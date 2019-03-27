@@ -1,4 +1,5 @@
 import argparse
+from time import time
 import os
 import numpy as np
 import nibabel as nib
@@ -8,7 +9,7 @@ from utils import benchmark, crawl_dir
 
 
 @benchmark()
-def read_img(filename, is_benchmarking, output_dir):
+def read_img(filename, is_benchmarking, output_dir, experiment, start):
     """Read the image from an MINC format to a Nifti format.
     
     :param filename: str -- representation of the path for the input file.
@@ -22,12 +23,12 @@ def read_img(filename, is_benchmarking, output_dir):
     
     data = img.get_data()
     
-    return (filename, data, (img.affine, img.header))
+    return filename, data, (img.affine, img.header)
 
 
 @benchmark(ignore=['data', 'metadata', 'threshold'])
-def binarize_data(filename, is_benchmarking, output_dir, *, data=None,
-                  metadata=None, threshold=0.5):
+def binarize_data(filename, is_benchmarking, output_dir, experiment, start, *,
+                  data, metadata, threshold=0.5):
     """Binarize the data.
     
     :param filename: str -- representation of the path for the input file.
@@ -44,12 +45,12 @@ def binarize_data(filename, is_benchmarking, output_dir, *, data=None,
     
     data = np.where(data > threshold, 1, 0)
     
-    return (filename, data, metadata)
+    return filename, data, metadata
 
 
 @benchmark(ignore=['data', 'metadata'])
-def save_binarization(filename, is_benchmarking, output_dir, *, data=None,
-                      metadata=None):
+def save_binarization(filename, is_benchmarking, output_dir, experiment,
+                      start, *, data, metadata):
     """Save the data into a nifti1Image format.
     
     :param filename: str -- representation of the path for the input file.
@@ -65,7 +66,7 @@ def save_binarization(filename, is_benchmarking, output_dir, *, data=None,
     f_out = os.path.join(output_dir, 'bin-' + bn)
     nib.save(img, f_out)
     
-    return (f_out, 'SUCCESS')
+    return f_out, 'SUCCESS'
 
 
 def main():
@@ -80,6 +81,8 @@ def main():
     parser.add_argument('output_dir', type=str,
                         help=('the folder to save binarized images to '
                               '(local fs only)'))
+    parser.add_argument('experiment', type=str,
+                        help='Name of the experiment being performed')
     parser.add_argument('threshold', type=int, help='binarization threshold')
     parser.add_argument('iterations', type=int, help='number of iterations')
     parser.add_argument('--benchmark', action='store_true',
@@ -91,17 +94,23 @@ def main():
     cluster = LocalCluster(n_workers=1, diagnostics_port=8788)
     Client(cluster)
     
+    start = time()
+    
     # Read images
     img_rdd = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir))) \
         .map(lambda path: read_img(path,
                                    args.benchmark,
-                                   args.output_dir))
+                                   args.output_dir,
+                                   args.experiment,
+                                   start))
     
     # Binarize the image data
     for i in range(args.iterations):
         img_rdd = img_rdd.map(lambda x: binarize_data(x[0],
                                                       args.benchmark,
                                                       args.output_dir,
+                                                      args.experiment,
+                                                      start,
                                                       data=x[1],
                                                       metadata=x[2],
                                                       threshold=args.threshold))
@@ -110,6 +119,8 @@ def main():
     img_rdd = img_rdd.map(lambda x: save_binarization(x[0],
                                                       args.benchmark,
                                                       args.output_dir,
+                                                      args.experiment,
+                                                      start,
                                                       data=x[1],
                                                       metadata=x[2]))
     

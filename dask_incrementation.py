@@ -1,4 +1,5 @@
 import argparse
+from time import time
 import os
 import nibabel as nib
 import dask.bag as db
@@ -7,7 +8,7 @@ from utils import benchmark, crawl_dir
 
 
 @benchmark()
-def read_img(filename, is_benchmarking, output_dir):
+def read_img(filename, is_benchmarking, output_dir, experiment, start):
     """Read the image from an MINC format to a Nifti format.
     
     :param filename: str -- representation of the path for the input file.
@@ -27,9 +28,8 @@ def read_img(filename, is_benchmarking, output_dir):
 
 
 @benchmark(ignore=['data', 'metadata'])
-def increment(filename, is_benchmarking, output_dir, *, data=None,
-              metadata=None,
-              iteration=1):
+def increment(filename, is_benchmarking, output_dir, experiment, start, *,
+              data, metadata, iteration):
     """Increment the data of a Nifti image by 1.
     
     :param filename: str -- representation of the path for the input file.
@@ -47,8 +47,8 @@ def increment(filename, is_benchmarking, output_dir, *, data=None,
 
 
 @benchmark(ignore=['data', 'metadata'])
-def save_incremented(filename, is_benchmarking, output_dir, *, data, metadata,
-                     iteration):
+def save_incremented(filename, is_benchmarking, output_dir, experiment, start,
+                     *, data, metadata, iteration):
     """Save a Nifti image.
     
     :param filename: str -- representation of the path for the input file.
@@ -81,6 +81,8 @@ def main():
     parser.add_argument('output_dir', type=str,
                         help=('the folder to save incremented images to'
                               '(local fs only)'))
+    parser.add_argument('experiment', type=str,
+                        help='Name of the experiment being performed')
     parser.add_argument('iterations', type=int, help='number of iterations')
     parser.add_argument('--benchmark', action='store_true',
                         help='benchmark results')
@@ -91,11 +93,14 @@ def main():
     cluster = LocalCluster(n_workers=1, diagnostics_port=8788)
     Client(cluster)
     
+    start = time()
     # Read images
     img_rdd = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir))) \
         .map(lambda path: read_img(path,
                                    args.benchmark,
-                                   args.output_dir)
+                                   args.output_dir,
+                                   args.experiment,
+                                   start)
              ).persist()
     
     # Increment the data n time:
@@ -103,6 +108,8 @@ def main():
         img_rdd = img_rdd.map(lambda x: increment(x[0],
                                                   args.benchmark,
                                                   args.output_dir,
+                                                  args.experiment,
+                                                  start,
                                                   data=x[1],
                                                   metadata=x[2],
                                                   iteration=itr)
@@ -111,6 +118,8 @@ def main():
     img_rdd.map(lambda x: save_incremented(x[0],
                                            args.benchmark,
                                            args.output_dir,
+                                           args.experiment,
+                                           start,
                                            data=x[1],
                                            metadata=x[2],
                                            iteration=args.iterations)
