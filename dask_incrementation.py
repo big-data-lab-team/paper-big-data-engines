@@ -101,7 +101,7 @@ def main():
                                    args.output_dir,
                                    args.experiment,
                                    start)
-             ).persist()
+             )
     
     # Increment the data n time:
     for itr in range(0, args.iterations):
@@ -113,7 +113,7 @@ def main():
                                                   data=x[1],
                                                   metadata=x[2],
                                                   iteration=itr)
-                              ).persist()
+                              )
     
     img_rdd.map(lambda x: save_incremented(x[0],
                                            args.benchmark,
