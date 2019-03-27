@@ -4,22 +4,7 @@ import numpy as np
 import nibabel as nib
 import dask.bag as db
 from dask.distributed import Client, LocalCluster
-from utils import benchmark
-
-
-def crawl_dir(input_dir):
-    """Crawl the input directory to retrieve MINC files.
-    
-    :param input_dir: str -- representation of the path for the input file.
-    :return: list -- of the retrieved path.
-    """
-    rv = list()
-    for folder, subs, files in os.walk(input_dir):
-        for filename in files:
-            if filename.endswith('.mnc'):
-                path = os.path.join(folder, filename)
-                rv.append(path)
-    return rv
+from utils import benchmark, crawl_dir
 
 
 @benchmark()
