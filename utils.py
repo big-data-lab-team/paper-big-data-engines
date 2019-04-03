@@ -40,7 +40,8 @@ def benchmark(_func=None, *, ignore=None):
                 calling_file = func.__globals__['__file__'].split('/')[-1][:-3]
                 benchmark_file = os.path.join(
                     benchmark_dir,
-                    "bench-{}-{}.txt".format(calling_file, experiment)
+                    "bench-{}-{}-{}.txt".format(calling_file, experiment,
+                                                uuid.uuid1())
                 )
                 
                 node = socket.gethostname()
@@ -49,10 +50,10 @@ def benchmark(_func=None, *, ignore=None):
                 with open(benchmark_file, 'a+') as f_out:
                     # Write
                     f_out.write('{0} {1} {2} {3} {4}'.format(func.__name__,
-                                                         start_time,
-                                                         end_time,
-                                                         bn,
-                                                         node))
+                                                             start_time,
+                                                             end_time,
+                                                             bn,
+                                                             node))
                     # Write optional keyword-arguments
                     if len(kwargs) > 0:
                         for k, v in sorted(kwargs.items()):
