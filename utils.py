@@ -34,7 +34,7 @@ def benchmark(_func=None, *, ignore=None):
             
             # Write to file if benchmarking
             if is_benchmarking:
-                benchmark_dir = os.path.join(output_dir, 'benchmarks')
+                benchmark_dir = os.path.join(output_dir, 'benchmarks-tmp')
                 os.makedirs(benchmark_dir, exist_ok=True)
                 
                 calling_file = func.__globals__['__file__'].split('/')[-1][:-3]
