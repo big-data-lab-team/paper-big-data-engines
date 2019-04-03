@@ -1,5 +1,5 @@
 import argparse
-from time import time
+from time import time, sleep
 import os
 import nibabel as nib
 import dask.bag as db
@@ -29,7 +29,7 @@ def read_img(filename, is_benchmarking, output_dir, experiment, start):
 
 @benchmark(ignore=['data', 'metadata'])
 def increment(filename, is_benchmarking, output_dir, experiment, start, *,
-              data, metadata, iteration):
+              data, metadata, iteration, delay):
     """Increment the data of a Nifti image by 1.
     
     :param filename: str -- representation of the path for the input file.
@@ -40,8 +40,10 @@ def increment(filename, is_benchmarking, output_dir, experiment, start, *,
     :param iteration: int -- current iteration
     :return: tuple -- of the form (filename, data, (image affine,
     image header), iteration+1).
+    :param delay: int -- sleep time for the task
     """
     data += 1
+    sleep(delay)
     
     return filename, data, metadata
 
@@ -59,7 +61,6 @@ def save_incremented(filename, is_benchmarking, output_dir, experiment, start,
     :param iteration: int -- current iteration
     :return: tuple -- of the form (f_out, 'SUCCESS')
     """
-    # print(metadata)
     bn = os.path.basename(filename[:-3] + 'nii')  # Save in nifti format
     f_out = os.path.join(output_dir, 'inc-{}itr-{}'.format(iteration, bn))
     
@@ -75,7 +76,7 @@ def main():
     :return:
     """
     parser = argparse.ArgumentParser(description="BigBrain incrementation")
-    parser.add_argument('scheduler', stype=str, help='Scheduler ip and port')
+    parser.add_argument('scheduler', type=str, help='Scheduler ip and port')
     parser.add_argument('bb_dir', type=str,
                         help=('The folder containing BigBrain NIfTI images'
                               '(local fs only)'))
@@ -85,6 +86,8 @@ def main():
     parser.add_argument('experiment', type=str,
                         help='Name of the experiment being performed')
     parser.add_argument('iterations', type=int, help='number of iterations')
+    parser.add_argument('delay', type=int, help='sleep delay during '
+                                                'incrementation')
     parser.add_argument('--benchmark', action='store_true',
                         help='benchmark results')
     
@@ -92,6 +95,7 @@ def main():
     
     # set up local cluster on your laptop
     client = Client(args.scheduler)
+    print('connected')
     
     start = time()
     # Read images
@@ -112,7 +116,8 @@ def main():
                                                   start,
                                                   data=x[1],
                                                   metadata=x[2],
-                                                  iteration=itr)
+                                                  iteration=itr,
+                                                  delay=args.delay)
                               )
     
     img_rdd.map(lambda x: save_incremented(x[0],
