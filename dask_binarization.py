@@ -75,6 +75,7 @@ def main():
     :return: void
     """
     parser = argparse.ArgumentParser(description="BigBrain binarization")
+    parser.add_argument('scheduler', stype=str, help='Scheduler ip and port')
     parser.add_argument('bb_dir', type=str,
                         help=('The folder containing BigBrain NIfTI images'
                               '(local fs only)'))
@@ -91,8 +92,7 @@ def main():
     args = parser.parse_args()
     
     # set up local cluster on your laptop
-    cluster = LocalCluster(n_workers=1, diagnostics_port=8788)
-    Client(cluster)
+    client = Client(args.scheduler)
     
     start = time()
     
