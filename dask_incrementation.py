@@ -86,7 +86,7 @@ def main():
     parser.add_argument('experiment', type=str,
                         help='Name of the experiment being performed')
     parser.add_argument('iterations', type=int, help='number of iterations')
-    parser.add_argument('delay', type=int, help='sleep delay during '
+    parser.add_argument('delay', type=float, help='sleep delay during '
                                                 'incrementation')
     parser.add_argument('--benchmark', action='store_true',
                         help='benchmark results')
@@ -105,7 +105,7 @@ def main():
                                    args.output_dir,
                                    args.experiment,
                                    start)
-             )
+             ).persist()
     
     # Increment the data n time:
     for itr in range(0, args.iterations):
@@ -118,17 +118,20 @@ def main():
                                                   metadata=x[2],
                                                   iteration=itr,
                                                   delay=args.delay)
-                              )
+                              ).persist()
     
-    img_rdd.map(lambda x: save_incremented(x[0],
-                                           args.benchmark,
-                                           args.output_dir,
-                                           args.experiment,
-                                           start,
-                                           data=x[1],
-                                           metadata=x[2],
-                                           iteration=args.iterations)
-                ).compute()
+    img_rdd = img_rdd.map(lambda x: save_incremented(x[0],
+                                                     args.benchmark,
+                                                     args.output_dir,
+                                                     args.experiment,
+                                                     start,
+                                                     data=x[1],
+                                                     metadata=x[2],
+                                                     iteration=args.iterations)
+                          ).persist()
+    img_rdd.compute()
+    
+    client.close()
 
 
 if __name__ == '__main__':
