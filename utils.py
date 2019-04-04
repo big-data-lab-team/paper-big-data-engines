@@ -37,11 +37,10 @@ def benchmark(_func=None, *, ignore=None):
                 benchmark_dir = os.path.join(output_dir, 'benchmarks-tmp')
                 os.makedirs(benchmark_dir, exist_ok=True)
                 
-                calling_file = func.__globals__['__file__'].split('/')[-1][:-3]
                 benchmark_file = os.path.join(
                     benchmark_dir,
-                    "bench-{}-{}-{}.txt".format(calling_file, experiment,
-                                                uuid.uuid1())
+                    "bench-{}-{}.txt".format(experiment,
+                                             uuid.uuid1())
                 )
                 
                 node = socket.gethostname()
