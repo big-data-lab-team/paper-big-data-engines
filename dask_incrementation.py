@@ -75,6 +75,8 @@ def main():
     :return:
     """
     parser = argparse.ArgumentParser(description="BigBrain incrementation")
+    parser.add_argument('scheduler', type=str,
+                        help='Scheduler ip and port')
     parser.add_argument('bb_dir', type=str,
                         help=('The folder containing BigBrain NIfTI images'
                               '(local fs only)'))
@@ -93,10 +95,14 @@ def main():
     cluster = LocalCluster(n_workers=1, diagnostics_port=8788)
     Client(cluster)
     
+    # Cluster scheduler
+    #client = Client(args.scheduler)
+    print('Connected')
+    
     start = time()
     # Read images
-    img_rdd = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir))) \
-        .map(lambda path: read_img(path,
+    paths = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir)))
+    img_rdd = paths.map(lambda path: read_img(path,
                                    args.benchmark,
                                    args.output_dir,
                                    args.experiment,
