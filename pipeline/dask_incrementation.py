@@ -113,17 +113,28 @@ if __name__ == '__main__':
                         help='benchmark results')
     
     args = parser.parse_args()
+
+    # Cluster scheduler
+    # cluster = args.scheduler
+
+    # Local scheduler
+    cluster = LocalCluster(n_workers=1,
+                           diagnostics_port=8788,
+                           resources={'process': 1})
     
-    # cluster = args.scheduler  # Cluster scheduler
-    cluster = LocalCluster(n_workers=1, diagnostics_port=8788)  # Local cluster
     client = Client(cluster)
     print(client)
+    client.upload_file('utils.py')  # Allow workers to use module
     
     start = time()  # Start time of the pipeline
     
     # Read images
     files = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir)))
-    img_rdd = client.map(read_img, files, start=start, args=args)
+    img_rdd = client.map(read_img,
+                         files,
+                         start=start,
+                         args=args,
+                         resources={'process': 1})
     
     # Increment the data n time:
     for _ in range(0, args.iterations):
@@ -131,10 +142,12 @@ if __name__ == '__main__':
                              img_rdd,
                              delay=args.delay,
                              start=start,
-                             args=args)
+                             args=args,
+                             resources={'process': 1})
     
     # Save the data
-    img_rdd = client.map(save_incremented, img_rdd, start=start, args=args)
+    img_rdd = client.map(save_incremented, img_rdd, start=start, args=args,
+                         resources={'process': 1})
     client.gather(img_rdd)
     
     client.close()
