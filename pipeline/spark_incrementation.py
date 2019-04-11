@@ -86,6 +86,8 @@ def main():
     parser.add_argument('experiment', type=str,
                         help='Name of the experiment being performed')
     parser.add_argument('iterations', type=int, help='number of iterations')
+    parser.add_argument('delay', type=float, help='sleep delay during '
+                                                  'incrementation')
     parser.add_argument('--benchmark', action='store_true',
                         help='benchmark results')
     
