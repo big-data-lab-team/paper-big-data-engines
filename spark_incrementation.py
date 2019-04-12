@@ -128,7 +128,7 @@ if __name__ == '__main__':
                                         delay=args.delay,
                                         start=start,
                                         args=args))
-        
+    
     # Save the data
     img_rdd = img_rdd.map(lambda x:
                           save_incremented(x,

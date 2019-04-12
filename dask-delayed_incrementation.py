@@ -119,12 +119,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     # Cluster scheduler
-    # cluster = args.scheduler
-    
-    # Local scheduler
-    cluster = LocalCluster(n_workers=1,
-                           diagnostics_port=8788,
-                           resources={'process': 1})
+    cluster = args.scheduler
     
     client = Client(cluster)
     print(client)
@@ -151,5 +146,5 @@ if __name__ == '__main__':
     futures = [client.submit(lambda x: x, f, resources={'process': 1}) for f in
                futures]
     client.gather(futures)
-   
+    
     client.close()

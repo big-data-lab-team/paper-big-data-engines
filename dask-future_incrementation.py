@@ -116,20 +116,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     # Cluster scheduler
-    # cluster = args.scheduler
-    
-    # Local scheduler
-    cluster = LocalCluster(n_workers=1,
-                           diagnostics_port=8788,
-                           resources={'process': 1})
-    
+    cluster = args.scheduler
     client = Client(cluster)
+    
     print(client)
     client.upload_file('utils.py')  # Allow workers to use module
     
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
-    
     client.scatter(paths)
     
     results = []
@@ -152,7 +146,7 @@ if __name__ == '__main__':
         
         # Execute the tasks
         fire_and_forget(img)
-        
+    
     client.gather(results)
     
     client.close()
