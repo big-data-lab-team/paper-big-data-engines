@@ -4,7 +4,7 @@ import os
 
 import nibabel as nib
 import dask.bag as db
-from dask.distributed import Client, LocalCluster
+from dask.distributed import Client, LocalCluster, futures_of, fire_and_forget
 import numpy as np
 import dask
 from dask.optimization import fuse
@@ -12,6 +12,7 @@ from dask.optimization import fuse
 from utils import benchmark, crawl_dir
 
 
+@dask.delayed
 def read_img(filename, start, args):
     """Read the image from an MINC format to a Nifti format.
     
@@ -29,11 +30,12 @@ def read_img(filename, start, args):
     
     if args.benchmark:
         benchmark(start_time, end_time, filename, args.output_dir,
-                  args.experiment, read_img.__name__)
+                  args.experiment, 'read_img')
     
     return filename, data, (img.affine, img.header)
 
 
+@dask.delayed
 def increment(img_rdd, delay, start, args):
     """Increment the data of a Nifti image by 1.
     
@@ -57,11 +59,12 @@ def increment(img_rdd, delay, start, args):
     
     if args.benchmark:
         benchmark(start_time, end_time, filename, args.output_dir,
-                  args.experiment, increment.__name__)
+                  args.experiment, 'increment')
     
     return filename, data, metadata
 
 
+@dask.delayed
 def save_incremented(img_rdd, start, args):
     """Save a Nifti image.
     
@@ -87,7 +90,7 @@ def save_incremented(img_rdd, start, args):
     
     if args.benchmark:
         benchmark(start_time, end_time, filename, args.output_dir,
-                  args.experiment, save_incremented.__name__)
+                  args.experiment, 'save_incremented')
     
     return f_out, 'SUCCESS'
 
@@ -131,29 +134,35 @@ if __name__ == '__main__':
     start = time()  # Start time of the pipeline
     
     # Read images
-    paths = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir)))
-    img_rdd = paths.map(lambda p: read_img(p,
-                                           start=start,
-                                           args=args))
+    paths = crawl_dir(os.path.abspath(args.bb_dir))
     
-    # Increment the data n time:
-    for _ in range(0, args.iterations):
-        img_rdd = img_rdd.map(lambda x:
-                              increment(x,
-                                        delay=args.delay,
-                                        start=start,
-                                        args=args))
+    results = []
+    for path in paths:
+        img_rdd = read_img(path, start=start, args=args)
+        
+        # Increment the data n time:
+        for _ in range(args.iterations):
+            img_rdd = increment(img_rdd, delay=args.delay, start=start,
+                                args=args)
         
         # Save the data
-        img_rdd = img_rdd.map(lambda x:
-                              save_incremented(x,
-                                               start=start,
-                                               args=args))
-        
-        img_rdd = dask.optimize(img_rdd,
-                                array_optimize=dask.optimization.fuse)[0]
-        
-        img_rdd.compute(resources={'process': 1})
-        # client.gather(img_rdd)
-        
-        client.close()
+        results.append(save_incremented(img_rdd, start=start, args=args))
+    
+    
+    # for r in results:
+    #     r.compute(resources={'process': 1})
+    def trigger(x):
+        fire_and_forget(x)
+        return x
+    client.scatter(results)
+    futures = client.compute(results)
+    client.scatter(futures)
+    futures = [client.submit(trigger, f, resources={'process': 1}) for f in
+               futures]
+    client.gather(futures)
+    # d = client.compute(results)
+    # results = dask.compute(*results)
+    # img_rdd.compute()
+    # client.gather(img_rdd)
+    
+    client.close()
