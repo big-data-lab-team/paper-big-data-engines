@@ -122,17 +122,17 @@ if __name__ == '__main__':
                                            args=args))
     
     # Increment the data n time:
-    for _ in range(0, args.iterations):
+    for _ in range(args.iterations):
         img_rdd = img_rdd.map(lambda x:
                               increment(x,
                                         delay=args.delay,
                                         start=start,
                                         args=args))
         
-        # Save the data
-        img_rdd = img_rdd.map(lambda x:
-                              save_incremented(x,
-                                               start=start,
-                                               args=args))
-        
-        img_rdd.collect()
+    # Save the data
+    img_rdd = img_rdd.map(lambda x:
+                          save_incremented(x,
+                                           start=start,
+                                           args=args))
+    
+    img_rdd.collect()
