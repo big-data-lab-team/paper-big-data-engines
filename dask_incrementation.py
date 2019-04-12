@@ -3,11 +3,8 @@ from time import time, sleep
 import os
 
 import nibabel as nib
-import dask.bag as db
-from dask.distributed import Client, LocalCluster, futures_of, fire_and_forget
-import numpy as np
+from dask.distributed import Client, LocalCluster, fire_and_forget
 import dask
-from dask.optimization import fuse
 
 from utils import benchmark, crawl_dir
 
@@ -100,6 +97,8 @@ if __name__ == '__main__':
     
     :return:
     """
+    start = time()  # Start time of the pipeline
+    
     parser = argparse.ArgumentParser(description="BigBrain incrementation")
     parser.add_argument('scheduler', type=str,
                         help='Scheduler ip and port')
@@ -131,8 +130,6 @@ if __name__ == '__main__':
     print(client)
     client.upload_file('utils.py')  # Allow workers to use module
     
-    start = time()  # Start time of the pipeline
-    
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
     
@@ -148,21 +145,11 @@ if __name__ == '__main__':
         # Save the data
         results.append(save_incremented(img_rdd, start=start, args=args))
     
-    
-    # for r in results:
-    #     r.compute(resources={'process': 1})
-    def trigger(x):
-        fire_and_forget(x)
-        return x
     client.scatter(results)
     futures = client.compute(results)
     client.scatter(futures)
-    futures = [client.submit(trigger, f, resources={'process': 1}) for f in
+    futures = [client.submit(lambda x: x, f, resources={'process': 1}) for f in
                futures]
     client.gather(futures)
-    # d = client.compute(results)
-    # results = dask.compute(*results)
-    # img_rdd.compute()
-    # client.gather(img_rdd)
-    
+   
     client.close()
