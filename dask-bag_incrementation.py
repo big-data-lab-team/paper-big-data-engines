@@ -137,23 +137,23 @@ if __name__ == '__main__':
                                            args=args))
     
     # Increment the data n time:
-    for _ in range(0, args.iterations):
+    for _ in range(args.iterations):
         img_rdd = img_rdd.map(lambda x:
                               increment(x,
                                         delay=args.delay,
                                         start=start,
                                         args=args))
         
-        # Save the data
-        img_rdd = img_rdd.map(lambda x:
-                              save_incremented(x,
-                                               start=start,
-                                               args=args))
-        
-        img_rdd = dask.optimize(img_rdd,
-                                array_optimize=dask.optimization.fuse)[0]
-        
-        img_rdd.compute(resources={'process': 1})
-        # client.gather(img_rdd)
-        
-        client.close()
+    # Save the data
+    img_rdd = img_rdd.map(lambda x:
+                          save_incremented(x,
+                                           start=start,
+                                           args=args))
+    
+    img_rdd = dask.optimize(img_rdd,
+                            array_optimize=dask.optimization.fuse)[0]
+    
+    img_rdd.compute(resources={'process': 1})
+    # client.gather(img_rdd)
+    
+    client.close()
