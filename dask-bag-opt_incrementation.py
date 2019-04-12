@@ -116,14 +116,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     # Cluster scheduler
-    # cluster = args.scheduler
-    
-    # Local scheduler
-    cluster = LocalCluster(n_workers=1,
-                           diagnostics_port=8788,
-                           resources={'process': 1})
-    
+    cluster = args.scheduler
     client = Client(cluster)
+    
     print(client)
     client.upload_file('utils.py')  # Allow workers to use module
     
@@ -142,7 +137,7 @@ if __name__ == '__main__':
                                         delay=args.delay,
                                         start=start,
                                         args=args))
-        
+    
     # Save the data
     img_rdd = img_rdd.map(lambda x:
                           save_incremented(x,
@@ -153,6 +148,5 @@ if __name__ == '__main__':
                             array_optimize=dask.optimization.fuse)[0]
     
     img_rdd.compute(resources={'process': 1})
-    # client.gather(img_rdd)
     
     client.close()
