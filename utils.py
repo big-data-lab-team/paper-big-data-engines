@@ -43,7 +43,7 @@ def crawl_dir(input_dir):
     rv = list()
     for folder, subs, files in os.walk(input_dir):
         for filename in files:
-            if filename.endswith('.mnc'):
+            if filename.endswith('.nii'):
                 path = os.path.join(folder, filename)
                 rv.append(path)
     return rv
