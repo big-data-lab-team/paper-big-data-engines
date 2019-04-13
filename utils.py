@@ -1,6 +1,7 @@
 import os
 import socket
 import uuid
+import threading
 
 
 def benchmark(start, end, filename, output_dir, experiment, func_name):
@@ -18,20 +19,22 @@ def benchmark(start, end, filename, output_dir, experiment, func_name):
     os.makedirs(benchmark_dir, exist_ok=True)
     
     benchmark_file = os.path.join(benchmark_dir,
-                                  "bench-{}-{}.txt".format(experiment,
-                                                           uuid.uuid1())
+                                  "benchmark-{}-{}.txt".format(experiment,
+                                                               uuid.uuid1())
                                   )
     
-    node = socket.gethostname()
     bn = os.path.basename(filename)
+    node = socket.gethostname()
+    thread = threading.currentThread().ident
     
     with open(benchmark_file, 'a+') as f_out:
         # Write
-        f_out.write('{0} {1} {2} {3} {4}\n'.format(func_name,
-                                                   start,
-                                                   end,
-                                                   bn,
-                                                   node))
+        f_out.write('{0},{1},{2},{3},{4},{5}\n'.format(func_name,
+                                                       start,
+                                                       end,
+                                                       bn,
+                                                       node,
+                                                       thread))
 
 
 def crawl_dir(input_dir):
