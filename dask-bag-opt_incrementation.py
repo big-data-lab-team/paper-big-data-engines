@@ -76,8 +76,7 @@ def save_incremented(img_rdd, start, args):
     metadata = img_rdd[2]
     
     bn = os.path.basename(filename[:-3] + 'nii')  # Save in nifti format
-    f_out = os.path.join(args.output_dir,
-                         '{}-{}'.format(args.experiment, bn))
+    f_out = os.path.join(args.output_dir, 'images/'+bn)
     
     img = nib.Nifti1Image(data, metadata[0], header=metadata[1])
     nib.save(img, f_out)
@@ -116,7 +115,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     # Cluster scheduler
-    cluster = args.scheduler
+    # cluster = args.scheduler
+    cluster = LocalCluster(n_workers=2, resources={'process': 1})
     client = Client(cluster)
     
     print(client)
