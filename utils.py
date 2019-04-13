@@ -15,7 +15,7 @@ def benchmark(start, end, filename, output_dir, experiment, func_name):
     :param func:
     :return:
     """
-    benchmark_dir = os.path.join(output_dir, 'benchmarks-tmp')
+    benchmark_dir = os.path.join(output_dir, 'benchmarks/'+experiment)
     os.makedirs(benchmark_dir, exist_ok=True)
     
     benchmark_file = os.path.join(benchmark_dir,
