@@ -11,14 +11,14 @@ with open('experiment.json') as f_in:
     shuffle(experiments)
     for exp in experiments:
         experiment = exp['experiment']
-        file = exp['file']
+        filename = exp['file']
         iterations = str(exp['iterations'])
         delay = str(exp['delay'])
         chunks = str(exp['chunks'])
         
         if experiment == 'spark_inc-baseline':
             subprocess.call(['python',
-                             '../' + file,
+                             '../' + filename,
                              '/nfs/bb-' + chunks + 'chunks',
                              '/nfs/results',
                              experiment,
@@ -27,7 +27,7 @@ with open('experiment.json') as f_in:
                              '--benchmark'])
         else:
             subprocess.call(['python',
-                             '../' + file,
+                             '../' + filename,
                              '192.168.73.23:8786',
                              '/nfs/bb-' + chunks + 'chunks',
                              '/nfs/results',
