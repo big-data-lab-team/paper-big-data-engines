@@ -238,13 +238,6 @@
     "chunks": 30
   },
   {
-    "experiment": "spark_inc-30chunks",
-    "file": "spark_incrementation.py",
-    "iterations": 10,
-    "delay": 3.44,
-    "chunks": 30
-  },
-  {
     "experiment": "dask-bag_inc-750chunks",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
