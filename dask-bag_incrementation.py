@@ -95,6 +95,8 @@ if __name__ == '__main__':
     
     :return:
     """
+    start = time()  # Start time of the pipeline
+    
     parser = argparse.ArgumentParser(description="BigBrain incrementation")
     parser.add_argument('scheduler', type=str,
                         help='Scheduler ip and port')
@@ -120,8 +122,6 @@ if __name__ == '__main__':
     
     print(client)
     client.upload_file('utils.py')  # Allow workers to use module
-    
-    start = time()  # Start time of the pipeline
     
     # Read images
     paths = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir)))
