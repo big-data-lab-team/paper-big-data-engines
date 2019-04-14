@@ -118,8 +118,8 @@ if __name__ == '__main__':
     
     # Cluster scheduler
     cluster = args.scheduler
-    
     client = Client(cluster)
+    
     print(client)
     client.upload_file('utils.py')  # Allow workers to use module
     

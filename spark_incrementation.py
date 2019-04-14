@@ -112,6 +112,8 @@ if __name__ == '__main__':
     
     conf = SparkConf().setAppName('Spark Incrementation')
     sc = SparkContext.getOrCreate(conf=conf)
+    
+    sc.addFile('utils.py')
     print('Connected')
     
     # Read images
