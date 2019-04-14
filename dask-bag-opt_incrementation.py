@@ -114,9 +114,7 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    # Cluster scheduler
-    # cluster = args.scheduler
-    cluster = LocalCluster(n_workers=2, resources={'process': 1})
+    cluster = args.scheduler
     client = Client(cluster)
     
     print(client)
