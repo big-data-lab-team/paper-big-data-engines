@@ -19,8 +19,7 @@ def read_img(filename, start, args):
     """
     start_time = time() - start
     
-    minc = nib.load(filename)
-    img = nib.Nifti1Image(minc.get_data(), affine=minc.affine)
+    img = nib.load(filename)
     data = img.get_data()
     
     end_time = time() - start
