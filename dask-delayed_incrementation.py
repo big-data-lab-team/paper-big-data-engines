@@ -140,9 +140,6 @@ if __name__ == '__main__':
     
     client.scatter(results)
     futures = client.compute(results)
-    client.scatter(futures)
-    futures = [client.submit(lambda x: x, f, resources={'process': 1}) for f in
-               futures]
     client.gather(futures)
     
     client.close()
