@@ -22,7 +22,7 @@ with open('experiment.json') as f_in:
                             'spark://192.168.73.23:7077',
                             '--executor-memory',
                             '25G',
-                            '/nfs/SOEN-499/Project/' + filename,
+                            '/nfs/SOEN-499-Project/' + filename,
                             '/nfs/bb-' + chunks + 'chunks',
                             '/nfs/results',
                             experiment,
@@ -31,7 +31,7 @@ with open('experiment.json') as f_in:
                             '--benchmark'])
         else:
             subprocess.run(['python',
-                            '/nfs/SOEN-499/Project/' + filename,
+                            '/nfs/SOEN-499-Project/' + filename,
                             '192.168.73.23:8786',
                             '/nfs/bb-' + chunks + 'chunks',
                             '/nfs/results',
