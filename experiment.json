@@ -21,8 +21,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-future_inc-baseline",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-baseline",
+    "file": "dask-futures_incrementation.py",
     "iterations": 10,
     "delay": 3.44,
     "chunks": 125
@@ -56,8 +56,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-future_inc-1itr",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-1itr",
+    "file": "dask-futures_incrementation.py",
     "iterations": 1,
     "delay": 3.44,
     "chunks": 125
@@ -91,8 +91,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-future_inc-100itr",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-100itr",
+    "file": "dask-futures_incrementation.py",
     "iterations": 100,
     "delay": 3.44,
     "chunks": 125
@@ -126,8 +126,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-future_inc-2.4delay",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-2.4delay",
+    "file": "dask-futures_incrementation.py",
     "iterations": 10,
     "delay": 2.4,
     "chunks": 125
@@ -161,8 +161,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-future_inc-7.68delay",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-7.68delay",
+    "file": "dask-futures_incrementation.py",
     "iterations": 10,
     "delay": 7.68,
     "chunks": 125
@@ -196,8 +196,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-future_inc-320delay",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-320delay",
+    "file": "dask-futures_incrementation.py",
     "iterations": 10,
     "delay": 320,
     "chunks": 125
@@ -231,8 +231,8 @@
     "chunks": 30
   },
   {
-    "experiment": "dask-future_inc-30chunks",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-30chunks",
+    "file": "dask-futures_incrementation.py",
     "iterations": 10,
     "delay": 3.44,
     "chunks": 30
@@ -259,8 +259,8 @@
     "chunks": 750
   },
   {
-    "experiment": "dask-future_inc-750chunks",
-    "file": "dask-future_incrementation.py",
+    "experiment": "dask-futures_inc-750chunks",
+    "file": "dask-futures_incrementation.py",
     "iterations": 10,
     "delay": 3.44,
     "chunks": 750
