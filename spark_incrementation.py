@@ -117,7 +117,8 @@ if __name__ == '__main__':
     print('Connected')
     
     # Read images
-    paths = sc.parallelize(crawl_dir(os.path.abspath(args.bb_dir)))
+    paths = crawl_dir(os.path.abspath(args.bb_dir))
+    paths = sc.parallelize(paths, len(paths))
     img_rdd = paths.map(lambda p: read_img(p,
                                            start=start,
                                            args=args))
