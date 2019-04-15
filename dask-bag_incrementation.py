@@ -124,7 +124,8 @@ if __name__ == '__main__':
     client.upload_file('utils.py')  # Allow workers to use module
     
     # Read images
-    paths = db.from_sequence(crawl_dir(os.path.abspath(args.bb_dir)))
+    paths = crawl_dir(os.path.abspath(args.bb_dir))
+    paths = db.from_sequence(paths, len(paths))
     img_rdd = paths.map(lambda p: read_img(p,
                                            start=start,
                                            args=args))
