@@ -125,7 +125,7 @@ if __name__ == '__main__':
     
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
-    paths = db.from_sequence(paths, len(paths))
+    paths = db.from_sequence(paths,  npartitions=len(paths))
     img_rdd = paths.map(lambda p: read_img(p,
                                            start=start,
                                            args=args))
