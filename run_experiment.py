@@ -16,7 +16,7 @@ with open('experiment.json') as f_in:
         delay = str(exp['delay'])
         chunks = str(exp['chunks'])
         
-        if experiment == 'spark_inc-baseline':
+        if experiment[:5] == 'spark':
             subprocess.run(['spark-submit',
                             '--master',
                             'spark://192.168.73.23:7077',
