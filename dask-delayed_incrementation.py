@@ -8,7 +8,6 @@ from dask.distributed import Client
 from utils import crawl_dir
 from Increment import read_img, increment, save_incremented
 
-
 if __name__ == '__main__':
     
     start = time()  # Start time of the pipeline
@@ -44,19 +43,19 @@ if __name__ == '__main__':
     
     results = []
     for path in paths:
-        img_rdd = dask.delayed(read_img(path, start=start, args=args))
+        img_rdd = dask.delayed(read_img)(path, start=start, args=args)
         
         # Increment the data n time:
         for _ in range(args.iterations):
-            img_rdd = dask.delayed(increment(img_rdd,
-                                             delay=args.delay,
-                                             start=start,
-                                             args=args))
+            img_rdd = dask.delayed(increment)(img_rdd,
+                                              delay=args.delay,
+                                              start=start,
+                                              args=args)
         
         # Save the data
-        results.append(dask.delayed(save_incremented(img_rdd,
-                                                     start=start,
-                                                     args=args)))
+        results.append(dask.delayed(save_incremented)(img_rdd,
+                                                      start=start,
+                                                      args=args))
     
     client.scatter(results)
     futures = client.compute(results)
