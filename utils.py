@@ -15,7 +15,7 @@ def benchmark(start, end, filename, output_dir, experiment, func_name):
     :param func:
     :return:
     """
-    benchmark_dir = os.path.join(output_dir, 'benchmarks/'+experiment)
+    benchmark_dir = os.path.join(output_dir, 'benchmarks/' + experiment)
     os.makedirs(benchmark_dir, exist_ok=True)
     
     benchmark_file = os.path.join(benchmark_dir,
@@ -26,17 +26,19 @@ def benchmark(start, end, filename, output_dir, experiment, func_name):
     bn = os.path.basename(filename)
     node = socket.gethostname()
     thread = threading.currentThread().ident
+    pid = os.getpid()
     
     with open(benchmark_file, 'a+') as f_out:
         # Write
-        f_out.write('{0},{1},{2},{3},{4},{5}\n'.format(func_name,
-                                                       start,
-                                                       end,
-                                                       bn,
-                                                       node,
-                                                       thread))
-
-
+        f_out.write('{0},{1},{2},{3},{4},{5},{6}\n'.format(func_name,
+                                                           start,
+                                                           end,
+                                                           bn,
+                                                           node,
+                                                           thread,
+                                                           pid))
+    
+    
 def crawl_dir(input_dir):
     """Crawl the input directory to retrieve MINC files.
     
