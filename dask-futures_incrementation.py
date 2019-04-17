@@ -36,8 +36,8 @@ if __name__ == '__main__':
     client = Client(cluster)
     
     print(client)
-    client.upload_file('Increment.py')
     client.upload_file('utils.py')  # Allow workers to use module
+    client.upload_file('Increment.py')
     
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
