@@ -33,6 +33,7 @@ if __name__ == '__main__':
     sc = SparkContext.getOrCreate(conf=conf)
     
     sc.addFile('utils.py')
+    sc.addFile('Increment.py')
     print('Connected')
     
     # Read images
