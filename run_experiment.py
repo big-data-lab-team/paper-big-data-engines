@@ -18,7 +18,7 @@ with open("experiment.json") as f_in:
                 [
                     "spark-submit",
                     "--master",
-                    "spark://192.168.73.23:7077",
+                    "spark://192.168.73.10:7077",
                     "--executor-memory",
                     "25G",
                     "/nfs/SOEN-499-Project/" + filename,
@@ -35,7 +35,7 @@ with open("experiment.json") as f_in:
                 [
                     "python",
                     "/nfs/SOEN-499-Project/" + filename,
-                    "192.168.73.23:8786",
+                    "192.168.73.10:8786",
                     "/nfs/bb-" + chunks + "chunks",
                     "/nfs/results",
                     experiment,
