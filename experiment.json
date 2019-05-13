@@ -3,273 +3,217 @@
     "experiment": "dask-bag_inc-baseline",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
-    "chunks": 125
-  },
-  {
-    "experiment": "dask-bag-opt_inc-baseline",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-delayed_inc-baseline",
     "file": "dask-delayed_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-futures_inc-baseline",
     "file": "dask-futures_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "spark_inc-baseline",
     "file": "spark_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-bag_inc-1itr",
     "file": "dask-bag_incrementation.py",
     "iterations": 1,
-    "delay": 3.44,
-    "chunks": 125
-  },
-  {
-    "experiment": "dask-bag-opt_inc-1itr",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 1,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-delayed_inc-1itr",
     "file": "dask-delayed_incrementation.py",
     "iterations": 1,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-futures_inc-1itr",
     "file": "dask-futures_incrementation.py",
     "iterations": 1,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "spark_inc-1itr",
     "file": "spark_incrementation.py",
     "iterations": 1,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-bag_inc-100itr",
     "file": "dask-bag_incrementation.py",
     "iterations": 100,
-    "delay": 3.44,
-    "chunks": 125
-  },
-  {
-    "experiment": "dask-bag-opt_inc-100itr",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 100,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-delayed_inc-100itr",
     "file": "dask-delayed_incrementation.py",
     "iterations": 100,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "dask-futures_inc-100itr",
     "file": "dask-futures_incrementation.py",
     "iterations": 100,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
     "experiment": "spark_inc-100itr",
     "file": "spark_incrementation.py",
     "iterations": 100,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 125
   },
   {
-    "experiment": "dask-bag_inc-2.4delay",
+    "experiment": "dask-bag_inc-1delay",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
-    "delay": 2.4,
+    "delay": 1,
     "chunks": 125
   },
   {
-    "experiment": "dask-bag-opt_inc-2.4delay",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 10,
-    "delay": 2.4,
-    "chunks": 125
-  },
-  {
-    "experiment": "dask-delayed_inc-2.4delay",
+    "experiment": "dask-delayed_inc-1delay",
     "file": "dask-delayed_incrementation.py",
     "iterations": 10,
-    "delay": 2.4,
+    "delay": 1,
     "chunks": 125
   },
   {
-    "experiment": "dask-futures_inc-2.4delay",
+    "experiment": "dask-futures_inc-1delay",
     "file": "dask-futures_incrementation.py",
     "iterations": 10,
-    "delay": 2.4,
+    "delay": 1,
     "chunks": 125
   },
   {
-    "experiment": "spark_inc-2.4delay",
+    "experiment": "spark_inc-1delay",
     "file": "spark_incrementation.py",
     "iterations": 10,
-    "delay": 2.4,
+    "delay": 1,
     "chunks": 125
   },
   {
-    "experiment": "dask-bag_inc-7.68delay",
+    "experiment": "dask-bag_inc-16delay",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
-    "delay": 7.68,
+    "delay": 16,
     "chunks": 125
   },
   {
-    "experiment": "dask-bag-opt_inc-7.68delay",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 10,
-    "delay": 7.68,
-    "chunks": 125
-  },
-  {
-    "experiment": "dask-delayed_inc-7.68delay",
+    "experiment": "dask-delayed_inc-16delay",
     "file": "dask-delayed_incrementation.py",
     "iterations": 10,
-    "delay": 7.68,
+    "delay": 16,
     "chunks": 125
   },
   {
-    "experiment": "dask-futures_inc-7.68delay",
+    "experiment": "dask-futures_inc-16delay",
     "file": "dask-futures_incrementation.py",
     "iterations": 10,
-    "delay": 7.68,
+    "delay": 16,
     "chunks": 125
   },
   {
-    "experiment": "spark_inc-7.68delay",
+    "experiment": "spark_inc-16delay",
     "file": "spark_incrementation.py",
     "iterations": 10,
-    "delay": 7.68,
+    "delay": 16,
     "chunks": 125
   },
   {
-    "experiment": "dask-bag_inc-320delay",
+    "experiment": "dask-bag_inc-64delay",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
-    "delay": 320,
+    "delay": 64,
     "chunks": 125
   },
   {
-    "experiment": "dask-bag-opt_inc-320delay",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 10,
-    "delay": 320,
-    "chunks": 125
-  },
-  {
-    "experiment": "dask-delayed_inc-320delay",
+    "experiment": "dask-delayed_inc-64delay",
     "file": "dask-delayed_incrementation.py",
     "iterations": 10,
-    "delay": 320,
+    "delay": 64,
     "chunks": 125
   },
   {
-    "experiment": "dask-futures_inc-320delay",
+    "experiment": "dask-futures_inc-64delay",
     "file": "dask-futures_incrementation.py",
     "iterations": 10,
-    "delay": 320,
+    "delay": 64,
     "chunks": 125
   },
   {
-    "experiment": "spark_inc-320delay",
+    "experiment": "spark_inc-64delay",
     "file": "spark_incrementation.py",
     "iterations": 10,
-    "delay": 320,
+    "delay": 64,
     "chunks": 125
   },
   {
     "experiment": "dask-bag_inc-30chunks",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
-    "chunks": 30
-  },
-  {
-    "experiment": "dask-bag-opt_inc-30chunks",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 30
   },
   {
     "experiment": "dask-delayed_inc-30chunks",
     "file": "dask-delayed_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 30
   },
   {
     "experiment": "dask-futures_inc-30chunks",
     "file": "dask-futures_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 30
   },
   {
     "experiment": "dask-bag_inc-750chunks",
     "file": "dask-bag_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
-    "chunks": 750
-  },
-  {
-    "experiment": "dask-bag-opt_inc-750chunks",
-    "file": "dask-bag-opt_incrementation.py",
-    "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 750
   },
   {
     "experiment": "dask-delayed_inc-750chunks",
     "file": "dask-delayed_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 750
   },
   {
     "experiment": "dask-futures_inc-750chunks",
     "file": "dask-futures_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 750
   },
   {
     "experiment": "spark_inc-750chunks",
     "file": "spark_incrementation.py",
     "iterations": 10,
-    "delay": 3.44,
+    "delay": 4,
     "chunks": 750
   }
 ]
