@@ -6,7 +6,7 @@ import dask
 from dask.distributed import Client
 
 from Increment import increment
-from utils import crawl_dir, read_img, save_incremented
+from utils import crawl_dir, read_img, save_results
 
 
 if __name__ == "__main__":
@@ -58,7 +58,7 @@ if __name__ == "__main__":
             )
 
         # Save the data
-        results.append(dask.delayed(save_incremented)(img_rdd, start=start, args=args))
+        results.append(dask.delayed(save_results)(img_rdd, start=start, args=args))
 
     client.scatter(results)
     futures = client.compute(results)
