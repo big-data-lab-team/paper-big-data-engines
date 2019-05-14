@@ -5,7 +5,7 @@ import os
 from pyspark import SparkConf, SparkContext
 
 from Increment import increment
-from utils import crawl_dir, read_img, save_incremented
+from utils import crawl_dir, read_img, save_results
 
 
 if __name__ == "__main__":
@@ -37,8 +37,8 @@ if __name__ == "__main__":
     conf = SparkConf().setAppName("Spark Incrementation")
     sc = SparkContext.getOrCreate(conf=conf)
 
-    sc.addFile("utils.py")
-    sc.addFile("Increment.py")
+    sc.addFile("/nfs/SOEN-499-Project/utils.py")
+    sc.addFile("/nfs/SOEN-499-Project/Increment.py")
     print("Connected")
 
     # Read images
@@ -53,6 +53,6 @@ if __name__ == "__main__":
         )
 
     # Save the data
-    img_rdd = img_rdd.map(lambda x: save_incremented(x, start=start, args=args))
+    img_rdd = img_rdd.map(lambda x: save_results(x, start=start, args=args))
 
     img_rdd.collect()
