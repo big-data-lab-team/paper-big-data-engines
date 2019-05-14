@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("/nfs/SOEN-499-Project")
+
 from time import time, sleep
 
 from utils import benchmark

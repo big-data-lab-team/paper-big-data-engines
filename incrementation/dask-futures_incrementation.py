@@ -5,7 +5,7 @@ import os
 from dask.distributed import Client, fire_and_forget
 
 from Increment import increment
-from utils import crawl_dir, read_img, save_incremented
+from utils import crawl_dir, read_img, save_results
 
 
 if __name__ == "__main__":
@@ -40,8 +40,8 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("utils.py")  # Allow workers to use module
-    client.upload_file("Increment.py")
+    client.upload_file("/nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
+    client.upload_file("/nfs/SOEN-499-Project/Increment.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -58,7 +58,7 @@ if __name__ == "__main__":
             )
 
         # Save the data
-        results.append(client.submit(save_incremented, img, start=start, args=args))
+        results.append(client.submit(save_results, img, start=start, args=args))
 
         # Execute the tasks
         fire_and_forget(img)

@@ -6,7 +6,7 @@ import dask.bag as db
 from dask.distributed import Client
 
 from Increment import increment
-from utils import crawl_dir, read_img, save_incremented
+from utils import crawl_dir, read_img, save_results
 
 
 if __name__ == "__main__":
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("utils.py")  # Allow workers to use module
-    client.upload_file("Increment.py")
+    client.upload_file("/nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
+    client.upload_file("/nfs/SOEN-499-Project/Increment.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         )
 
     # Save the data
-    img_rdd = img_rdd.map(lambda x: save_incremented(x, start=start, args=args))
+    img_rdd = img_rdd.map(lambda x: save_results(x, start=start, args=args))
 
     img_rdd.compute(resources={"process": 1})
 

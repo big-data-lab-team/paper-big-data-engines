@@ -1,4 +1,4 @@
-import BytesIO
+from io import BytesIO
 import os
 import socket
 import uuid
