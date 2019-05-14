@@ -1,54 +1,155 @@
+import BytesIO
 import os
 import socket
 import uuid
+from time import time
 import threading
+
+import nibabel as nib
 
 
 def benchmark(start, end, filename, output_dir, experiment, func_name):
+    """Records function lifetime to a file.
+
+    Parameters
+    ----------
+    start : float
+        Start time of the function.
+    end : float
+        End time of the function.
+    filename : str
+        Name of the filename processed.
+    output_dir : str
+        Directory were the output is saved.
+    experiment : str
+        Tag for the experiment.
+    func_name : str
+        Name of the function benchmarked.
     """
-    
-    :param start:
-    :param end:
-    :param filename:
-    :param output_dir:
-    :param experiment:
-    :param func:
-    :return:
-    """
-    benchmark_dir = os.path.join(output_dir, 'benchmarks/' + experiment)
+    benchmark_dir = os.path.join(output_dir, "benchmarks/" + experiment)
     os.makedirs(benchmark_dir, exist_ok=True)
-    
-    benchmark_file = os.path.join(benchmark_dir,
-                                  "benchmark-{}-{}.txt".format(experiment,
-                                                               uuid.uuid1())
-                                  )
-    
+
+    benchmark_file = os.path.join(
+        benchmark_dir, "benchmark-{}-{}.txt".format(experiment, uuid.uuid1())
+    )
+
     bn = os.path.basename(filename)
     node = socket.gethostname()
     thread = threading.currentThread().ident
     pid = os.getpid()
-    
-    with open(benchmark_file, 'a+') as f_out:
+
+    with open(benchmark_file, "a+") as f_out:
         # Write
-        f_out.write('{0},{1},{2},{3},{4},{5},{6}\n'.format(func_name,
-                                                           start,
-                                                           end,
-                                                           bn,
-                                                           node,
-                                                           thread,
-                                                           pid))
-    
-    
+        f_out.write(
+            "{0},{1},{2},{3},{4},{5},{6}\n".format(
+                func_name, start, end, bn, node, thread, pid
+            )
+        )
+
+
 def crawl_dir(input_dir):
     """Crawl the input directory to retrieve MINC files.
-    
-    :param input_dir: str -- representation of the path for the input file.
-    :return: list -- of the retrieved path.
+
+    Parameters
+    ----------
+    input_dir: str
+        Representation of the path for the input file.
+
+    Returns
+    -------
+    rv : list
+        List of the retrieved path.
     """
     rv = list()
     for folder, subs, files in os.walk(input_dir):
         for filename in files:
-            if filename.endswith('.nii'):
+            if filename.endswith(".nii"):
                 path = os.path.join(folder, filename)
                 rv.append(path)
     return rv
+
+
+def read_img(filename, start, args):
+    """Read a Nifti image as a byte stream.
+
+    Parameters
+    ----------
+    filename: str
+        Representation of the path for the input file.
+
+    Returns
+    -------
+    filename : str
+        Representation of the path for the input file.
+    data : np.array
+        Data of the nifti imaeg read.
+    (img.affine, img.header) : (np.array, np.array)
+        Affine and header of the nifti image read.
+    """
+    start_time = time() - start
+
+    img = None
+    with open(filename, "rb") as f_in:
+        fh = nib.FileHolder(fileobj=BytesIO(f_in.read()))
+        img = nib.Nifti1Image.from_file_map({"header": fh, "image": fh})
+    data = img.get_data()
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            filename,
+            args.output_dir,
+            args.experiment,
+            read_img.__name__,
+        )
+
+    return filename, data, (img.affine, img.header)
+
+
+def save_results(img_rdd, start, args):
+    """Save a Nifti image.
+
+    Parameters
+    ----------
+    filename: str
+        Representation of the path for the input file.
+    data: np.array
+        Image to process.
+    metadata: (np.array, np.array)
+        Affine and header of the image.
+
+    Returns
+    -------
+    f_out : str
+        Output path where the image is saved.
+    "SUCCESS" : str
+        Indicates that the pipeline succeeded.
+    """
+    start_time = time() - start
+
+    filename = img_rdd[0]
+    data = img_rdd[1]
+    metadata = img_rdd[2]
+
+    bn = os.path.basename(filename[:-3] + "nii")  # Save in nifti format
+    f_out = os.path.join(args.output_dir, "images/" + bn)
+
+    img = nib.Nifti1Image(data, metadata[0], header=metadata[1])
+    nib.save(img, f_out)
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            filename,
+            args.output_dir,
+            args.experiment,
+            save_results.__name__,
+        )
+
+    return f_out, "SUCCESS"
