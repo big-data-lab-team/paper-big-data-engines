@@ -13,6 +13,8 @@ with open("experiment.json") as f_in:
         delay = str(exp["delay"])
         chunks = str(exp["chunks"])
 
+        subprocess.run(["sh", "/nfs/SOEN-499-Project/bash-script/clear-cache.sh"])
+
         if experiment[:5] == "spark":
             subprocess.run(
                 [
