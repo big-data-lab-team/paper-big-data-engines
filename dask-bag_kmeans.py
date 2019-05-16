@@ -4,68 +4,9 @@ from time import time
 
 import dask.bag as db
 from dask.distributed import Client, LocalCluster
-import nibabel as nib
-import numpy as np
 
-from Kmeans import add_component_wise, closest_centroid, get_voxels
-from utils import benchmark, crawl_dir, read_img
-
-
-def save_results(img_rdd, assignments, *, start, args):
-    """Save a Nifti image.
-
-    Parameters
-    ----------
-    filename: str
-        Representation of the path for the input file.
-    img_rdd: (str, np.array, (np.array, np.array))
-        Filename, image, and image header and affine.
-    metadata: (np.array, np.array)
-        Affine and header of the image.
-    start : float
-        Start time of the application.
-    args : {str: Any}
-
-    Returns
-    -------
-    f_out : str
-        Output path where the image is saved.
-    "SUCCESS" : str
-        Indicates that the pipeline succeeded.
-    """
-    start_time = time() - start
-    filename = img_rdd[0]
-    img = img_rdd[1]
-    metadata = img_rdd[2]
-
-    assigned_class = {class_[0] for class_ in assignments}
-
-    for class_ in assigned_class:
-        assigned_voxels = list(
-            map(lambda x: x[1][0], filter(lambda x: x[0] == class_, assignments))
-        )
-        img[np.where(np.isin(img, assigned_voxels))] = class_
-
-    bn = os.path.basename("classified-" + filename[:-3] + "nii")  # Save in nifti format
-    f_out = os.path.join(args.output_dir, "images/" + bn)
-
-    # save classified image
-    classified_img = nib.Nifti1Image(img, metadata[0], header=metadata[1])
-    nib.save(classified_img, f_out)
-
-    end_time = time() - start
-
-    if args.benchmark:
-        benchmark(
-            start_time,
-            end_time,
-            filename,
-            args.output_dir,
-            args.experiment,
-            save_results.__name__,
-        )
-
-    return f_out, "SUCCESS"
+from Kmeans import add_component_wise, closest_centroid, get_voxels, save_results
+from utils import crawl_dir, read_img
 
 
 if __name__ == "__main__":
