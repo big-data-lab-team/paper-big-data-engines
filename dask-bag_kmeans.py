@@ -57,9 +57,7 @@ if __name__ == "__main__":
 
     voxels = img_rdd.map(lambda x: get_voxels(x[1])).flatten()
 
-    # Initial centroids
-    centroids = [0.0, 125.8, 251.6, 377.4]
-
+    centroids = [0.0, 125.8, 251.6, 377.4]  # Initial centroids
     voxel_pair = None
     for i in range(0, args.iterations):  # Disregard convergence.
         voxel_pair = voxels.frequencies().map(
