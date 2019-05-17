@@ -40,10 +40,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cluster scheduler
-    # cluster = args.scheduler
-    cluster = LocalCluster(
-        n_workers=1, dashboard_address="127.0.0.1:8787"
-    )  # TODO REMOVE for experiments
+    cluster = args.scheduler
     client = Client(cluster)
 
     print(client)
