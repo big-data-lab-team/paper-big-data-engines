@@ -33,18 +33,7 @@ def eucledian_distance(xs, ys):
     xs = xs if isinstance(xs, list) or isinstance(xs, tuple) else [xs]
     ys = ys if isinstance(ys, list) or isinstance(ys, tuple) else [ys]
 
-    dist = list()
-    assert len(xs) == len(ys)
-    for x, y in zip(xs, ys):
-        for ops in ["__add__", "__sub__", "__pow__"]:
-            assert (
-                ops in type(x).__dict__
-            ), f"{type(x)} does not have {ops} thus the distance cannot be calculated."
-            assert (
-                ops in type(y).__dict__
-            ), f"{type(y)} does not have {ops} thus the distance cannot be calculated."
-
-        dist.append((x - y) ** 2)
+    dist = [(x - y) ** 2 for x, y in zip(xs, ys)]
 
     return math.sqrt(sum(dist))
 
@@ -75,7 +64,6 @@ def closest_centroid(x, centroids):
             min_dist = dist
             closest_centroid = centroid
 
-    assert isinstance(closest_centroid, float)
     return closest_centroid, x
 
 
