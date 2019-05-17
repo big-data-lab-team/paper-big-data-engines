@@ -2,8 +2,7 @@ import argparse
 import os
 from time import time
 
-import dask.bag as db
-from dask.distributed import Client, LocalCluster
+from pyspark import SparkConf, SparkContext
 
 from Kmeans import add_component_wise, closest_centroid, get_voxels, save_results
 from utils import crawl_dir, read_img
@@ -14,7 +13,6 @@ if __name__ == "__main__":
     start = time()  # Start time of the pipeline
 
     parser = argparse.ArgumentParser(description="BigBrain Kmeans")
-    parser.add_argument("scheduler", type=str, help="Scheduler ip and port")
     parser.add_argument(
         "bb_dir",
         type=str,
@@ -40,39 +38,38 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cluster scheduler
-    # cluster = args.scheduler
-    cluster = LocalCluster(
-        n_workers=1, dashboard_address="127.0.0.1:8787"
-    )  # TODO REMOVE for experiments
-    client = Client(cluster)
+    conf = SparkConf().setAppName("Spark Incrementation")
+    sc = SparkContext.getOrCreate(conf=conf)
 
-    print(client)
-    client.upload_file("utils.py")  # Allow workers to use module
-    client.upload_file("Kmeans.py")
+    sc.addFile("/nfs/SOEN-499-Project/utils.py")
+    sc.addFile("/nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    print("Connected")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
-    paths = db.from_sequence(paths, npartitions=len(paths))
+    paths = sc.parallelize(paths, len(paths))
     img_rdd = paths.map(lambda p: read_img(p, start=start, args=args)).persist()
 
-    voxels = img_rdd.map(lambda x: get_voxels(x[1])).flatten()
+    voxels = img_rdd.flatMap(lambda x: get_voxels(x[1]))
 
     centroids = [0.0, 125.8, 251.6, 377.4]  # Initial centroids
     voxel_pair = None
     for i in range(0, args.iterations):  # Disregard convergence.
-        voxel_pair = voxels.frequencies().map(
-            lambda x: (closest_centroid(x, centroids))
+        voxel_pair = (
+            voxels.map(lambda x: (x, 1))
+            .reduceByKey(lambda x, y: x + y)
+            .map(lambda x: (closest_centroid(x, centroids)))
         )
 
         # Reduce voxel assigned to the same centroid together
         classe_pairs = (
             voxel_pair.map(lambda x: (x[0], (x[1][0] * x[1][1], x[1][1])))
-            .foldby(0, add_component_wise, (0, (0, 0)))
-            .map(lambda x: x[1][1])
-            .compute()
+            .foldByKey((0, 0), lambda x, y: (x[0] + y[0], x[1] + y[1]))
+            .map(lambda x: x[1])
+            .collect()
         )
         # Find centroid (total, count) => total/count = centroid
         centroids = [pair[0] / pair[1] for pair in classe_pairs]
 
-    voxel_pair = voxel_pair.compute()
-    img_rdd.map(lambda x: save_results(x, voxel_pair, start=start, args=args)).compute()
+    voxel_pair = voxel_pair.collect()
+    img_rdd.map(lambda x: save_results(x, voxel_pair, start=start, args=args)).collect()

@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("/nfs/SOEN-499-Project")
+
 import math
 import os
 from time import time
