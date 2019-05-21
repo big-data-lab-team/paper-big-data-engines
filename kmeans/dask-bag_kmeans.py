@@ -50,10 +50,12 @@ if __name__ == "__main__":
 
     centroids = [0.0, 125.8, 251.6, 377.4]  # Initial centroids
     voxel_pair = None
+    frequency_pair = voxels.frequencies()
+
     for i in range(0, args.iterations):  # Disregard convergence.
         start_time = time() - start
 
-        voxel_pair = voxels.frequencies().map(
+        voxel_pair = frequency_pair.map(
             lambda x: (closest_centroid(x, centroids))
         )
 
