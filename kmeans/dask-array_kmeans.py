@@ -129,8 +129,8 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("utils.py")  # Allow workers to use module
-    client.upload_file("kmeans/Kmeans.py")
+    client.upload_file("nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
+    client.upload_file("nfs/SOEN-499-Project/kmeans/Kmeans.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -148,7 +148,6 @@ if __name__ == "__main__":
     unique, counts = dask.compute(unique, bincount)
     unique = da.from_array(unique)
     counts = da.from_array(counts)
-    freq = da.transpose(da.vstack((unique, counts)))
 
     for i in range(0, args.iterations):  # Disregard convergence.
         start_time = time() - start
