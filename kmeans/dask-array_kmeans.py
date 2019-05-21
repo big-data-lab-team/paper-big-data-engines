@@ -151,6 +151,8 @@ if __name__ == "__main__":
     freq = da.transpose(da.vstack((unique, counts)))
 
     for i in range(0, args.iterations):  # Disregard convergence.
+        start_time = time() - start
+
         associated_centroid = da.from_array(
             np.vectorize(closest_centroid, excluded=["centroids"])(
                 x=unique, centroids=centroids
@@ -163,6 +165,18 @@ if __name__ == "__main__":
         centroids = da.from_array(
             [unique_total[associated_centroid == k].sum() for k in centroids]
         ) / da.from_array([counts[associated_centroid == k].sum() for k in centroids])
+
+        end_time = time() - start
+
+        if args.benchmark:
+            benchmark(
+                start_time,
+                end_time,
+                "all_file",
+                args.output_dir,
+                args.experiment,
+                "update_centroids",
+            )
 
     voxel_pair = da.transpose(da.vstack((associated_centroid, unique))).compute()
 

@@ -5,7 +5,7 @@ from time import time
 from pyspark import SparkConf, SparkContext
 
 from Kmeans import add_component_wise, closest_centroid, get_voxels, save_results
-from utils import crawl_dir, read_img
+from utils import benchmark, crawl_dir, read_img
 
 
 if __name__ == "__main__":
@@ -49,6 +49,8 @@ if __name__ == "__main__":
     centroids = [0.0, 125.8, 251.6, 377.4]  # Initial centroids
     voxel_pair = None
     for i in range(0, args.iterations):  # Disregard convergence.
+        start_time = time() - start
+
         voxel_pair = (
             voxels.map(lambda x: (x, 1))
             .reduceByKey(lambda x, y: x + y)
@@ -64,6 +66,18 @@ if __name__ == "__main__":
         )
         # Find centroid (total, count) => total/count = centroid
         centroids = [pair[0] / pair[1] for pair in classe_pairs]
+
+        end_time = time() - start
+
+        if args.benchmark:
+            benchmark(
+                start_time,
+                end_time,
+                "all_file",
+                args.output_dir,
+                args.experiment,
+                "update_centroids",
+            )
 
     voxel_pair = voxel_pair.collect()
     img_rdd.map(lambda x: save_results(x, voxel_pair, start=start, args=args)).collect()
