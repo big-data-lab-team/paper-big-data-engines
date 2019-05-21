@@ -89,7 +89,7 @@
     "iterations": 10,
     "delay": 4,
     "chunks": 750
-  }
+  },
   {
     "experiment": "dask-array_kmeans-750chunks",
     "file": "dask-array_kmeans.py",
