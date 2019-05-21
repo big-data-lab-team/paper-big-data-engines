@@ -14,6 +14,13 @@
     "chunks": 125
   },
   {
+    "experiment": "dask-array_kmeans-baseline",
+    "file": "dask-array_kmeans.py",
+    "iterations": 10,
+    "delay": 4,
+    "chunks": 125
+  },
+  {
     "experiment": "dask-bag_kmeans-1itr",
     "file": "dask-bag_kmeans.py",
     "iterations": 1,
@@ -23,6 +30,13 @@
   {
     "experiment": "spark_kmeans-1itr",
     "file": "spark_kmeans.py",
+    "iterations": 1,
+    "delay": 4,
+    "chunks": 125
+  },
+  {
+    "experiment": "dask-array_kmeans-1itr",
+    "file": "dask-array_kmeans.py",
     "iterations": 1,
     "delay": 4,
     "chunks": 125
@@ -42,8 +56,22 @@
     "chunks": 125
   },
   {
+    "experiment": "dask-array_kmeans-100itr",
+    "file": "dask-array_kmeans.py",
+    "iterations": 100,
+    "delay": 4,
+    "chunks": 125
+  },
+  {
     "experiment": "dask-bag_kmeans-30chunks",
     "file": "dask-bag_kmeans.py",
+    "iterations": 10,
+    "delay": 4,
+    "chunks": 30
+  },
+  {
+    "experiment": "dask-array_kmeans-30chunks",
+    "file": "dask-array_kmeans.py",
     "iterations": 10,
     "delay": 4,
     "chunks": 30
@@ -58,6 +86,13 @@
   {
     "experiment": "spark_kmeans-750chunks",
     "file": "spark_kmeans.py",
+    "iterations": 10,
+    "delay": 4,
+    "chunks": 750
+  }
+  {
+    "experiment": "dask-array_kmeans-750chunks",
+    "file": "dask-array_kmeans.py",
     "iterations": 10,
     "delay": 4,
     "chunks": 750
