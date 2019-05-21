@@ -29,12 +29,6 @@ if __name__ == "__main__":
         "experiment", type=str, help="Name of the experiment being performed"
     )
     parser.add_argument("iterations", type=int, help="number of iterations")
-    parser.add_argument(
-        "--k", nargs="?", const=4, type=int, help="Number of classes in the dataset"
-    )
-    parser.add_argument(
-        "--seed", nargs="?", const=0, help="Seed to choose initial centroids"
-    )
     parser.add_argument("--benchmark", action="store_true", help="benchmark results")
 
     args = parser.parse_args()
