@@ -5,8 +5,8 @@ import os
 import dask.bag as db
 from dask.distributed import Client
 
-from Increment import increment
-from utils import crawl_dir, read_img, save_results
+from Increment import increment, save_results
+from utils import crawl_dir, read_img
 
 
 if __name__ == "__main__":
