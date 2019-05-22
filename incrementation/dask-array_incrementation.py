@@ -2,11 +2,11 @@ import argparse
 from time import time
 import os
 
-import dask
+import dask.array as da
 from dask.distributed import Client
 
-from Increment import increment, save_results
-from utils import crawl_dir, read_img
+from Increment import increment
+from utils import crawl_dir, read_img, save_results
 
 
 if __name__ == "__main__":
@@ -41,27 +41,7 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("/nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
-    client.upload_file("/nfs/SOEN-499-Project/incrementation/Increment.py")
+    client.upload_file("utils.py")  # Allow workers to use module
+    client.upload_file("Increment.py")
 
-    # Read images
-    paths = crawl_dir(os.path.abspath(args.bb_dir))
-
-    results = []
-    for path in paths:
-        img_rdd = dask.delayed(read_img)(path, start=start, args=args)
-
-        # Increment the data n time:
-        for _ in range(args.iterations):
-            img_rdd = dask.delayed(increment)(
-                img_rdd, delay=args.delay, start=start, args=args
-            )
-
-        # Save the data
-        results.append(dask.delayed(save_results)(img_rdd, start=start, args=args))
-
-    client.scatter(results)
-    futures = client.compute(results)
-    client.gather(futures)
-
-    client.close()
+    
