@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     centroids = [0.0, 125.8, 251.6, 377.4]  # Initial centroids
     voxel_pair = None
-    frequency_pair = voxels.frequencies()
+    frequency_pair = voxels.frequencies().persist()
 
     for i in range(0, args.iterations):  # Disregard convergence.
         start_time = time() - start
