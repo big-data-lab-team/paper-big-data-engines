@@ -1,15 +1,56 @@
 import argparse
+from io import BytesIO
 import os
 from time import time
 
 import dask
 import dask.array as da
-from dask.distributed import Client, LocalCluster
+from dask.distributed import Client
 import nibabel as nib
 import numpy as np
 
 from Kmeans import eucledian_distance
-from utils import benchmark, crawl_dir, read_img
+from utils import benchmark, crawl_dir
+
+
+def read_img(filename, start, args):
+    """Read a Nifti image as a byte stream.
+
+    Parameters
+    ----------
+    filename: str
+        Representation of the path for the input file.
+
+    Returns
+    -------
+    filename : str
+        Representation of the path for the input file.
+    data : da.array
+        Data of the nifti imaeg read.
+    (img.affine, img.header) : (np.array, np.array)
+        Affine and header of the nifti image read.
+    """
+    start_time = time() - start
+
+    img = None
+    with open(filename, "rb") as f_in:
+        fh = nib.FileHolder(fileobj=BytesIO(f_in.read()))
+        img = nib.Nifti1Image.from_file_map({"header": fh, "image": fh})
+    data = img.get_data()
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            filename,
+            args.output_dir,
+            args.experiment,
+            read_img.__name__,
+        )
+
+    return filename, da.from_array(data), (img.affine, img.header)
 
 
 def closest_centroid(x, centroids):
@@ -122,10 +163,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cluster scheduler
-    # cluster = args.scheduler
-    cluster = LocalCluster(
-        n_workers=1, dashboard_address="127.0.0.1:8787"
-    )  # TODO REMOVE for experiments
+    cluster = args.scheduler
     client = Client(cluster)
 
     print(client)
@@ -133,10 +171,11 @@ if __name__ == "__main__":
     client.upload_file("nfs/SOEN-499-Project/kmeans/Kmeans.py")
 
     # Read images
-    paths = crawl_dir(os.path.abspath(args.bb_dir))
-    img = np.array([read_img(path, start=start, args=args) for path in paths])
+    paths = crawl_dir(os.path.abspath("test/data"))
 
-    voxels = da.from_array([x[1] for x in img]).reshape(-1)
+    img = [read_img(path, start=start, args=args) for path in paths]
+
+    voxels = da.concatenate([x[1] for x in img]).reshape(-1)
 
     centroids = [0.0, 125.8, 251.6, 377.4]  # Initial centroids
     voxel_pair = None
@@ -146,13 +185,11 @@ if __name__ == "__main__":
     unique = da.unique(voxels)
 
     unique, counts = dask.compute(unique, bincount)
-    unique = da.from_array(unique)
-    counts = da.from_array(counts)
 
     for i in range(0, args.iterations):  # Disregard convergence.
         start_time = time() - start
 
-        associated_centroid = da.from_array(
+        associated_centroid = np.array(
             np.vectorize(closest_centroid, excluded=["centroids"])(
                 x=unique, centroids=centroids
             )
@@ -161,9 +198,9 @@ if __name__ == "__main__":
         unique_total = unique * counts
 
         # Find centroid (total, count) => total/count = centroid
-        centroids = da.from_array(
+        centroids = np.array(
             [unique_total[associated_centroid == k].sum() for k in centroids]
-        ) / da.from_array([counts[associated_centroid == k].sum() for k in centroids])
+        ) / np.array([counts[associated_centroid == k].sum() for k in centroids])
 
         end_time = time() - start
 
@@ -177,7 +214,7 @@ if __name__ == "__main__":
                 "update_centroids",
             )
 
-    voxel_pair = da.transpose(da.vstack((associated_centroid, unique))).compute()
+    voxel_pair = np.vstack(associated_centroid, unique).T
 
     for x in img:
-        save_results(x, voxel_pair, start=start, args=args)
+        save_results(x, voxel_pair, start=start, args=args).compute()
