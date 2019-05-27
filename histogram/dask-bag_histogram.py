@@ -3,7 +3,7 @@ import os
 from time import time
 
 import dask.bag as db
-from dask.distributed import Client, LocalCluster
+from dask.distributed import Client
 
 from utils import benchmark, crawl_dir, read_img
 
@@ -27,19 +27,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "experiment", type=str, help="Name of the experiment being performed"
     )
-    parser.add_argument("iterations", type=int, help="number of iterations")
     parser.add_argument("--benchmark", action="store_true", help="benchmark results")
 
     args = parser.parse_args()
 
     # Cluster scheduler
-    # cluster = args.scheduler
-    cluster = LocalCluster(n_workers=2)
+    cluster = args.scheduler
     client = Client(cluster)
 
     print(client)
-    # client.upload_file("/nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
-    # client.upload_file("/nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    # Allow workers to use module
+    client.upload_file("nfs/SOEN-499-Project/utils.py")
+    client.upload_file("nfs/SOEN-499-Project/kmeans/Kmeans.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -62,3 +61,22 @@ if __name__ == "__main__":
             args.experiment,
             "find_frequency",
         )
+
+    start_time = time() - start
+
+    with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
+        for x in frequency_pair:
+            f_out.write(f"{x[0]};{x[1]}\n")
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            "all_file",
+            args.output_dir,
+            args.experiment,
+            "save_histogram",
+        )
+

@@ -5,15 +5,14 @@ from time import time
 
 import dask
 import dask.array as da
-from dask.distributed import Client, LocalCluster
+from dask.distributed import Client
 import nibabel as nib
-import numpy as np
 
 from utils import benchmark, crawl_dir
 
 
-def read_img(filename, start, args):
-    """Read a Nifti image as a byte stream.
+def get_voxels(filename, start, args):
+    """Retrieve voxel intensity of a Nifti image as a byte stream.
 
     Parameters
     ----------
@@ -22,12 +21,8 @@ def read_img(filename, start, args):
 
     Returns
     -------
-    filename : str
-        Representation of the path for the input file.
     data : da.array
         Data of the nifti imaeg read.
-    (img.affine, img.header) : (np.array, np.array)
-        Affine and header of the nifti image read.
     """
     start_time = time() - start
 
@@ -46,10 +41,10 @@ def read_img(filename, start, args):
             filename,
             args.output_dir,
             args.experiment,
-            read_img.__name__,
+            get_voxels.__name__,
         )
 
-    return filename, da.from_array(data), (img.affine, img.header)
+    return da.from_array(data)
 
 
 if __name__ == "__main__":
@@ -71,25 +66,24 @@ if __name__ == "__main__":
     parser.add_argument(
         "experiment", type=str, help="Name of the experiment being performed"
     )
-    parser.add_argument("iterations", type=int, help="number of iterations")
     parser.add_argument("--benchmark", action="store_true", help="benchmark results")
 
     args = parser.parse_args()
 
     # Cluster scheduler
-    # cluster = args.scheduler
-    cluster = LocalCluster(n_workers=2)
+    cluster = args.scheduler
     client = Client(cluster)
 
     print(client)
-    # client.upload_file("nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
-    # client.upload_file("nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    # Allow workers to use module
+    client.upload_file("nfs/SOEN-499-Project/utils.py")
+    client.upload_file("nfs/SOEN-499-Project/kmeans/Kmeans.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath("test/data"))
 
-    img = [read_img(path, start=start, args=args) for path in paths]
-    voxels = da.concatenate([x[1] for x in img]).reshape(-1)
+    img = [get_voxels(path, start=start, args=args) for path in paths]
+    voxels = da.concatenate([x for x in img]).reshape(-1)
 
     start_time = time() - start
 
@@ -111,3 +105,20 @@ if __name__ == "__main__":
             "find_frequency",
         )
 
+    start_time = time() - start
+
+    with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
+        for x in zip(unique, counts):
+            f_out.write(f"{x[0]};{x[1]}\n")
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            "all_file",
+            args.output_dir,
+            args.experiment,
+            "save_histogram",
+        )
