@@ -87,7 +87,7 @@ if __name__ == "__main__":
     paths = crawl_dir(os.path.abspath("test/data"))
 
     img = [get_voxels(path, start=start, args=args) for path in paths]
-    voxels = da.concatenate([x for x in img]).reshape(-1)
+    voxels = da.concatenate(img).reshape(-1)
 
     start_time = time() - start
 
