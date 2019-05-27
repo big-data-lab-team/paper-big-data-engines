@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("/nfs/SOEN-499-Project")
+
 import argparse
 from io import BytesIO
 import os
