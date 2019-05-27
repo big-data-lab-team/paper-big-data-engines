@@ -4,7 +4,6 @@ from time import time
 
 from pyspark import SparkConf, SparkContext
 
-from Kmeans import add_component_wise, closest_centroid, get_voxels, save_results
 from utils import benchmark, crawl_dir, read_img
 
 
@@ -26,7 +25,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "experiment", type=str, help="Name of the experiment being performed"
     )
-    parser.add_argument("iterations", type=int, help="number of iterations")
     parser.add_argument("--benchmark", action="store_true", help="benchmark results")
 
     args = parser.parse_args()
@@ -46,7 +44,7 @@ if __name__ == "__main__":
 
     start_time = time() - start
 
-    voxels = img_rdd.flatMap(lambda x: get_voxels(x[1]))
+    voxels = img_rdd.flatMap(lambda x: x[1].flatten("F"))
     frequency_pair = (
         voxels.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y).collect()
     )
@@ -61,5 +59,23 @@ if __name__ == "__main__":
             args.output_dir,
             args.experiment,
             "find_frequency",
+        )
+
+    start_time = time() - start
+
+    with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
+        for x in frequency_pair:
+            f_out.write(f"{x[0]};{x[1]}\n")
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            "all_file",
+            args.output_dir,
+            args.experiment,
+            "save_histogram",
         )
 
