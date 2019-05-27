@@ -76,8 +76,8 @@ if __name__ == "__main__":
 
     print(client)
     # Allow workers to use module
-    client.upload_file("nfs/SOEN-499-Project/utils.py")
-    client.upload_file("nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    client.upload_file("/nfs/SOEN-499-Project/utils.py")
+    client.upload_file("/nfs/SOEN-499-Project/kmeans/Kmeans.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath("test/data"))
