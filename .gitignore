@@ -174,3 +174,4 @@ test/
 bash-script/
 results/data-*
 dask-worker-space/
+vm-singularity/
