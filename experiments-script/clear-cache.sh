@@ -7,5 +7,5 @@ do
     sync
     sudo sh -c "/usr/bin/echo 1 > /proc/sys/vm/drop_caches"
 EOF
-done < /nfs/SOEN-499-Project/experiments-script/host8.txt
+done < /nfs/paper-big-data-engines/experiments-script/host8.txt
 echo 'DONE'
