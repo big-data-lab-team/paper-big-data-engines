@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("/nfs/SOEN-499-Project")
+sys.path.append("/nfs/paper-big-data-engines")
 
 import argparse
 import os
@@ -37,8 +37,8 @@ if __name__ == "__main__":
     conf = SparkConf().setAppName("Spark Incrementation")
     sc = SparkContext.getOrCreate(conf=conf)
 
-    sc.addFile("/nfs/SOEN-499-Project/utils.py")
-    sc.addFile("/nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    sc.addFile("/nfs/paper-big-data-engines/utils.py")
+    sc.addFile("/nfs/paper-big-data-engines/kmeans/Kmeans.py")
     print("Connected")
 
     # Read images
@@ -82,4 +82,3 @@ if __name__ == "__main__":
             args.experiment,
             "save_histogram",
         )
-
