@@ -84,7 +84,7 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/kmeans/Kmeans.py")
 
     # Read images
-    paths = crawl_dir(os.path.abspath("test/data"))
+    paths = crawl_dir(os.path.abspath(args.bb_dir))
 
     img = [get_voxels(path, start=start, args=args) for path in paths]
     voxels = da.concatenate(img).reshape(-1)
