@@ -47,60 +47,116 @@
 \begin{abstract}
 
 % Topic
-As the amount of data increases and is easier to access, Big Data processing becomes critical in neuroimaging. 
+As the amount of data increases and is easier to access, Big Data processing becomes
+critical in neuroimaging.
 % Problem
-This is an issue as the currently used frameworks are specialized for neuroimaging and not Big Data concerns. This can lead to performance decrease or limit the research we can perform.
+This is an issue as the currently used frameworks are specialized for neuroimaging
+and not Big Data concerns. This can lead to performance decrease or limit the
+research we can perform.
 % Relevance
-The usage of Big Data framework is beneficial to this problem.
-The state-of-the-art general purpose Big Data framework Spark has its code base written in Scala, while our laboratory mostly uses Python. This can be problematic since it is harder to port our pipelines to the framework. Also, theoretically, it leads to performance decrease.
+The usage of Big Data framework is beneficial to this problem. The state-of-the-art
+general purpose Big Data framework Spark has its code base written in Scala, while
+our laboratory mostly uses Python. This can be problematic since it is harder to port
+our pipelines to the framework. Also, theoretically, it leads to performance
+decrease.
 
 % Approach
-We propose to use Dask since it provides native Python parallelism to pipelines while providing support to familiar API from the Python's scientific ecosystem. However there are few comparisons of Spark and Dask; especially in neuroimaging. Moreover, these studies were done when Dask was still an immature framework which make those study unfair nowadays. This is our motivation to compare the latest version of Dask with Spark.
+We propose to use Dask since it provides native Python parallelism to pipelines while
+providing support to familiar API from the Python's scientific ecosystem. However
+there are few comparisons of Spark and Dask; especially in neuroimaging. Moreover,
+these studies were done when Dask was still an immature framework which make those
+study unfair nowadays. This is our motivation to compare the latest version of Dask
+with Spark.
 % Methods (one sentence)
 To evaluate the frameworks, we focus on their performance and their scheduler.
 
 % Key Impact
-Our study demonstrates the potential of using Dask as the framework to build neuroimaging pipelines.
+Our study demonstrates the potential of using Dask as the framework to build
+neuroimaging pipelines.
 
 \end{abstract}
 
 \section{Introduction}
 % Context
-With the increasing number of data available in neuroimaging \citep{ALFAROALMAGRO:18, UKBioBank:18} the processing of Big Data is becoming critical. Frameworks like Nipype \citep{Nipype:11} are usually used to create neuroimaging pipelines however it is worth considering the use of general purpose Big Data frameworks \citep{Hayot-Sasson:17}. In that research, Spark \citep{Spark:16} was a natural choice as it is the state-of-the-art framework for Big Data. However, as our laboratory works mostly with Python, we want to know if Dask \citep{Dask:15}, a Python written framework, could bring better or similar performances while facilitating usage.
+With the increasing number of data available in neuroimaging \citep{ALFAROALMAGRO:18,
+UKBioBank:18} the processing of Big Data is becoming critical. Frameworks like Nipype
+\citep{Nipype:11} are usually used to create neuroimaging pipelines however it is
+worth considering the use of general purpose Big Data frameworks
+\citep{Hayot-Sasson:17}. In that research, Spark \citep{Spark:16} was a natural
+choice as it is the state-of-the-art framework for Big Data. However, as our
+laboratory works mostly with Python, we want to know if Dask \citep{Dask:15}, a
+Python written framework, could bring better or similar performances while
+facilitating usage.
 
 %Similarities
-Spark and Dask offer in-memory computing, data locality and lazy evaluation; which is common for Big Data framework. Both their scheduler operate dynamically. This is good when the runtimes are not known ahead of time \citep{Dask:15}. Over these similarities, the frameworks are quite different.
+Spark and Dask offer in-memory computing, data locality and lazy evaluation; which is
+common for Big Data framework. Both their scheduler operate dynamically. This is good
+when the runtimes are not known ahead of time \citep{Dask:15}. Over these
+similarities, the frameworks are quite different.
 
 % Spark
-On the one hand, we have Spark which provides a high-level API. This allows the scheduler to perform more optimizations which makes it well suited for neuroimaging applications that often require lengthy executions. However, Spark's code base is in Scala which theoretically can lead to slow down in execution due to a required serialization. Moreover, while Spark's API is flexible and allows most implementations, it differs from the ones seen in the Python's ecosystem.
+On the one hand, we have Spark which provides a high-level API. This allows the
+scheduler to perform more optimizations which makes it well suited for neuroimaging
+applications that often require lengthy executions. However, Spark's code base is in
+Scala which theoretically can lead to slow down in execution due to a required
+serialization. Moreover, while Spark's API is flexible and allows most
+implementations, it differs from the ones seen in the Python's ecosystem.
 
 % Dask
-On the other hand, Dask was created with the purpose to natively parallelize Python pipelines while keeping the syntax of familiar API from the Python's scientific ecosystem. However, Dask is still a young framework with work to be done; it's API does not completely replicate the library it supports. While its lower-level API allows the implementation of more complex algorithms it sacrifice a layer of optimization.
+On the other hand, Dask was created with the purpose to natively parallelize Python
+pipelines while keeping the syntax of familiar API from the Python's scientific
+ecosystem. However, Dask is still a young framework with work to be done; it's API
+does not completely replicate the library it supports. While its lower-level API
+allows the implementation of more complex algorithms it sacrifice a layer of
+optimization.
 % Related work
-Previous work by \citet{Mehta:17} shows that Dask had significant overhead and was hard to debug. 
+Previous work by \citet{Mehta:17} shows that Dask had significant overhead and was
+hard to debug.
 % What issues your work addresses
-Dask was immature at the time and a lot of change was brought to the framework. Therefore we think it is valuable to re-compare it with Spark.
+Dask was immature at the time and a lot of change was brought to the framework.
+Therefore we think it is valuable to re-compare it with Spark.
 
 %% Dask API
-The Dask API we decide to use for our comparison are Dask bag, delayed and futures. Dask bag offer an easy API to parallelize data. Dask delayed offer a lower-level API that offer more flexibility; this is good to implement more complex task that do not fit in the Dask bag framework. Dask futures is a real time API. Both Dask bag and delayed apply lazy evaluation to tasks while futures trigger them directly.
+The Dask API we decide to use for our comparison are Dask bag, delayed and futures.
+Dask bag offer an easy API to parallelize data. Dask delayed offer a lower-level API
+that offer more flexibility; this is good to implement more complex task that do not
+fit in the Dask bag framework. Dask futures is a real time API. Both Dask bag and
+delayed apply lazy evaluation to tasks while futures trigger them directly.
 
 % Methods used (summary)
-The project aims to compare the state-of-the-art general purpose framework Spark with the newcomer Dask. We decide to compare the performance of Spark and Dask on custom incrementation pipeline to simplify the effect of the algorithm on the comparison. Then we access the frameworks on two real-life applications: (1) histogram of the voxels intensity in a 3d images (2) BIDS example.
+The project aims to compare the state-of-the-art general purpose framework Spark with
+the newcomer Dask. We decide to compare the performance of Spark and Dask on custom
+incrementation pipeline to simplify the effect of the algorithm on the comparison.
+Then we access the frameworks on two real-life applications: (1) histogram of the
+voxels intensity in a 3d images (2) BIDS example.
 
 % Implications of our research
-The result from our project help in assessing if Dask is a good choice to build neuroimaging pipelines.
+The result from our project help in assessing if Dask is a good choice to build
+neuroimaging pipelines.
 
 
 %%%%% MATERIAL AND METHODS %%%%%%
 \section{Material and Methods}
 %% Material
-We compare Dask(\textbf{v1.1.4}) and Spark(\textbf{v2.4.0}) based on two metrics their scheduling and their makespan performance. All scripts used to perform our experiments are available at \href{https://github.com/mathdugre/SOEN-499-Project}{https://github.com/mathdugre/SOEN-499-Project}. For our experiments we used Compute Canada Cloud where each instance has 8 cores and 30GB RAM. The system was dedicated.
+We compare Dask(\textbf{v1.1.4}) and Spark(\textbf{v2.4.0}) based on two metrics
+their scheduling and their makespan performance. All scripts used to perform our
+experiments are available at
+\href{https://github.com/mathdugre/SOEN-499-Project}{https://github.com/mathdugre/SOEN-499-Project}.
+For our experiments we used Compute Canada Cloud where each instance has 8 cores and
+30GB RAM. The system was dedicated.
  
 %% Incrementation
 \subsection{Incrementation}
-As our first experiment to benchmark the frameworks we used a simple incrementation pipeline (see Algorithm \ref{alg:incrementation}). It loads chunks from the 75GB BigBrain\citep{ds052:01} image, increment its value by 1 and save the result to an nfs as a Nifti image. The incrementation allows to reduce caching effect of the data. This experiment allows us to study the behaviour of the frameworks when all input are processed independently; i.e. each task in the graph only depend on the previous one (see \ref{fig:tg-inc}).
+As our first experiment to benchmark the frameworks we used a simple incrementation
+pipeline (see Algorithm \ref{alg:incrementation}). It loads chunks from the 75GB
+BigBrain\citep{ds052:01} image, increment its value by 1 and save the result to an
+nfs as a Nifti image. The incrementation allows to reduce caching effect of the data.
+This experiment allows us to study the behaviour of the frameworks when all input are
+processed independently; i.e. each task in the graph only depend on the previous one
+(see \ref{fig:tg-inc}).
 
-This experiment refers to  the implementation of the Spark pipelines purposed in \citet{Hayot-Sasson:17}.
+This experiment refers to the implementation of the Spark pipelines purposed in
+\citet{Hayot-Sasson:17}.
 
 \begin{algorithm}\caption{Incrementation}\label{alg:incrementation}
     \begin{algorithmic}
@@ -127,7 +183,13 @@ This experiment refers to  the implementation of the Spark pipelines purposed in
 
 % Histogram
 \subsection{Histogram}
-For our second experiment we find the frequency of the voxels intensity in BigBrain and save them as a tuple in a file. In this experiment the end results depends on all of the input results (see \ref{fig:tg-histo}). This allow us to study the behaviour of the framework when task are dependent. Also this application require data shuffling thus inter worker communication. In this application we decided to only compare Spark against the Dask bag and array API as they are the more realistic for this use case.
+For our second experiment we find the frequency of the voxels intensity in BigBrain
+and save them as a tuple in a file. In this experiment the end results depends on all
+of the input results (see \ref{fig:tg-histo}). This allow us to study the behaviour
+of the framework when task are dependent. Also this application require data
+shuffling thus inter worker communication. In this application we decided to only
+compare Spark against the Dask bag and array API as they are the more realistic for
+this use case.
 
 \begin{figure}[ht]
     \centering
@@ -142,31 +204,43 @@ Our last experiment compare both frameworks on the BIDS Example algorithm.
 % Specify more details and the data set used
 
 % Note
-Note that the code implemented might not be optimal. However we hope to provide a baseline assessment of Dask and Spark.
+Note that the code implemented might not be optimal. However we hope to provide a
+baseline assessment of Dask and Spark.
 
 %% Performance
 \subsection{Experiments}
-Our experiments have for goal to see how the frameworks react to different environments and tasks types.
+Our experiments have for goal to see how the frameworks react to different
+environments and tasks types.
 
 %% Incrementation
 For the incrementation experiment, we
 %% Node
-first vary the number of instances in our cluster environment. We test with 1, 2, 4, 8, and 16 instances. From this we can evaluate the level of parallelism offered by both framework.
+first vary the number of instances in our cluster environment. We test with 1, 2, 4,
+8, and 16 instances. From this we can evaluate the level of parallelism offered by
+both framework.
 
 %% Iterations
-Secondly, we modify the number of iterations we perform on the increment task between the experiment. We use 1, 10 and 100 iterations. This allow the study of the schedulers different amount of task are to be performed.
+Secondly, we modify the number of iterations we perform on the increment task between
+the experiment. We use 1, 10 and 100 iterations. This allow the study of the
+schedulers different amount of task are to be performed.
 
 %% Sleep delay
-Thirdly, we change the sleep delay in the increment tasks. We fix a 1, 4 and 16 and 64 seconds sleep time for each iterations. This allow us to test the effect of tasks with different time length.
+Thirdly, we change the sleep delay in the increment tasks. We fix a 1, 4 and 16 and
+64 seconds sleep time for each iterations. This allow us to test the effect of tasks
+with different time length.
 
 %% Splits
-Finally, we split the BigBrain in different number of chunks. We split it in 30, 125 and 750 chunks. From that we can evaluate the framework with task of different size; around 2.5GB, 0.6GB and 0.1GB, respectively.
+Finally, we split the BigBrain in different number of chunks. We split it in 30, 125
+and 750 chunks. From that we can evaluate the framework with task of different size;
+around 2.5GB, 0.6GB and 0.1GB, respectively.
 
 %% Baseline
-Our baseline for all experiment is 10 iterations, 4 sleep delay, 125 chunks running on 8 instances.
+Our baseline for all experiment is 10 iterations, 4 sleep delay, 125 chunks running
+on 8 instances.
 
 %% Histogram
-For the histogram experiment, we vary the number of instances, as above. We also change the number of splits as above.  
+For the histogram experiment, we vary the number of instances, as above. We also
+change the number of splits as above.
 
 %% BIDS Example
 For the BIDS example experiment, we vary the number of instances, again as above.
@@ -179,7 +253,14 @@ For the BIDS example experiment, we vary the number of instances, again as above
 %%% INCREMENTATION %%%
 %% Instances
 \subsection{Experiment 1: Number of instances}
-Figure \ref{fig:inc_node} shows that has the number of node increase the performance decrease. The reason we think this happen is that the number of workers becomes larger than the number of tasks to process. Also, as more worker access the nfs simultaneously this increase the stress put on the system which result in bottleneck, errors and slow down. On the one hand, Dask seems better when using a single worker. On the other hand, Spark makespan decrease faster for low level of parallelism. However Dask quickly catch up at high level of parallelism. This makes us think that the scheduler in Dask might be better
+Figure \ref{fig:inc_node} shows that has the number of node increase the performance
+decrease. The reason we think this happen is that the number of workers becomes
+larger than the number of tasks to process. Also, as more worker access the nfs
+simultaneously this increase the stress put on the system which result in bottleneck,
+errors and slow down. On the one hand, Dask seems better when using a single worker.
+On the other hand, Spark makespan decrease faster for low level of parallelism.
+However Dask quickly catch up at high level of parallelism. This makes us think that
+the scheduler in Dask might be better
 
 \begin{figure}[p]
     \centering
@@ -198,7 +279,14 @@ Figure \ref{fig:inc_node} shows that has the number of node increase the perform
 
 %% Iterations
 \subsection{Experiment 1: Number of iterations}
-In Figure \ref{fig:inc_itr} Dask futures grows faster than the other API. This is due to the lack of optimization on the real time processing of tasks. The Dask bag with graph optimization seems to perform worst than other as the number of tasks increase. This might show that over optimizing task graph results in performance decrease. When the task load start to grow slightly Dask bag seems to be the best option. This could be explained as Dask bag is the most optimized Dask's API that we compare. Also Spark serialization could slow down the execution as the number of task increase thus reducing its optimization effects
+In Figure \ref{fig:inc_itr} Dask futures grows faster than the other API. This is due
+to the lack of optimization on the real time processing of tasks. The Dask bag with
+graph optimization seems to perform worst than other as the number of tasks increase.
+This might show that over optimizing task graph results in performance decrease. When
+the task load start to grow slightly Dask bag seems to be the best option. This could
+be explained as Dask bag is the most optimized Dask's API that we compare. Also Spark
+serialization could slow down the execution as the number of task increase thus
+reducing its optimization effects
 
 \begin{figure}[p]
     \centering
@@ -216,7 +304,11 @@ In Figure \ref{fig:inc_itr} Dask futures grows faster than the other API. This i
 
 %% Sleep time
 \subsection{Experiment 1: Sleep delay}
-As Figure \ref{fig:inc_sleep} shows, Dask is way faster than Spark for any task length. We can consider optimising the graph for shorter task but it seams that normal Dask bag have better optimization policy for longer task. However the results are surprising since the makespan should increase as the sleep delay increase but we see the inverse effect.
+As Figure \ref{fig:inc_sleep} shows, Dask is way faster than Spark for any task
+length. We can consider optimising the graph for shorter task but it seams that
+normal Dask bag have better optimization policy for longer task. However the results
+are surprising since the makespan should increase as the sleep delay increase but we
+see the inverse effect.
 
 \begin{figure}[p]
     \centering
@@ -234,7 +326,13 @@ As Figure \ref{fig:inc_sleep} shows, Dask is way faster than Spark for any task 
 
 % Chunks
 \subsection{Experiment 1: Number of splits}
-In Figure \ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because spark has a 2GB limitation in the task size it can compute. All API have a longer make span at 30 chunks compared to 125 chunks. This is because the 8 instances each have 8 cores thus merely half the resources available are used. At 125 chunks Dask bag are the fastest. This could be explained by Dask bag having the better optimization of the Dask's API and that Spark has to perform serialization to Java. At 750 chunks Spark becomes as good 
+In Figure \ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because
+spark has a 2GB limitation in the task size it can compute. All API have a longer
+make span at 30 chunks compared to 125 chunks. This is because the 8 instances each
+have 8 cores thus merely half the resources available are used. At 125 chunks Dask
+bag are the fastest. This could be explained by Dask bag having the better
+optimization of the Dask's API and that Spark has to perform serialization to Java.
+At 750 chunks Spark becomes as good
 
 \begin{figure}[p]
     \centering
@@ -249,15 +347,26 @@ In Figure \ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is becau
     \label{fig:inc_chunk}
 \end{figure}
 
-From the Figures \ref{fig:node} to \ref{fig:chunk}  the Dask bag with optimized graph has high variance on its makespan. Moreover, Dask API seems to always offer a better option than spark RDDs. 
+From the Figures \ref{fig:inc_node} to \ref{fig:inc_chunk} the Dask bag with optimized graph
+has high variance on its makespan. Moreover, Dask API seems to always offer a better
+option than spark RDDs.
 
 %% Baseline gantt chart
 \subsection{Experimentation 1: Baseline timeline}
-From Figure \ref{fig:dask_gantt} and Figure \ref{fig:spark_gantt} the execution time is similar in Dask and Spark. However Spark takes more time to save the data to disk. This could be due to the FIFO scheduler that tends to have the first set of save consequent thus saturating the nfs. Also serialization could have an effect. It looks like the nfs could be a bottleneck when reading (writing) data from (to) the application. 
+From Figure \ref{fig:inc_gantt} the execution time
+is similar in Dask and Spark. However Spark takes more time to save the data to disk.
+This could be due to the FIFO scheduler that tends to have the first set of save
+consequent thus saturating the nfs. Also serialization could have an effect. It looks
+like the nfs could be a bottleneck when reading (writing) data from (to) the
+application.
 
-Dask scheduler seems to have strange behaviour in Figure \ref{fig:dask_gantt}. It often wait before scheduling tasks that we would expect to be scheduled right away. We currently don't have explication for this behaviour. This could be explained by task rescheduled to other workers.
+Dask scheduler seems to have strange behaviour in Figure \ref{fig:inc_gantt}. It
+often wait before scheduling tasks that we would expect to be scheduled right away.
+We currently don't have explication for this behaviour. This could be explained by
+task rescheduled to other workers.
 
-Also, the same length does not seem to be homogeneous. This might be due to caching effect either with the main memory or the nfs.
+Also, the same length does not seem to be homogeneous. This might be due to caching
+effect either with the main memory or the nfs.
 
 \begin{figure}[p]
     \centering
@@ -316,23 +425,41 @@ Also, the same length does not seem to be homogeneous. This might be due to cach
 %%%%% DISCUSSION %%%%%
 \section{Discussion}
 \subsection{Serialization}
-We think that serialization could have an important effect on the makespan of the application. This could potentially slow down the application when a lot of tasks are scheduled.
+We think that serialization could have an important effect on the makespan of the
+application. This could potentially slow down the application when a lot of tasks are
+scheduled.
 
 \subsection{NFS}
-The nfs seems to be a source of bottleneck. We think that exploring other file system, like Lustre, could give us insight the actual effect of the nfs on the application makespan. We also think that the nfs caching could play an effect on the task of different length.
+The nfs seems to be a source of bottleneck. We think that exploring other file
+system, like Lustre, could give us insight the actual effect of the nfs on the
+application makespan. We also think that the nfs caching could play an effect on the
+task of different length.
 
 \subsection{Scheduler}
-The Dask scheduler seems to have some bizarre behaviour. It seems like it waits to schedule task. However it could also be due to tasks being scheduled on other workers thus requiring data to be sent over the network; which would explain the stall on the worker. More work would be needed to investigate that issue.
+The Dask scheduler seems to have some bizarre behaviour. It seems like it waits to
+schedule task. However it could also be due to tasks being scheduled on other workers
+thus requiring data to be sent over the network; which would explain the stall on the
+worker. More work would be needed to investigate that issue.
 
 
 \subsection{Caching}
-We think that caching plays an effect on the results. As seen in the gantt chart previously, some of the read tasks are significantly shorter than other while all chunks are of equal size.
+We think that caching plays an effect on the results. As seen in the gantt chart
+previously, some of the read tasks are significantly shorter than other while all
+chunks are of equal size.
 
 
 
 %% Future work
 \subsection{Future work}
-There is definitely a lot of work to be done to assess exactly what is happening at the scheduling level for both Dask and Spark. For the future we plan to test the effect of caching on the system. We would also need to explore caching and saturation of the nfs. We also need to explore different scheduler (e.g. Yarn, Mesos) on both Spark and Dask to see if our result are mostly affected by the scheduler or outside factors. Afterwards, we want to continue the analysis by evaluating the memory consumption of the frameworks. Moreover we want to explore more complex algorithm including some related to neuroimaging. We also plan to investigate which library would be better in which context.
+There is definitely a lot of work to be done to assess exactly what is happening at
+the scheduling level for both Dask and Spark. For the future we plan to test the
+effect of caching on the system. We would also need to explore caching and saturation
+of the nfs. We also need to explore different scheduler (e.g. Yarn, Mesos) on both
+Spark and Dask to see if our result are mostly affected by the scheduler or outside
+factors. Afterwards, we want to continue the analysis by evaluating the memory
+consumption of the frameworks. Moreover we want to explore more complex algorithm
+including some related to neuroimaging. We also plan to investigate which library
+would be better in which context.
 
 \section{Acknowledgement}
 We would like to thanks Compute Canada Cloud for the the infrastructure.
