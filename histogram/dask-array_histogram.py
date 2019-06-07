@@ -11,6 +11,7 @@ import dask
 import dask.array as da
 from dask.distributed import Client
 import nibabel as nib
+import numpy as np
 
 from utils import benchmark, crawl_dir
 
@@ -34,7 +35,8 @@ def get_voxels(filename, start, args):
     with open(filename, "rb") as f_in:
         fh = nib.FileHolder(fileobj=BytesIO(f_in.read()))
         img = nib.Nifti1Image.from_file_map({"header": fh, "image": fh})
-    data = img.get_data()
+    data = img.get_fdata(caching="unchanged")
+    data = nib.casting.float_to_int(data, np.int16)
 
     end_time = time() - start
 
