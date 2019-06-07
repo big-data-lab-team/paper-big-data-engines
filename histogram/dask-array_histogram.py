@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("/nfs/SOEN-499-Project")
+sys.path.append("/nfs/paper-big-data-engines")
 
 import argparse
 from io import BytesIO
@@ -80,11 +80,11 @@ if __name__ == "__main__":
 
     print(client)
     # Allow workers to use module
-    client.upload_file("/nfs/SOEN-499-Project/utils.py")
-    client.upload_file("/nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    client.upload_file("/nfs/paper-big-data-engines/utils.py")
+    client.upload_file("/nfs/paper-big-data-engines/kmeans/Kmeans.py")
 
     # Read images
-    paths = crawl_dir(os.path.abspath("test/data"))
+    paths = crawl_dir(os.path.abspath(args.bb_dir))
 
     img = [get_voxels(path, start=start, args=args) for path in paths]
     voxels = da.concatenate(img).reshape(-1)
