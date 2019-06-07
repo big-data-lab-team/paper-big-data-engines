@@ -37,8 +37,8 @@ if __name__ == "__main__":
     conf = SparkConf().setAppName("Spark Incrementation")
     sc = SparkContext.getOrCreate(conf=conf)
 
-    sc.addFile("/nfs/SOEN-499-Project/utils.py")
-    sc.addFile("/nfs/SOEN-499-Project/incrementation/Increment.py")
+    sc.addFile("/nfs/paper-big-data-engines/utils.py")
+    sc.addFile("/nfs/paper-big-data-engines/incrementation/Increment.py")
     print("Connected")
 
     # Read images
