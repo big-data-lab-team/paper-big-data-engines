@@ -41,8 +41,8 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("/nfs/SOEN-499-Project/utils.py")  # Allow workers to use module
-    client.upload_file("/nfs/SOEN-499-Project/incrementation/Increment.py")
+    client.upload_file("/nfs/paper-big-data-engines/utils.py")  # Allow workers to use module
+    client.upload_file("/nfs/paper-big-data-engines/incrementation/Increment.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
