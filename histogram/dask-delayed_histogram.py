@@ -91,8 +91,6 @@ if __name__ == "__main__":
     partial_histogram = []
     for path in paths:
         img_rdd = dask.delayed(read_img)(path, start=start, args=args)
-        print(img_rdd[1].flatten("F"))
-        # break
 
         voxels = img_rdd[1].flatten("F")
 
