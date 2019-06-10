@@ -9,6 +9,7 @@ from time import time
 
 import dask
 from dask.distributed import Client
+import numpy as np
 
 from utils import benchmark, crawl_dir, read_img
 
@@ -48,11 +49,10 @@ if __name__ == "__main__":
     def calculate_histogram(arr):
         start_time = time() - start
 
-        histogram = dict()
-        for x in arr:
-            if x not in histogram:
-                histogram[x] = 0
-            histogram[x] += 1
+        y = np.bincount(arr)
+        ii = np.nonzero(y)[0]
+        out = np.vstack((ii, y[ii])).T
+        histogram = {k: v for k, v in out}
 
         end_time = time() - start
 
