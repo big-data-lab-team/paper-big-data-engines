@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("/nfs/SOEN-499-Project")
+sys.path.append("/nfs/paper-big-data-engines")
 
 import argparse
 from functools import reduce
@@ -43,8 +43,7 @@ if __name__ == "__main__":
 
     print(client)
     # Allow workers to use module
-    client.upload_file("/nfs/SOEN-499-Project/utils.py")
-    client.upload_file("/nfs/SOEN-499-Project/kmeans/Kmeans.py")
+    client.upload_file("/nfs/paper-big-data-engines/utils.py")
 
     def calculate_histogram(arr):
         start_time = time() - start
