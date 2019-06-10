@@ -285,11 +285,11 @@ term of performance. The dask delayed api seems to perform well with low amount 
 task but grow faster the spark and dask bag. We think this is because dask delayed
 often schedule a block on different worker of the same instance which cause small
 delay everytime due to inter worker communication. This is good when there is fewer
-tasks as is make the io between block go out of sync hence lowering the io bottleneck
-observed earlier however as the number of tasks increases those small delays become
-significant. The dask futures api seems to outperform all the other apis but this is
-most likely because the tasks are not inter dependent thus this application benifits
-from the less optimal but faster scheduling brought by dask futures.
+tasks as is make the IO between block go out of sync hence lowering the IO bottleneck
+however as the number of tasks increases those small delays become significant. The
+dask futures api seems to outperform all the other apis but this is most likely
+because the tasks are not inter dependent thus this application benifits from the
+less optimal but faster scheduling brought by dask futures.
 
 \begin{figure}[htp]
     \centering
@@ -325,13 +325,18 @@ As Figure \ref{fig:inc_sleep}
 
 % Chunks
 \subsection{Experiment 1: Number of splits}
-In Figure \ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because
-spark has a 2GB limitation in the task size it can compute. All API have a longer
-make span at 30 chunks compared to 125 chunks. This is because the 8 instances each
-have 8 cores thus merely half the resources available are used. At 125 chunks Dask
-bag are the fastest. This could be explained by Dask bag having the better
-optimization of the Dask's API and that Spark has to perform serialization to Java.
-At 750 chunks Spark becomes as good
+In Figure \ref{fig:inc_splits} Spark is not compared for 30 chunks. This is because
+spark has a 2GB limitation in the task size it can compute. Note from Figure
+\ref{fig:inc_splits}(b) that the compute time increase when there is more splits.
+This is expected because the sleep delay is constant throughout this experiment and
+there are more compute task when the number of splits increases. We also note that in
+Figure \ref{fig:inc_splits}(b) for 30 splits the dask bag api has a much lower
+overhead time. This is because calculate the idle time of active worker only and the
+dask bag api was only using one worker per split in comparison to the dask delayed
+and dask futures api which were offloading the calculations on multiple workers on a
+same instance. From Figure \ref{fig:inc_splits} we observe that when the dataset is
+seperated in more (smaller) splits it saves IO time however it increases the overhead
+by a similar amount; the inverse happens when we reduce teh number of splits.
 
 \begin{figure}[htp]
     \centering
@@ -343,7 +348,7 @@ At 750 chunks Spark becomes as good
       \includegraphics[clip,width=\columnwidth]{images/inc_idle_splits.png}%
     }
     \caption{10 iterations, 4 sec. sleep delay, 8 instances}
-    \label{fig:inc_chunk}
+    \label{fig:inc_splits}
 \end{figure}
 
 From the Figures \ref{fig:inc_node} to \ref{fig:inc_chunk} the Dask bag with optimized graph
