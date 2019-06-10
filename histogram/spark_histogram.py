@@ -38,7 +38,6 @@ if __name__ == "__main__":
     sc = SparkContext.getOrCreate(conf=conf)
 
     sc.addFile("/nfs/paper-big-data-engines/utils.py")
-    sc.addFile("/nfs/paper-big-data-engines/kmeans/Kmeans.py")
     print("Connected")
 
     # Read images

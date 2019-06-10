@@ -83,7 +83,6 @@ if __name__ == "__main__":
     print(client)
     # Allow workers to use module
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
-    client.upload_file("/nfs/paper-big-data-engines/kmeans/Kmeans.py")
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
