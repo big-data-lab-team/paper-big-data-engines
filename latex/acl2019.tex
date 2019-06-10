@@ -187,9 +187,8 @@ For our second experiment we find the frequency of the voxels intensity in BigBr
 and save them as a tuple in a file. In this experiment the end results depends on all
 of the input results (see \ref{fig:tg-histo}). This allow us to study the behaviour
 of the framework when task are dependent. Also this application require data
-shuffling thus inter worker communication. In this application we decided to only
-compare Spark against the Dask bag and array API as they are the more realistic for
-this use case.
+shuffling thus inter worker communication. In this application we decided to omit the
+dask futures api as it is less realistic for this use case.
 
 \begin{figure}[ht]
     \centering
@@ -202,10 +201,6 @@ this use case.
 \subsection{BIDS Example}
 Our last experiment compare both frameworks on the BIDS Example algorithm.
 % Specify more details and the data set used
-
-% Note
-Note that the code implemented might not be optimal. However we hope to provide a
-baseline assessment of Dask and Spark.
 
 %% Performance
 \subsection{Experiments}
@@ -245,6 +240,9 @@ change the number of splits as above.
 %% BIDS Example
 For the BIDS example experiment, we vary the number of instances, again as above.
 
+% Note
+Note that the code implemented might not be optimal. However we hope to provide a
+baseline assessment of Dask and Spark.
 
 
 %%%%% RESULTS %%%%%
@@ -253,16 +251,19 @@ For the BIDS example experiment, we vary the number of instances, again as above
 %%% INCREMENTATION %%%
 %% Instances
 \subsection{Experiment 1: Number of instances}
-Figure \ref{fig:inc_node} shows that has the number of node increase the performance
-decrease. The reason we think this happen is that the number of workers becomes
-larger than the number of tasks to process. Also, as more worker access the nfs
-simultaneously this increase the stress put on the system which result in bottleneck,
-errors and slow down. On the one hand, Dask seems better when using a single worker.
-On the other hand, Spark makespan decrease faster for low level of parallelism.
-However Dask quickly catch up at high level of parallelism. This makes us think that
-the scheduler in Dask might be better
+Figure \ref{fig:inc_node}(a) shows that the incease in performance is not
+proportional to the number of worker which differ form what we would expect; it even
+decrease when we reach 8 instances (64 workers). This is explained by an increase in
+IO time corrolated to the number of workers (Figure \ref{fig:inc_node}(b)), as more
+worker access the nfs simultaneously it increase the stress put on the system which
+result in bottleneck, errors and slow down.
 
-\begin{figure}[p]
+On the one hand, Dask seems better when
+using a single worker. On the other hand, Spark makespan decrease faster for low
+level of parallelism. However Dask quickly catch up at high level of parallelism.
+This makes us think that the scheduler in Dask might be better
+
+\begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
       \includegraphics[clip,width=\columnwidth]{images/Incrementation_instances.png}%
@@ -279,16 +280,18 @@ the scheduler in Dask might be better
 
 %% Iterations
 \subsection{Experiment 1: Number of iterations}
-In Figure \ref{fig:inc_itr} Dask futures grows faster than the other API. This is due
-to the lack of optimization on the real time processing of tasks. The Dask bag with
-graph optimization seems to perform worst than other as the number of tasks increase.
-This might show that over optimizing task graph results in performance decrease. When
-the task load start to grow slightly Dask bag seems to be the best option. This could
-be explained as Dask bag is the most optimized Dask's API that we compare. Also Spark
-serialization could slow down the execution as the number of task increase thus
-reducing its optimization effects
+In Figure \ref{fig:inc_itr} we see that spark and the dask bag api are equivalent in
+term of performance. The dask delayed api seems to perform well with low amount of
+task but grow faster the spark and dask bag. We think this is because dask delayed
+often schedule a block on different worker of the same instance which cause small
+delay everytime due to inter worker communication. This is good when there is fewer
+tasks as is make the io between block go out of sync hence lowering the io bottleneck
+observed earlier however as the number of tasks increases those small delays become
+significant. The dask futures api seems to outperform all the other apis but this is
+most likely because the tasks are not inter dependent thus this application benifits
+from the less optimal but faster scheduling brought by dask futures.
 
-\begin{figure}[p]
+\begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
       \includegraphics[clip,width=\columnwidth]{images/Incrementation_iterations.png}%
@@ -304,13 +307,9 @@ reducing its optimization effects
 
 %% Sleep time
 \subsection{Experiment 1: Sleep delay}
-As Figure \ref{fig:inc_sleep} shows, Dask is way faster than Spark for any task
-length. We can consider optimising the graph for shorter task but it seams that
-normal Dask bag have better optimization policy for longer task. However the results
-are surprising since the makespan should increase as the sleep delay increase but we
-see the inverse effect.
+As Figure \ref{fig:inc_sleep} 
 
-\begin{figure}[p]
+\begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
       \includegraphics[clip,width=\columnwidth]{images/Incrementation_sleeptime.png}%
@@ -334,7 +333,7 @@ bag are the fastest. This could be explained by Dask bag having the better
 optimization of the Dask's API and that Spark has to perform serialization to Java.
 At 750 chunks Spark becomes as good
 
-\begin{figure}[p]
+\begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
       \includegraphics[clip,width=\columnwidth]{images/Incrementation_splits.png}%
@@ -368,7 +367,7 @@ task rescheduled to other workers.
 Also, the same length does not seem to be homogeneous. This might be due to caching
 effect either with the main memory or the nfs.
 
-\begin{figure}[p]
+\begin{figure}[htp]
     \centering
     \subfloat[Dask execution timeline]{%
       \includegraphics[clip,width=\columnwidth]{images/inc_dask-bag_baseline_gantt.png}%
@@ -385,7 +384,7 @@ effect either with the main memory or the nfs.
 %%% HISTOGRAM %%%
 \subsection{Experiment 2: Number of instances}
 
-\begin{figure}[p]
+\begin{figure}[htp]
     \centering
     \subfloat[Histogram makespan]{%
       \includegraphics[clip,width=\columnwidth]{images/histo_instance.png}%
@@ -400,7 +399,7 @@ effect either with the main memory or the nfs.
 
 \subsection{Experiment 2: Number of splits (task size)}
 
-\begin{figure}[p]
+\begin{figure}[htp]
     \centering
     \subfloat[Histogram makespan]{%
       \includegraphics[clip,width=\columnwidth]{images/histo_splits.png}%
@@ -424,6 +423,9 @@ effect either with the main memory or the nfs.
 
 %%%%% DISCUSSION %%%%%
 \section{Discussion}
+\subsection{IO Time}
+
+
 \subsection{Serialization}
 We think that serialization could have an important effect on the makespan of the
 application. This could potentially slow down the application when a lot of tasks are
