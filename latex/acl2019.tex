@@ -252,10 +252,10 @@ baseline assessment of Dask and Spark.
 %%% INCREMENTATION %%%
 %% Instances
 \subsection{Experiment 1: Number of instances}
-Figure \ref{fig:inc_node}(a) shows that the incease in performance is not
+Figure \ref{fig:inc_worker}(a) shows that the incease in performance is not
 proportional to the number of worker which differ form what we would expect; it even
 decrease when we reach 8 workers. This is explained by an increase in IO overhead
-corrolated to the number of workers (Figure \ref{fig:inc_node}(b)), as more worker
+corrolated to the number of workers (Figure \ref{fig:inc_worker}(b)), as more worker
 access the nfs simultaneously it increase the stress put on the system which result
 in bottleneck, errors and slow down.
 
@@ -266,14 +266,14 @@ constently faster then spark which make us think it has a better scheduler.
 \begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/Incrementation_instances.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_worker.png}%
     }
     
     \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_instances.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_idle_worker.png}%
     }
     \caption{125 splits, 10 iterations, 4 sec. sleep delay}
-    \label{fig:inc_node}
+    \label{fig:inc_worker}
 \end{figure}
 
 
@@ -294,11 +294,11 @@ less optimal but faster scheduling brought by dask futures.
 \begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/Incrementation_iterations.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_itr.png}%
     }
     
     \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_iterations.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
     }
     \caption{125 splits, 4 sec. sleep delay, 8 instances}
     \label{fig:inc_itr}
@@ -313,11 +313,11 @@ As Figure \ref{fig:inc_sleep}
 \begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/Incrementation_sleeptime.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_sleep.png}%
     }
     
     \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleeptime.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
     }
     \caption{125 splits, 10 iterations, 8 instances}
     \label{fig:inc_sleep}
@@ -326,33 +326,33 @@ As Figure \ref{fig:inc_sleep}
 
 % Chunks
 \subsection{Experiment 1: Number of splits}
-In Figure \ref{fig:inc_splits} Spark is not compared for 30 chunks. This is because
+In Figure \ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because
 spark has a 2GB limitation in the task size it can compute. Note from Figure
-\ref{fig:inc_splits}(b) that the compute time increase when there is more splits.
+\ref{fig:inc_chunk}(b) that the compute time increase when there is more splits.
 This is expected because the sleep delay is constant throughout this experiment and
 there are more compute task when the number of splits increases. We also note that in
-Figure \ref{fig:inc_splits}(b) for 30 splits the dask bag api has a much lower
+Figure \ref{fig:inc_chunk}(b) for 30 splits the dask bag api has a much lower
 overhead time. This is because we only calculate the idle time of used core and the
 dask bag api was only using one thread per block in comparison to the dask delayed
 and dask futures api which were offloading the calculations on multiple thread of a
-same worker. From Figure \ref{fig:inc_splits} we observe that when the dataset is
+same worker. From Figure \ref{fig:inc_chunk} we observe that when the dataset is
 seperated in more (smaller) splits it saves IO time however it increases the overhead
 by a similar amount; the inverse happens when we reduce teh number of splits.
 
 \begin{figure}[htp]
     \centering
     \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/Incrementation_splits.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_chunk.png}%
     }
     
     \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_splits.png}%
+      \includegraphics[clip,width=\columnwidth]{images/inc_idle_chunk.png}%
     }
     \caption{10 iterations, 4 sec. sleep delay, 8 instances}
-    \label{fig:inc_splits}
+    \label{fig:inc_chunk}
 \end{figure}
 
-From the Figures \ref{fig:inc_node} to \ref{fig:inc_chunk} the Dask bag with optimized graph
+From the Figures \ref{fig:inc_worker} to \ref{fig:inc_chunk} the Dask bag with optimized graph
 has high variance on its makespan. Moreover, Dask API seems to always offer a better
 option than spark RDDs.
 
@@ -375,12 +375,20 @@ effect either with the main memory or the nfs.
 
 \begin{figure}[htp]
     \centering
-    \subfloat[Dask execution timeline]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_dask-bag_baseline_gantt.png}%
+    \subfloat[Spark execution timeline]{%
+      \includegraphics[clip,width=\columnwidth]{images/spark_inc_baseline_gantt.png}%
+    }
+
+    \subfloat[Dask bag execution timeline]{%
+      \includegraphics[clip,width=\columnwidth]{images/dask_bag_inc_baseline_gantt.png}%
+    }
+
+    \subfloat[Dask delayed execution timeline]{%
+      \includegraphics[clip,width=\columnwidth]{images/dask_delayed_inc_baseline_gantt.png}%
     }
     
-    \subfloat[Spark execution timeline]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_spark_baseline_gantt.png}%
+    \subfloat[Dask futures execution timeline]{%
+      \includegraphics[clip,width=\columnwidth]{images/dask_futures_inc_baseline_gantt.png}%
     }
     \caption{125 splits, 4 sec. sleep delay, 8 instances}
     \label{fig:inc_gantt}
@@ -400,10 +408,10 @@ effect either with the main memory or the nfs.
       \includegraphics[clip,width=\columnwidth]{images/histo_idle_instances.png}%
     }
     \caption{8 instances}
-    \label{fig:histo_instance}
+    \label{fig:histo_wroker}
 \end{figure}
 
-\subsection{Experiment 2: Number of splits (task size)}
+\subsection{Experiment 2: Number of chunks}
 
 \begin{figure}[htp]
     \centering
@@ -415,15 +423,11 @@ effect either with the main memory or the nfs.
       \includegraphics[clip,width=\columnwidth]{images/histo_idle_splits.png}%
     }
     \caption{10 iterations, 4 sec. sleep delay, 8 instances}
-    \label{fig:histo_splits}
+    \label{fig:histo_chunk}
 \end{figure}
-
-\subsection{Experiment 2: Number of chunks}
 
 %%% BIDS EXAMPLE %%%
 \subsection{Experiment 3: Number of instances}
-
-\subsection{Experiment 3: Number of subjects}
 
 
 
