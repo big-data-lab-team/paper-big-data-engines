@@ -79,7 +79,7 @@ neuroimaging pipelines.
 \section{Introduction}
 % Context
 With the increasing number of data available in neuroimaging \citep{ALFAROALMAGRO:18,
-UKBioBank:18} the processing of Big Data is becoming critical. Frameworks like Nipype
+UKBioBank:18} the processing of Big Data becomes critical. Frameworks like Nipype
 \citep{Nipype:11} are usually used to create neuroimaging pipelines however it is
 worth considering the use of general purpose Big Data frameworks
 \citep{Hayot-Sasson:17}. In that research, Spark \citep{Spark:16} was a natural
@@ -97,10 +97,10 @@ similarities, the frameworks are quite different.
 % Spark
 On the one hand, we have Spark which provides a high-level API. This allows the
 scheduler to perform more optimizations which makes it well suited for neuroimaging
-applications that often require lengthy executions. However, Spark's code base is in
-Scala which theoretically can lead to slow down in execution due to a required
-serialization. Moreover, while Spark's API is flexible and allows most
-implementations, it differs from the ones seen in the Python's ecosystem.
+analysis that often require the usage of pipeline with multiple steps. However,
+Spark's code base is in Scala which theoretically can lead to slow down in execution
+due to a required serialization. Moreover, while Spark's API is flexible and allows
+most implementations, it differs from the ones seen in the Python's ecosystem.
 
 % Dask
 On the other hand, Dask was created with the purpose to natively parallelize Python
@@ -125,13 +125,13 @@ delayed apply lazy evaluation to tasks while futures trigger them directly.
 
 % Methods used (summary)
 The project aims to compare the state-of-the-art general purpose framework Spark with
-the newcomer Dask. We decide to compare the performance of Spark and Dask on custom
+the newcomer Dask. We decide to compare the performance of Spark and Dask on a custom
 incrementation pipeline to simplify the effect of the algorithm on the comparison.
-Then we access the frameworks on two real-life applications: (1) histogram of the
+Then we assess the frameworks on two real-life applications: (1) histogram of the
 voxels intensity in a 3d images (2) BIDS example.
 
 % Implications of our research
-The result from our project help in assessing if Dask is a good choice to build
+The result from our project help in deciding if Dask is a good choice to build
 neuroimaging pipelines.
 
 
@@ -141,19 +141,18 @@ neuroimaging pipelines.
 We compare Dask(\textbf{v1.1.4}) and Spark(\textbf{v2.4.0}) based on two metrics
 their scheduling and their makespan performance. All scripts used to perform our
 experiments are available at
-\href{https://github.com/mathdugre/SOEN-499-Project}{https://github.com/mathdugre/SOEN-499-Project}.
-For our experiments we used Compute Canada Cloud where each instance has 8 cores and
-30GB RAM. The system was dedicated.
+\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines}.
+For our experiments we used Compute Canada Cloud where each instance has 8 cores,
+30GB RAM, 10GB bandwidht and is dedicated.
  
 %% Incrementation
-\subsection{Incrementation}
-As our first experiment to benchmark the frameworks we used a simple incrementation
-pipeline (see Algorithm \ref{alg:incrementation}). It loads chunks from the 75GB
-BigBrain\citep{ds052:01} image, increment its value by 1 and save the result to an
-nfs as a Nifti image. The incrementation allows to reduce caching effect of the data.
-This experiment allows us to study the behaviour of the frameworks when all input are
-processed independently; i.e. each task in the graph only depend on the previous one
-(see \ref{fig:tg-inc}).
+\subsection{Incrementation} As our first experiment to benchmark the frameworks we
+used a simple incrementation pipeline (see Algorithm \ref{alg:incrementation}). It
+loads chunks from the 75GB BigBrain\citep{ds052:01} image, increment its value by 1 a
+determined number of time and save the result to an nfs as a Nifti image.
+Incrementting the data reduce the caching effect. This experiment allows us to study
+the behaviour of the frameworks when all input are processed independently; i.e. each
+task in the graph only depend on the previous one (see \ref{Figure fig:tg-inc}).
 
 This experiment refers to the implementation of the Spark pipelines purposed in
 \citet{Hayot-Sasson:17}.
@@ -185,7 +184,7 @@ This experiment refers to the implementation of the Spark pipelines purposed in
 \subsection{Histogram}
 For our second experiment we find the frequency of the voxels intensity in BigBrain
 and save them as a tuple in a file. In this experiment the end results depends on all
-of the input results (see \ref{fig:tg-histo}). This allow us to study the behaviour
+of the input results (see \ref{Figure fig:tg-histo}). This allows us to study the behaviour
 of the framework when task are dependent. Also this application require data
 shuffling thus inter worker communication. In this application we decided to omit the
 dask futures api as it is less realistic for this use case.
@@ -201,6 +200,8 @@ dask futures api as it is less realistic for this use case.
 \subsection{BIDS Example}
 Our last experiment compare both frameworks on the BIDS Example algorithm.
 % Specify more details and the data set used
+% SECTION TO COMPLETE -- Experience not done yet
+
 
 %% Performance
 \subsection{Experiments}
@@ -211,7 +212,7 @@ environments and tasks types.
 For the incrementation experiment, we
 %% Node
 first vary the number of instances in our cluster environment. We test with 1, 2, 4,
-8, and 16 instances. From this we can evaluate the level of parallelism offered by
+and 8 instances. From this we can evaluate the level of parallelism offered by
 both framework.
 
 %% Iterations
@@ -225,12 +226,12 @@ Thirdly, we change the sleep delay in the increment tasks. We fix a 1, 4 and 16 
 with different time length.
 
 %% Splits
-Finally, we split the BigBrain in different number of chunks. We split it in 30, 125
-and 750 chunks. From that we can evaluate the framework with task of different size;
-around 2.5GB, 0.6GB and 0.1GB, respectively.
+Finally, we seperate the BigBrain in different number of splits. We seperate it in
+30, 125 and 750 splits; around 2.5GB, 0.6GB and 0.1GB, respectively. From that we can
+evaluate the framework with task of different size and IO requirements.
 
 %% Baseline
-Our baseline for all experiment is 10 iterations, 4 sleep delay, 125 chunks running
+Our baseline for all experiment is 10 iterations, 4 sleep delay, 125 splits running
 on 8 instances.
 
 %% Histogram
@@ -253,15 +254,14 @@ baseline assessment of Dask and Spark.
 \subsection{Experiment 1: Number of instances}
 Figure \ref{fig:inc_node}(a) shows that the incease in performance is not
 proportional to the number of worker which differ form what we would expect; it even
-decrease when we reach 8 instances (64 workers). This is explained by an increase in
-IO time corrolated to the number of workers (Figure \ref{fig:inc_node}(b)), as more
-worker access the nfs simultaneously it increase the stress put on the system which
-result in bottleneck, errors and slow down.
+decrease when we reach 8 workers. This is explained by an increase in IO overhead
+corrolated to the number of workers (Figure \ref{fig:inc_node}(b)), as more worker
+access the nfs simultaneously it increase the stress put on the system which result
+in bottleneck, errors and slow down.
 
-On the one hand, Dask seems better when
-using a single worker. On the other hand, Spark makespan decrease faster for low
-level of parallelism. However Dask quickly catch up at high level of parallelism.
-This makes us think that the scheduler in Dask might be better
+On the one hand, Dask seems better when using a single worker. On the other hand,
+Spark makespan decrease faster for higher level of parallelism. However Dask is
+constently faster then spark which make us think it has a better scheduler.
 
 \begin{figure}[htp]
     \centering
@@ -283,8 +283,8 @@ This makes us think that the scheduler in Dask might be better
 In Figure \ref{fig:inc_itr} we see that spark and the dask bag api are equivalent in
 term of performance. The dask delayed api seems to perform well with low amount of
 task but grow faster the spark and dask bag. We think this is because dask delayed
-often schedule a block on different worker of the same instance which cause small
-delay everytime due to inter worker communication. This is good when there is fewer
+often schedule a block on different thread of the same worker which cause small delay
+everytime due to inter thread data communication. This is good when there is fewer
 tasks as is make the IO between block go out of sync hence lowering the IO bottleneck
 however as the number of tasks increases those small delays become significant. The
 dask futures api seems to outperform all the other apis but this is most likely
@@ -308,6 +308,7 @@ less optimal but faster scheduling brought by dask futures.
 %% Sleep time
 \subsection{Experiment 1: Sleep delay}
 As Figure \ref{fig:inc_sleep} 
+% Not sure what to conclude.
 
 \begin{figure}[htp]
     \centering
@@ -331,10 +332,10 @@ spark has a 2GB limitation in the task size it can compute. Note from Figure
 This is expected because the sleep delay is constant throughout this experiment and
 there are more compute task when the number of splits increases. We also note that in
 Figure \ref{fig:inc_splits}(b) for 30 splits the dask bag api has a much lower
-overhead time. This is because calculate the idle time of active worker only and the
-dask bag api was only using one worker per split in comparison to the dask delayed
-and dask futures api which were offloading the calculations on multiple workers on a
-same instance. From Figure \ref{fig:inc_splits} we observe that when the dataset is
+overhead time. This is because we only calculate the idle time of used core and the
+dask bag api was only using one thread per block in comparison to the dask delayed
+and dask futures api which were offloading the calculations on multiple thread of a
+same worker. From Figure \ref{fig:inc_splits} we observe that when the dataset is
 seperated in more (smaller) splits it saves IO time however it increases the overhead
 by a similar amount; the inverse happens when we reduce teh number of splits.
 
