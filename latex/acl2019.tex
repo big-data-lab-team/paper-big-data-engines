@@ -358,20 +358,27 @@ option than spark RDDs.
 
 %% Baseline gantt chart
 \subsection{Experimentation 1: Baseline timeline}
-From Figure \ref{fig:inc_gantt} the execution time
-is similar in Dask and Spark. However Spark takes more time to save the data to disk.
-This could be due to the FIFO scheduler that tends to have the first set of save
-consequent thus saturating the nfs. Also serialization could have an effect. It looks
-like the nfs could be a bottleneck when reading (writing) data from (to) the
-application.
+From Table \ref{tb:inc-base} and Figure \ref{fig:inc_gantt} the framework have
+similar makespan however the time spend for each type of task differ significantly.
+Spark tends to spend more time than other framework for IO however it has a much
+lower overhead. dask delayed and futures have a the loowest IO time but a much higher
+overhead. Dask bag stand in the middle for both IO and overhead. Compute time is
+approximately the same for all frameworks.
 
-Dask scheduler seems to have strange behaviour in Figure \ref{fig:inc_gantt}. It
-often wait before scheduling tasks that we would expect to be scheduled right away.
-We currently don't have explication for this behaviour. This could be explained by
-task rescheduled to other workers.
-
-Also, the same length does not seem to be homogeneous. This might be due to caching
-effect either with the main memory or the nfs.
+\begin{table}[h]
+  \resizebox{\columnwidth}{!}{
+    \begin{tabular}{|l|l|l|l|l|l|}
+    \hline
+    Framework    & Read     & Compute & Write    & Overhead & Total    \\ \hline
+    Spark        & 34465.22 & 5117.90 & 22679.15 & 17075.94 & 79338.22 \\ \hline
+    Dask.bag     & 36863.32 & 5120.80 & 15448.91 & 21387.82 & 78820.86 \\ \hline
+    Dask.delayed & 32769.47 & 5119.32 & 11372.86 & 26198.90 & 75460.56 \\ \hline
+    Dask.futures & 31891.29 & 5120.47 & 11269.66 & 27983.72 & 76265.14 \\ \hline
+    \end{tabular}
+  }
+  \caption{Distirbution of the execution time in seconds}
+  \label{tb:inc-base}
+ \end{table}
 
 \begin{figure}[htp]
     \centering
