@@ -7,6 +7,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{times}
+\usepackage{siunitx}
 \usepackage{latexsym}
 \usepackage{hyperref}
 \usepackage{algpseudocode}
@@ -139,23 +140,38 @@ neuroimaging pipelines.
 
 %%%%% MATERIAL AND METHODS %%%%%%
 \section{Material and Methods}
-%% Material
-We compare Dask (\textbf{v1.1.4}) and Spark (\textbf{v2.4.0}) based on two metrics
-their scheduling and their makespan performance. All scripts used to perform our
-experiments are available at
-\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines}.
-For our experiments, we used Compute Canada Cloud where each instance has 8 cores,
-30GB RAM, 10GB bandwidth and is dedicated.
- 
+
+\subsection{Engines}
+Spark v2.4.0 and Dask v1.1.4 was used for the experiments.
+
+\textbf{PySpark.RDD \cite{spark-rdd}} 
+
+\textbf{Dask.bag \cite{dask-bag}} 
+
+\textbf{Dask.delayed \cite{dask-delayed}} 
+
+\textbf{Dask.futures \cite{dask-futures}} 
+
+\subsection{Dataset}
+For the incrementation and histogram experiment the BigBrain~\cite{Amunts:13} is
+used. It is a three-dimensional image of a brain scanned at \SI{40}{\micro\metre}.
+The data set store the intensity of each voxel and their position. This results in a
+75GB image. It is stored in 125 chunks in the minc~\cite{minc} format. To perform our
+experiment we convert the chunks into the nifti format. Also, using sam~\cite{sam} we
+combine the chunks and split them into 30, 125 and 750 chunks of equal size; 2.5GB,
+0.6GB, and 0.1GB, respectively.
+
+\subsection{Applications}
+
 %% Incrementation
-\subsection{Incrementation}
+\subsubsection{\textbf{Incrementation}}
 As our first experiment to benchmark the frameworks we used a simple incrementation
-pipeline (see Algorithm~\ref{alg:incrementation}). It loads chunks from the 75GB
-BigBrain\cite{ds052:01} image, increment its value by 1 a determined number of time
-and save the result to an NFS as a Nifti image. Incrementing the data reduce the
-caching effect. This experiment allows us to study the behavior of the frameworks
-when all input are processed independently; i.e.\ each task in the graph only depends
-on the previous one (see~\ref{Figure fig:tg-inc}).
+pipeline (see Algorithm~\ref{alg:incrementation}). It reads chunks from the BigBrain
+image, increments the intensity value of each voxel by 1 for a specified amount of
+iterations and write the result to an NFS as a Nifti image. Incrementing the data
+reduce the caching effect. This experiment allows us to study the behavior of the
+frameworks when all input are processed independently; i.e.\ each task in the graph
+only depends on the previous one (see~\ref{Figure fig:tg-inc}).
 
 This experiment refers to the implementation of the Spark pipelines purposed
 in~\cite{Hayot-Sasson:17}.
@@ -183,6 +199,24 @@ in~\cite{Hayot-Sasson:17}.
     angle=-90]{images/incrementation-task-graph.png}
     \caption{Task graph for Incrementation}\label{fig:tg-inc}
 \end{figure}
+
+\subsubsection{Histogram}
+
+
+\subsection{Experiment}
+
+\subsection{Infrastructure}
+All experiments were performed on Compute Canda Cloud.
+
+
+
+%% Material
+We compare Dask (\textbf{v1.1.4}) and Spark (\textbf{v2.4.0}) based on two metrics
+their scheduling and their makespan performance. All scripts used to perform our
+experiments are available at
+\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines}.
+For our experiments, we used Compute Canada Cloud where each instance has 8 cores,
+30GB RAM, 10GB bandwidth and is dedicated.
 
 % Histogram
 \subsection{Histogram}
