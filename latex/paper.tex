@@ -144,13 +144,31 @@ neuroimaging pipelines.
 \subsection{Engines}
 Spark v2.4.0 and Dask v1.1.4 was used for the experiments.
 
-\textbf{PySpark.RDD \cite{spark-rdd}} 
+\subsubsection{PySpark RDD~\cite{spark-rdd}} Spark is a general-purpose big data
+framework. It provides in-memory computing, data locality and lazy evaluation. Spark
+abstract resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant. Its
+high-level API provides optimizations on the transformations made to some data. Since
+Spark is written in Scala, this optimization is lessen because it requires a
+serialization from Python to Java. The API offered by Spark is flexible and suit most
+problem however it differ from Python ecosystem. The standalone scheduler is used for
+our experiment. It has a LIFO policy.
 
-\textbf{Dask.bag \cite{dask-bag}} 
+\subsubsection{Dask Bag~\cite{dask-bag}} Dask Bag is one of the high-level API
+offered by dask. It also provides in-memory computing, data locality and lazy
+evaluation however it does not have fault resilience. Fundamently it is parallized
+lists. Dask Bag parallelizes computations of large collection of generic python
+objects~\cite{dask-bag}. Also, it offers optimized algorithm that mimic most the
+toolz library. Our experiment use the dask distributed~\cite{dask-distributed}
+scheduler. It has a LIFO policy. In theory it should speed-up the computation by
+finishing task computations before starting new ones.
 
-\textbf{Dask.delayed \cite{dask-delayed}} 
+\subsubsection{Dask Delayed~\cite{dask-delayed}} Dask Delayed is a low-level API. It
+does not offer the optimized algorithm as the high-level APIs however it allows the
+user to parallelize custom function that do not fit in the array, dataframe or
+MapReduce framework.
 
-\textbf{Dask.futures \cite{dask-futures}} 
+\subsubsection{Dask Futures~\cite{dask-futures}} Dask Futures is also a low-level API
+from dask. It differs from the other APIs as its computations trigger immediately.
 
 \subsection{Dataset}
 For the incrementation and histogram experiment the BigBrain~\cite{Amunts:13} is
@@ -171,10 +189,11 @@ image, increments the intensity value of each voxel by 1 for a specified amount 
 iterations and write the result to an NFS as a Nifti image. Incrementing the data
 reduce the caching effect. This experiment allows us to study the behavior of the
 frameworks when all input are processed independently; i.e.\ each task in the graph
-only depends on the previous one (see~\ref{Figure fig:tg-inc}).
+only depends on the previous one (see Figure~\ref{Figure fig:tg-inc}). This mimic the
+behavior of analyzing multiple independent subjects in parallel.
 
 This experiment refers to the implementation of the Spark pipelines purposed
-in~\cite{Hayot-Sasson:17}.
+in Ref.~\cite{Hayot-Sasson:17}.
 
 \begin{algorithm}[!t]
     \caption{Incrementation}\label{alg:incrementation}
