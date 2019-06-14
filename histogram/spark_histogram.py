@@ -1,14 +1,11 @@
-import sys
-
-sys.path.append("/nfs/paper-big-data-engines")
-
 import argparse
 import os
+import sys
 from time import time
 
 from pyspark import SparkConf, SparkContext
 
-from utils import benchmark, crawl_dir, read_img
+sys.path.append("/nfs/paper-big-data-engines")
 
 
 if __name__ == "__main__":
@@ -34,10 +31,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cluster scheduler
-    conf = SparkConf().setAppName("Spark Incrementation")
+    conf = SparkConf().setAppName(f"Spark {args.experiment}")
     sc = SparkContext.getOrCreate(conf=conf)
 
     sc.addFile("/nfs/paper-big-data-engines/utils.py")
+    sc.addFile("/nfs/paper-big-data-engines/histogram/Histogram.py")
+    from utils import benchmark, crawl_dir, read_img
+    from histogram import calculate_histogram, combine_histogram
+
     print("Connected")
 
     # Read images
@@ -45,30 +46,21 @@ if __name__ == "__main__":
     paths = sc.parallelize(paths, len(paths))
     img_rdd = paths.map(lambda p: read_img(p, start=start, args=args))
 
-    start_time = time() - start
+    voxels = img_rdd.map(lambda x: (x[0], x[1].flatten("F")))
 
-    voxels = img_rdd.flatMap(lambda x: x[1].flatten("F"))
-    frequency_pair = (
-        voxels.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y).collect()
+    partial_histogram = voxels.map(
+        lambda x: calculate_histogram(x[1], args=args, start=start, filename=x[0])
     )
 
-    end_time = time() - start
-
-    if args.benchmark:
-        benchmark(
-            start_time,
-            end_time,
-            "all_file",
-            args.output_dir,
-            args.experiment,
-            "find_frequency",
-        )
+    histogram = partial_histogram.fold(
+        lambda x: combine_histogram(x, args=args, start=start)
+    ).collect()
 
     start_time = time() - start
 
     with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
-        for x in frequency_pair:
-            f_out.write(f"{x[0]};{x[1]}\n")
+        for k, v in histogram.items():
+            f_out.write(f"{k};{v}\n")
 
     end_time = time() - start
 
