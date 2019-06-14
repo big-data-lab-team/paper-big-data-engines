@@ -3,14 +3,16 @@ from random import shuffle
 import json
 
 
-with open("experiment.json") as f_in:
+with open(
+    "/nfs/paper-big-data-engines/experiments-script/histogram_experiment.json"
+) as f_in:
     experiments = json.load(f_in)
     shuffle(experiments)
     for exp in experiments:
         experiment = exp["experiment"]
         filename = exp["file"]
-        iterations = str(exp["iterations"])
-        delay = str(exp["delay"])
+        # iterations = str(exp["iterations"])
+        # delay = str(exp["delay"])
         chunks = str(exp["chunks"])
 
         subprocess.run(
@@ -29,8 +31,6 @@ with open("experiment.json") as f_in:
                     "/nfs/bb-" + chunks + "chunks",
                     "/nfs/results",
                     experiment,
-                    iterations,
-                    delay,
                     "--benchmark",
                 ]
             )
@@ -43,8 +43,6 @@ with open("experiment.json") as f_in:
                     "/nfs/bb-" + chunks + "chunks",
                     "/nfs/results",
                     experiment,
-                    iterations,
-                    delay,
                     "--benchmark",
                 ]
             )

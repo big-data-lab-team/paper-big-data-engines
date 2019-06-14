@@ -5,8 +5,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-array_histogram-baseline",
-    "file": "dask-array_histogram.py",
+    "experiment": "dask-delayed_histogram-baseline",
+    "file": "dask-delayed_histogram.py",
     "chunks": 125
   },
   {
@@ -15,8 +15,8 @@
     "chunks": 125
   },
   {
-    "experiment": "dask-array_histogram-30chunks",
-    "file": "dask-array_histogram.py",
+    "experiment": "dask-delayed_histogram-30chunks",
+    "file": "dask-delayed_histogram.py",
     "chunks": 30
   },
   {
@@ -25,13 +25,18 @@
     "chunks": 30
   },
   {
+    "experiment": "spark_histogram-30chunks",
+    "file": "spark_histogram.py",
+    "chunks": 30
+  },
+  {
     "experiment": "dask-bag_histogram-750chunks",
     "file": "dask-bag_histogram.py",
     "chunks": 750
   },
   {
-    "experiment": "dask-array_histogram-750chunks",
-    "file": "dask-array_histogram.py",
+    "experiment": "dask-delayed_histogram-750chunks",
+    "file": "dask-delayed_histogram.py",
     "chunks": 750
   },
   {
