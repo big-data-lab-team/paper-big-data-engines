@@ -154,21 +154,27 @@ problem however it differ from Python ecosystem. The standalone scheduler is use
 our experiment. It has a LIFO policy.
 
 \subsubsection{Dask Bag~\cite{dask-bag}} Dask Bag is one of the high-level API
-offered by dask. It also provides in-memory computing, data locality and lazy
+offered by dask. Like Spark, it provides in-memory computing, data locality and lazy
 evaluation however it does not have fault resilience. Fundamently it is parallized
 lists. Dask Bag parallelizes computations of large collection of generic python
-objects~\cite{dask-bag}. Also, it offers optimized algorithm that mimic most the
-toolz library. Our experiment use the dask distributed~\cite{dask-distributed}
-scheduler. It has a LIFO policy. In theory it should speed-up the computation by
-finishing task computations before starting new ones.
+objects~\cite{dask-bag}. Also, it offers optimized algorithm that mimic most of the
+toolz library. Our experiment use the Dask Distributed~\cite{dask-distributed}
+scheduler. It has a LIFO policy. In theory it should speed-up the pipeline excution
+by finishing task computations before starting new ones.
 
 \subsubsection{Dask Delayed~\cite{dask-delayed}} Dask Delayed is a low-level API. It
 does not offer the optimized algorithm as the high-level APIs however it allows the
 user to parallelize custom function that do not fit in the array, dataframe or
-MapReduce framework.
+MapReduce framework. This is perfect for more complex function which could easily be
+parallelized. Like Dask Bag, it offers in-memory computing, data locality and lack
+fault resilience. The Dask Distributed scheduler.
 
 \subsubsection{Dask Futures~\cite{dask-futures}} Dask Futures is also a low-level API
-from dask. It differs from the other APIs as its computations trigger immediately.
+from Dask. Like the other Dask APIs it benifit of in-memory computing and data
+locatlity. Unlike the other APIs, Dask Futures triggers computation immediately. When
+the user tries to gather data, if available it will return the result otherwise it
+will block until the cimputation is done.
+
 
 \subsection{Dataset}
 For the incrementation and histogram experiment the BigBrain~\cite{Amunts:13} is
