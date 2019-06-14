@@ -1,15 +1,12 @@
-import sys
-
-sys.path.append("/nfs/paper-big-data-engines")
-
 import argparse
 import os
+import sys
 from time import time
 
 import dask.bag as db
 from dask.distributed import Client
 
-from utils import benchmark, crawl_dir, read_img
+sys.path.append("/nfs/paper-big-data-engines")
 
 
 if __name__ == "__main__":
@@ -42,34 +39,29 @@ if __name__ == "__main__":
     print(client)
     # Allow workers to use module
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
+    client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
+    from utils import benchmark, crawl_dir, read_img
+    from histogram import calculate_histogram, combine_histogram
+
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
     paths = db.from_sequence(paths, npartitions=len(paths))
-    img_rdd = paths.map(lambda p: read_img(p, start=start, args=args))
+    img = paths.map(lambda p: read_img(p, start=start, args=args))
 
-    start_time = time() - start
+    partial_histogram = img.map(
+        lambda x: calculate_histogram(x[1], args=args, start=start, filename=x[0])
+    )
 
-    voxels = img_rdd.map(lambda x: x[1].flatten("F")).flatten()
-    frequency_pair = voxels.frequencies().compute()
-
-    end_time = time() - start
-
-    if args.benchmark:
-        benchmark(
-            start_time,
-            end_time,
-            "all_file",
-            args.output_dir,
-            args.experiment,
-            "find_frequency",
-        )
+    histogram = partial_histogram.fold(
+        lambda x: combine_histogram(x, args=args, start=start)
+    ).compute()
 
     start_time = time() - start
 
     with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
-        for x in frequency_pair:
-            f_out.write(f"{x[0]};{x[1]}\n")
+        for k, v in histogram.items():
+            f_out.write(f"{k};{v}\n")
 
     end_time = time() - start
 

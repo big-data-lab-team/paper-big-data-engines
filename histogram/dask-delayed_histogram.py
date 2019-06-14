@@ -1,17 +1,13 @@
-import sys
-
-sys.path.append("/nfs/paper-big-data-engines")
-
 import argparse
 from functools import reduce
 import os
+import sys
 from time import time
 
 import dask
 from dask.distributed import Client
-import numpy as np
 
-from utils import benchmark, crawl_dir, read_img
+sys.path.append("/nfs/paper-big-data-engines")
 
 
 if __name__ == "__main__":
@@ -44,59 +40,25 @@ if __name__ == "__main__":
     print(client)
     # Allow workers to use module
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
-
-    def calculate_histogram(arr):
-        start_time = time() - start
-
-        y = np.bincount(arr)
-        ii = np.nonzero(y)[0]
-        out = np.vstack((ii, y[ii])).T
-        histogram = {k: v for k, v in out}
-
-        end_time = time() - start
-
-        if args.benchmark:
-            benchmark(
-                start_time,
-                end_time,
-                "all_file",
-                args.output_dir,
-                args.experiment,
-                "calculate_histogram",
-            )
-        return histogram
-
-    def combine_histogram(x, y):
-        start_time = time() - start
-
-        rv = {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
-
-        end_time = time() - start
-
-        if args.benchmark:
-            benchmark(
-                start_time,
-                end_time,
-                "all_file",
-                args.output_dir,
-                args.experiment,
-                "combine_histogram",
-            )
-        return rv
+    client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
+    from utils import benchmark, crawl_dir, read_img
+    from histogram import calculate_histogram, combine_histogram
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
 
     partial_histogram = []
     for path in paths:
-        img_rdd = dask.delayed(read_img)(path, start=start, args=args)
+        img = dask.delayed(read_img)(path, start=start, args=args)
 
-        voxels = img_rdd[1].flatten("F")
-
-        partial_histogram.append(dask.delayed(calculate_histogram)(voxels))
+        partial_histogram.append(
+            dask.delayed(calculate_histogram)(
+                img[1], args=args, start=start, filename=img[0]
+            )
+        )
 
     histogram = dask.delayed(reduce)(
-        lambda x, y: combine_histogram(x, y), partial_histogram
+        lambda x, y: combine_histogram(x, y, args=args, start=start), partial_histogram
     )
 
     future = client.compute(histogram)
