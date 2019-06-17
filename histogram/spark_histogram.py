@@ -53,7 +53,7 @@ if __name__ == "__main__":
     )
 
     histogram = partial_histogram.fold(
-        lambda x: combine_histogram(x, args=args, start=start)
+        {}, lambda x, y: combine_histogram(x, y, args=args, start=start)
     ).collect()
 
     start_time = time() - start
