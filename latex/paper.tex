@@ -142,57 +142,57 @@ neuroimaging pipelines.
 \section{Material and Methods}
 
 \subsection{Engines}
-Spark v2.4.0 and Dask v1.1.4 was used for the experiments.
+For all our experiments, we used Spark v2.4.0 and Dask v1.1.4.
 
-\subsubsection{PySpark RDD~\cite{spark-rdd}} Spark is a general-purpose big data
+\subsubsection{PySpark RDD~\cite{spark-rdd}} Spark is a general-purpose Big Data
 framework. It provides in-memory computing, data locality and lazy evaluation. Spark
-abstract resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant. Its
-high-level API provides optimizations on the transformations made to some data. Since
+abstracts resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant. Its
+high-level API provides optimizations for transformations applied data. Since
 Spark is written in Scala, this optimization is lessen because it requires a
-serialization from Python to Java. The API offered by Spark is flexible and suit most
-problem however it differ from Python ecosystem. The standalone scheduler is used for
+serialization from Python to Java. The API offered by Spark is flexible and suits most
+problems however it differs from Python ecosystem. The standalone scheduler is used for
 our experiment. It has a LIFO policy.
 
 \subsubsection{Dask Bag~\cite{dask-bag}} Dask Bag is one of the high-level API
-offered by dask. Like Spark, it provides in-memory computing, data locality and lazy
-evaluation however it does not have fault resilience. Fundamently it is parallized
+offered by Dask. Like Spark, it provides in-memory computing, data locality and lazy
+evaluation however it does not have fault resilience. Fundamently, it is parallized
 lists. Dask Bag parallelizes computations of large collection of generic python
-objects~\cite{dask-bag}. Also, it offers optimized algorithm that mimic most of the
-toolz library. Our experiment use the Dask Distributed~\cite{dask-distributed}
+objects~\cite{dask-bag}. Also, it offers optimized algorithms that mimic most of the
+toolz~\cite{toolz} library. Our experiment use the Dask Distributed~\cite{dask-distributed}
 scheduler. It has a LIFO policy. In theory it should speed-up the pipeline excution
-by finishing task computations before starting new ones.
+by finishing a branch of task computations before starting new ones.
 
 \subsubsection{Dask Delayed~\cite{dask-delayed}} Dask Delayed is a low-level API. It
 does not offer the optimized algorithm as the high-level APIs however it allows the
 user to parallelize custom function that do not fit in the array, dataframe or
 MapReduce framework. This is perfect for more complex function which could easily be
 parallelized. Like Dask Bag, it offers in-memory computing, data locality and lack
-fault resilience. The Dask Distributed scheduler.
+fault resilience. The Dask Distributed scheduler is used.
 
 \subsubsection{Dask Futures~\cite{dask-futures}} Dask Futures is also a low-level API
-from Dask. Like the other Dask APIs it benifit of in-memory computing and data
-locatlity. Unlike the other APIs, Dask Futures triggers computation immediately. When
-the user tries to gather data, if available it will return the result otherwise it
-will block until the cimputation is done.
+from Dask. Like the other Dask APIs, it benifits of in-memory computing and data
+locatlity. However, unlike the other APIs, Dask Futures triggers computation
+immediately. When the user tries to gather data if available it will return the
+result otherwise it will block until the computation is done. Again, the Dask
+Distributed scheduler is used.
 
 
 \subsection{Dataset}
 For the incrementation and histogram experiment the BigBrain~\cite{Amunts:13} is
 used. It is a three-dimensional image of a brain scanned at \SI{40}{\micro\metre}.
 The data set store the intensity of each voxel and their position. This results in a
-75GB image. It is stored in 125 chunks in the minc~\cite{minc} format. To perform our
-experiment we convert the chunks into the nifti format. Also, using sam~\cite{sam} we
-combine the chunks and split them into 30, 125 and 750 chunks of equal size; 2.5GB,
-0.6GB, and 0.1GB, respectively.
+75GB image. It is stored in 125 chunks in the \textit{MINC}~\cite{minc} format. To
+perform our experiment we convert the chunks into the \textit{NifTI}~\cite{nifti}
+format. Also, using \textit{sam}~\cite{sam} we combine the chunks and split them into
+30, 125 and 750 chunks of equal size; each of 2.5GB, 0.6GB, and 0.1GB, respectively.
 
 \subsection{Applications}
-
 %% Incrementation
 \subsubsection{\textbf{Incrementation}}
-As our first experiment to benchmark the frameworks we used a simple incrementation
+As our first experiment to benchmark the frameworks, we used a simple incrementation
 pipeline (see Algorithm~\ref{alg:incrementation}). It reads chunks from the BigBrain
 image, increments the intensity value of each voxel by 1 for a specified amount of
-iterations and write the result to an NFS as a Nifti image. Incrementing the data
+iterations, and write the result to an NFS as a NifTI image. Incrementing the data
 reduce the caching effect. This experiment allows us to study the behavior of the
 frameworks when all input are processed independently; i.e.\ each task in the graph
 only depends on the previous one (see Figure~\ref{Figure fig:tg-inc}). This mimic the
@@ -201,32 +201,61 @@ behavior of analyzing multiple independent subjects in parallel.
 This experiment refers to the implementation of the Spark pipelines purposed
 in Ref.~\cite{Hayot-Sasson:17}.
 
-\begin{algorithm}[!t]
+\begin{algorithm}[!b]
     \caption{Incrementation}\label{alg:incrementation}
     \begin{algorithmic}
     \Require{\(x\), a sleep delay in float}
     \Require{\(file\), a file containing a chunk}
-    \Require{\(fs\), NFS to save image to.}
-    \State{read \(chunk\) from \(file\)}
+    \Require{\(fs\), NFS to write image to.}
+    \State{Read \(chunk\) from \(file\)}
     \ForEach{\(i \in iterations\)}
         \ForEach{\(chunk \in image\)}
             \State{\(chunk\gets chunk+1\)}
-            \State{sleep \(x\)}
+            \State{Sleep \(x\)}
         \EndFor
     \EndFor
-    \State{save \(chunk\) to \(fs\)}
+    \State{Write \(chunk\) to \(fs\)}
 \end{algorithmic}
 \end{algorithm}
 
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \includegraphics[width=0.125\textwidth,
     angle=-90]{images/incrementation-task-graph.png}
     \caption{Task graph for Incrementation}\label{fig:tg-inc}
 \end{figure}
 
-\subsubsection{Histogram}
+\subsubsection{\textbf{Histogram}}
+Our second experiment consist to calculate the histogram of the intensity of the
+voxel in BigBrain (see Algorithm~\ref{alg:histogram}). It reads the images from the
+nfs, calculate inividual image frequency, aggregate the images frequency together,
+and write the result to a file. In this experiment, the result depends on all the
+input (see Fig.~\ref{fig:tg-histo}). This allows to study the behavior of the
+frameworks when tasks are dependent. Also, this application requires data shuffling
+thus inter-worker communication. We decided to omit Dask Futures as it does not had
+any value over Dask Delayed in this application.
 
+\begin{algorithm}[!t]
+    \caption{Histogram}\label{alg:histogram}
+    \begin{algorithmic}
+    \Require{\(files\), files containing BigBrain}
+    \Require{\(fs\), NFS to save image to.}
+    \ForEach{\(file \in files\)}
+        \State{Read \(chunk\) from \(file\)}
+        \State{{Calculate \(frequency\) of \(chunks\)}}
+    \EndFor
+    
+    \State{\(histogram\gets\)Aggregate \(frequency\) of each \(file\)}
+
+    \State{Write \(histogram\) to \(fs\)}
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.16\textwidth, angle=-90]{images/histogram-task-graph.png}
+    \caption{Task graph for Histogram}\label{fig:tg-histo}
+\end{figure}
 
 \subsection{Experiment}
 
@@ -240,30 +269,8 @@ We compare Dask (\textbf{v1.1.4}) and Spark (\textbf{v2.4.0}) based on two metri
 their scheduling and their makespan performance. All scripts used to perform our
 experiments are available at
 \href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines}.
-For our experiments, we used Compute Canada Cloud where each instance has 8 cores,
+For our experiments, we used Compute Canada Cloud where each instance has 8 vCPUs,
 30GB RAM, 10GB bandwidth and is dedicated.
-
-% Histogram
-\subsection{Histogram}
-For our second experiment, we find the frequency of the intensity of the voxel in
-BigBrain and save them as a tuple in a file. In this experiment, the results depend
-on all of the input results (see~\ref{Figure fig:tg-histo}). This allows us to study
-the behavior of the framework when tasks are dependent. Also, this application
-requires data shuffling thus inter worker communication. We decided to omit the Dask
-futures API as it is less realistic for this use case.
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=0.16\textwidth, angle=-90]{images/histogram-task-graph.png}
-    \caption{Task graph for Histogram}\label{fig:tg-histo}
-\end{figure}
-
-% BIDS Example
-\subsection{BIDS Example}
-Our last experiment the BIDS Example algorithm to compare the frameworks.
-% Specify more details and the data set used
-% SECTION TO COMPLETE -- Experience not done yet
-
 
 %% Performance
 \subsection{Experiments}
