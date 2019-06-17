@@ -25,11 +25,6 @@
     "chunks": 30
   },
   {
-    "experiment": "spark_histogram-30chunks",
-    "file": "spark_histogram.py",
-    "chunks": 30
-  },
-  {
     "experiment": "dask-bag_histogram-750chunks",
     "file": "dask-bag_histogram.py",
     "chunks": 750
