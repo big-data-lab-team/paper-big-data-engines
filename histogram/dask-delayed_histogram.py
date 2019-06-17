@@ -7,7 +7,7 @@ from time import time
 import dask
 from dask.distributed import Client
 
-sys.path.append("/nfs/papeSr-big-data-engines")
+sys.path.append("/nfs/paper-big-data-engines/histogram")
 
 
 if __name__ == "__main__":
