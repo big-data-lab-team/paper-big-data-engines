@@ -6,7 +6,7 @@ from time import time
 import dask.bag as db
 from dask.distributed import Client
 
-sys.path.append("/nfs/paper-big-data-engines")
+sys.path.append("/nfs/paper-big-data-engines/histogram")
 
 
 if __name__ == "__main__":
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from histogram.Histogram import calculate_histogram, combine_histogram
+    from Histogram import calculate_histogram, combine_histogram
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     )
 
     histogram = partial_histogram.fold(
-        lambda x: combine_histogram(x, args=args, start=start)
+        lambda x, y: combine_histogram(x, y, args=args, start=start)
     ).compute()
 
     start_time = time() - start

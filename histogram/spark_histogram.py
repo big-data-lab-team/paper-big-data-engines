@@ -5,7 +5,7 @@ from time import time
 
 from pyspark import SparkConf, SparkContext
 
-sys.path.append("/nfs/paper-big-data-engines")
+sys.path.append("/nfs/paper-big-data-engines/histogram")
 
 
 if __name__ == "__main__":
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     sc.addFile("/nfs/paper-big-data-engines/utils.py")
     sc.addFile("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from histogram.Histogram import calculate_histogram, combine_histogram
+    from Histogram import calculate_histogram, combine_histogram
 
     print("Connected")
 

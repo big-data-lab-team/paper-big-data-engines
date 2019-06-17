@@ -7,7 +7,7 @@ from time import time
 import dask
 from dask.distributed import Client
 
-sys.path.append("/nfs/paper-big-data-engines")
+sys.path.append("/nfs/papeSr-big-data-engines")
 
 
 if __name__ == "__main__":
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from histogram.Histogram import calculate_histogram, combine_histogram
+    from Histogram import calculate_histogram, combine_histogram
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
