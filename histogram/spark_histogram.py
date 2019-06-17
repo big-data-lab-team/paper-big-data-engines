@@ -37,7 +37,7 @@ if __name__ == "__main__":
     sc.addFile("/nfs/paper-big-data-engines/utils.py")
     sc.addFile("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from histogram import calculate_histogram, combine_histogram
+    from histogram.Histogram import calculate_histogram, combine_histogram
 
     print("Connected")
 

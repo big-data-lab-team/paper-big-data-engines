@@ -42,7 +42,7 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from histogram import calculate_histogram, combine_histogram
+    from histogram.Histogram import calculate_histogram, combine_histogram
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
