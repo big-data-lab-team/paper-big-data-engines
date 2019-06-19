@@ -5,6 +5,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{textcomp}
+\usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{times}
 \usepackage{siunitx}
@@ -12,11 +13,13 @@
 \usepackage{hyperref}
 \usepackage{algpseudocode}
 \usepackage{algorithm}
+\usepackage{caption}
+\usepackage{subcaption}
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
-\usepackage[caption=false]{subfig}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
 \begin{document}
 
 \title{Comparative study of Dask and Spark for neuroimaging pipelines\\
@@ -195,7 +198,7 @@ image, increments the intensity value of each voxel by 1 for a specified amount 
 iterations, and write the result to an NFS as a NifTI image. Incrementing the data
 reduce the caching effect. This experiment allows us to study the behavior of the
 frameworks when all input are processed independently; i.e.\ each task in the graph
-only depends on the previous one (see Figure~\ref{Figure fig:tg-inc}). This mimic the
+only depends on the previous one (see Figure~\ref{fig:tg-inc}). This mimic the
 behavior of analyzing multiple independent subjects in parallel.
 
 This experiment refers to the implementation of the Spark pipelines purposed
@@ -258,67 +261,55 @@ any value over Dask Delayed in this application.
 \end{figure}
 
 \subsection{Experiment}
+The applications are benchmarked according to up to four parameters
+(Table~\ref{tab:param}):
+
+\textbf{Number of workers:} Varying the numbers of workers helps in assessing the
+scaling of the frameworks in a cluster. Also, it helps in determining the level of
+parallelism of the frameworks.
+
+\textbf{Number of chunks:} Evaluating the frameworks on different amount of chunks
+allows us to understand their behavior with different task size and IO requirements.
+
+\textbf{Number of iterations:} We change the amount of iterations for the
+incrementation~\ref{alg:incrementation} to study the effect of the job size.
+
+\textbf{Sleep delay:} We modify the sleep delay in the
+incrementation~\ref{alg:incrementation} to understand the behavior of task of
+different length.
+
+The baseline for our experiments is: 8 workers, 125 chunks, 10 iterations and 4
+seconds sleep delay.
+
+
+\begin{table}[!b]
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Parameters for the experiments}\label{tab:param}
+    \centering
+    \begin{tabular*}{\columnwidth}{llll}
+    \hline
+                        & Incrementation & Histogram             & BIDS Example          \\ \hline
+    \# of worker        & 1, 2, 4, 8     & 1, 2, 4, 8            & 1, 2, 4, 8            \\
+    \# of chunks        & 30, 125, 750   & 30, 125, 750          & 30, 125, 750          \\
+    \# of iterations    & 1, 10, 100     & \multicolumn{1}{c}{-} & \multicolumn{1}{c}{-} \\
+    Sleep delay {[}s{]} & 1, 4, 16, 64   & \multicolumn{1}{c}{-} & \multicolumn{1}{c}{-} \\ \hline
+    \end{tabular*}
+    \end{table}
+
 
 \subsection{Infrastructure}
-All experiments were performed on Compute Canda Cloud.
+All experiments were performed on Arbutus Cloud Compute Canda. Each node has CentOS
+7.5.1804 as base operating system and have the Linux kernel version
+3.10.0\-862.11.6.el7.x86\_64. The nodes have an Intel Xeon Gold 6130 processor with
+30GB 2666 MHz memory. The networks has a 10GB/s bandwidth. The filesystem is 2TB NFS v4.
 
-
-
-%% Material
-We compare Dask (\textbf{v1.1.4}) and Spark (\textbf{v2.4.0}) based on two metrics
-their scheduling and their makespan performance. All scripts used to perform our
-experiments are available at
-\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines}.
-For our experiments, we used Compute Canada Cloud where each instance has 8 vCPUs,
-30GB RAM, 10GB bandwidth and is dedicated.
-
-%% Performance
-\subsection{Experiments}
-Our experiments have for goal to see how the frameworks react to different
-environments and task types.
-
-%% Incrementation
-%% Node
-Firstly, we vary the number of instances in our cluster environment. We test with 1,
-2, 4, and 8 instances. From this, we can evaluate the level of parallelism offered by
-both frameworks.
-
-%% Iterations
-Secondly, we modify the number of iterations we perform on the increment task between
-the experiment. We use 1, 10 and 100 iterations. This allows the study of the
-schedulers when a different amount of task is to be performed.
-
-%% Sleep delay
-Thirdly, we change the sleep delay in the increment tasks. We fix a 1, 4 and 16 and
-64 seconds of sleep time for each iteration. This allows us to test the effect of
-tasks with different time lengths.
-
-%% Chunks
-Finally, we split the BigBrain in a different number of chunks. We divide it in 30,
-125 and 750 chunks; around 2.5GB, 0.6GB and 0.1GB, respectively. From that, we can
-evaluate the framework with tasks of different size and IO requirements.
-
-%% Baseline
-Our baseline for all experiment is 10 iterations, 4 sleep delay, 125 chunks running
-on 8 instances.
-
-%% Histogram
-For the histogram experiment, we vary the number of instances, as above. We also
-change the number of chunks as above.
-
-%% BIDS Example
-For the BIDS example experiment, we vary the number of instances, again as above.
-
-% Note
-Note that the code implemented might not be optimal. We hope to provide a baseline
-assessment of Dask and Spark.
 
 
 %%%%% RESULTS %%%%%
 \section{Results}
 
 %%% INCREMENTATION %%%
-%% Instances
+%% worker
 \subsection{Experiment 1: Number of instances}
 Figure~\ref{fig:inc_worker}(a) shows that the increase in performance is not
 proportional to the number of workers which differ from what we would expect; it even
@@ -333,17 +324,46 @@ faster than Spark which makes us think it has a better scheduler.
 
 \begin{figure}[!t]
     \centering
-    \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_worker.png}%
-    }
-    
-    \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_worker.png}%
-    }
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_worker.png}%
+        \caption{Incrementation makespan}\label{fig:inc_ms_worker}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_idle_worker.png}%
+        \caption{Incrementation total time}\label{fig:inc_tt_worker}
+    \end{subfigure}
     \caption{125 chunks, 10 iterations, 4 sec.\ sleep delay}\label{fig:inc_worker}
 \end{figure}
 
+% Chunks
+\subsection{Experiment 1: Number of chunks}
+In Figure~\ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because
+Spark has a 2GB limitation in the task size it can compute. Note from
+Figure~\ref{fig:inc_chunk}(b) that the compute time increase when there are more
+chunks. This is expected because the sleep delay is constant throughout this
+experiment and there are more compute tasks when the number of chunks increases. We
+also note that in Figure~\ref{fig:inc_tt_chunk} for 30 chunks the Dask bag API has a
+much lower overhead time. This is because we only calculate the idle time of the used
+core. Dask bag was only using one thread per block in comparison to Dask delayed and
+Dask futures which was offloading the calculations on multiple threads of the same
+worker. From Figure~\ref{fig:inc_chunk} we observe that when the dataset is separated
+in more (smaller) chunks it saves IO time however it increases the overhead by a
+similar amount; the inverse happens when we reduce the number of chunks.
 
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_chunk.png}%
+        \caption{Incrementation makespan}\label{fig:inc_ms_chunk}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_idle_chunk.png}%
+        \caption{Incrementation total time}\label{fig:inc_tt_chunk}
+    \end{subfigure}
+    \caption{10 iterations, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_chunk}
+\end{figure}
 
 %% Iterations
 \subsection{Experiment 1: Number of iterations}
@@ -360,13 +380,15 @@ from the less optimal but faster scheduling brought by Dask futures.
 
 \begin{figure}[!t]
     \centering
-    \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_itr.png}%
-    }
-    
-    \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
-    }
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_itr.png}%
+        \caption{Incrementation makespan}\label{fig:inc_ms_chunk}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
+        \caption{Incrementation total time}\label{fig:inc_tt_chunk}
+    \end{subfigure}
     \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_itr}
 \end{figure}
 
@@ -385,60 +407,33 @@ better than Dask delayed and Dask futures. The opposite happens for the IO time.
     \caption{Distribution of the execution time in seconds for our baseline: 125
     chunks, 4 sec.\ sleep delay, 10 iterations, and 8 workers}\label{tb:inc-sleep}
     \centering
-    \begin{tabular}{llllll}
+    \begin{tabular*}{\columnwidth}{llllll}
     \hline
                  & Read  & Compute & Write & Overhead & Total \\ \hline
     Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
     Dask.bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
     Dask.delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
     Dask.futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
-    \end{tabular}
+    \end{tabular*}
  \end{table}
 
 \begin{figure}[!t]
     \centering
-    \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_sleep.png}%
-    }
-    
-    \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
-    }
-    \caption{125 chunks, 10 iterations, 8 instances}
-    \label{fig:inc_sleep}
-\end{figure}
-
-
-% Chunks
-\subsection{Experiment 1: Number of chunks}
-In Figure~\ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because
-Spark has a 2GB limitation in the task size it can compute. Note from
-Figure~\ref{fig:inc_chunk}(b) that the compute time increase when there are more
-chunks. This is expected because the sleep delay is constant throughout this
-experiment and there are more compute tasks when the number of chunks increases. We
-also note that in Figure~\ref{fig:inc_chunk}(b) for 30 chunks the Dask bag API has a
-much lower overhead time. This is because we only calculate the idle time of the used
-core. Dask bag was only using one thread per block in comparison to Dask delayed and
-Dask futures which was offloading the calculations on multiple threads of the same
-worker. From Figure~\ref{fig:inc_chunk} we observe that when the dataset is separated
-in more (smaller) chunks it saves IO time however it increases the overhead by a
-similar amount; the inverse happens when we reduce the number of chunks.
-
-\begin{figure}[!t]
-    \centering
-    \subfloat[Incrementation makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_chunk.png}%
-    }
-    
-    \subfloat[Incrementation total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/inc_idle_chunk.png}%
-    }
-    \caption{10 iterations, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_chunk}
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_sleep.png}%
+        \caption{Incrementation makespan}\label{fig:inc_ms_chunk}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
+        \caption{Incrementation total time}\label{fig:inc_tt_chunk}
+    \end{subfigure}
+    \caption{125 chunks, 10 iterations, 8 instances}\label{fig:inc_sleep}
 \end{figure}
 
 %% Baseline gantt chart
 \subsection{Experimentation 1: Baseline timeline}
-From Table~\ref{tb:inc-base} and Figure~\ref{fig:inc_gantt}, the frameworks have
+From Table~\ref{tb:inc_base} and Figure~\ref{fig:inc_gantt}, the frameworks have
 similar makespan however the time spend for each type of task differs significantly.
 Spark tends to spend more time than other frameworks for IO however it has a much
 lower overhead. Dask delayed and futures have the lowest IO time but a much higher
@@ -448,38 +443,41 @@ approximately the same for all frameworks.
 \begin{table}[!t]
     \renewcommand{\arraystretch}{1.3}
     \caption{Distribution of the execution time in seconds for our baseline: 125
-    chunks, 4 sec.\ sleep delay, 10 iterations, and 8 workers}\label{tb:inc-base}
+    chunks, 4 sec.\ sleep delay, 10 iterations, and 8 workers}\label{tb:inc_base}
     \centering
-    \begin{tabular}{llllll}
+    \begin{tabular*}{\columnwidth}{llllll}
     \hline
                     & Read  & Compute & Write & Overhead & Total \\ \hline
     Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
     Dask.bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
     Dask.delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
     Dask.futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
-    \end{tabular}
+    \end{tabular*}
  \end{table}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
     \centering
-    \subfloat[Spark execution timeline]{%
-      \includegraphics[clip,width=\columnwidth]{images/spark_inc_baseline_gantt.png}%
-    }
-
-    \subfloat[Dask bag execution timeline]{%
-      \includegraphics[clip,width=\columnwidth]{images/Dask_bag_inc_baseline_gantt.png}%
-    }
-
-    \subfloat[Dask delayed execution timeline]{%
-      \includegraphics[clip,width=\columnwidth]{images/Dask_delayed_inc_baseline_gantt.png}%
-    }
-    
-    \subfloat[Dask futures execution timeline]{%
-      \includegraphics[clip,width=\columnwidth]{images/Dask_futures_inc_baseline_gantt.png}%
-    }
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/spark_inc_baseline_gantt.png}
+        \caption{Spark execution timeline}\label{fig:inc_spark_gantt}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/Dask_bag_inc_baseline_gantt.png}%
+        \caption{Dask bag execution timeline}\label{fig:inc_dask_bag_gantt}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/Dask_delayed_inc_baseline_gantt.png}%
+        \caption{Dask delayed execution timeline}\label{fig:inc_dask_delayed_gantt}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/Dask_futures_inc_baseline_gantt.png}%
+        \caption{Dask futures execution timeline}\label{fig:inc_dask_futures_gantt}
+    \end{subfigure}
     \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}
-    \label{fig:inc_gantt}
-\end{figure}
+\end{figure*}
 
 
 %%% HISTOGRAM %%%
@@ -487,28 +485,32 @@ approximately the same for all frameworks.
 
 \begin{figure}[!t]
     \centering
-    \subfloat[Histogram makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/histo_instance.png}%
-    }
-    
-    \subfloat[Histogram total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/histo_idle_instances.png}%
-    }
-    \caption{8 instances}\label{fig:histo_wroker}
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_instance.png}%
+        \caption{Histogram makespan}\label{fig:histo_ms_worker}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_idle_instances.png}%
+        \caption{Histogram total time}\label{fig:histo_tt_worker}
+    \end{subfigure}
+    \caption{125 chunks}
 \end{figure}
 
 \subsection{Experiment 2: Number of chunks}
 
 \begin{figure}[!t]
     \centering
-    \subfloat[Histogram makespan]{%
-      \includegraphics[clip,width=\columnwidth]{images/histo_splits.png}%
-    }
-    
-    \subfloat[Histogram total time]{%
-      \includegraphics[clip,width=\columnwidth]{images/histo_idle_splits.png}%
-    }
-    \caption{10 iterations, 4 sec.\ sleep delay, 8 instances}\label{fig:histo_chunk}
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_splits.png}%
+        \caption{Histogram makespan}\label{fig:histo_ms_chunk}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_idle_splits.png}%
+        \caption{Histogram total time}\label{fig:histo_tt_chunk}
+    \end{subfigure}
+    \caption{8 workers}
 \end{figure}
 
 %%% BIDS EXAMPLE %%%
