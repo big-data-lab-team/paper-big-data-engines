@@ -65,11 +65,11 @@ our pipelines to the framework. Also, theoretically, it leads to performance dec
 
 % Approach
 We propose to use Dask since it provides native Python parallelism to pipelines while
-providing support to familiar API from Python's scientific ecosystem. Unfortunately,
-there are few comparisons between Spark and Dask; especially in neuroimaging.
-Moreover, these studies were done when Dask was still an immature framework which
-makes those studies unfair nowadays. This is our motivation to compare the latest
-version of Dask with Spark.
+providing support to familiar API from the Python's scientific ecosystem.
+Unfortunately, there are few comparisons between Spark and Dask; especially in
+neuroimaging. Moreover, these studies were done when Dask was still an immature
+framework which makes those studies unfair nowadays. This is our motivation to
+compare the latest version of Dask with Spark.
 % Methods (one sentence)
 To evaluate the frameworks, we focus on their performance and their scheduler.
 
@@ -106,11 +106,11 @@ scheduler to perform more optimizations which makes it well suited for neuroimag
 analysis that often requires the usage of a pipeline with multiple steps. Though,
 Spark's code base is in Scala which theoretically can lead to slow down in execution
 due to a required serialization. Moreover, while Spark's API is flexible and allows
-most implementations, it differs from the ones seen in Python's ecosystem.
+most implementations, it differs from the ones seen in the Python's ecosystem.
 
 % Dask
 On the other hand, Dask was created with the purpose of natively parallelize Python
-pipelines while keeping the syntax of familiar API from Python's scientific
+pipelines while keeping the syntax of familiar API from the Python's scientific
 ecosystem. However, Dask is still a young framework with work to be done; it's API
 does not completely replicate the library it supports. While its lower-level API
 allows the implementation of more complex algorithms it sacrifices a layer of
@@ -123,11 +123,11 @@ Dask was immature at the time and a lot of change was brought to the framework.
 Therefore we think it is valuable to re-compare it with Spark.
 
 %% Dask API
-The Dask APIs we decide to use for our comparison are Dask bag, delayed and futures.
-Dask bag offers an easy API to parallelize data. Dask delayed offer a lower-level API
+The Dask APIs we decide to use for our comparison are Dask Bag, Delayed and Futures.
+Dask Bag offers an easy API to parallelize data. Dask Delayed offer a lower-level API
 that offers more flexibility; this is good to implement more complex tasks that do
-not fit in the Dask bag framework. Dask futures is a real-time API. Both Dask bag and
-delayed apply lazy evaluation to tasks while futures trigger them directly.
+not fit in the Dask Bag framework. Dask Futures is a real-time API. Both Dask Bag and
+Delayed apply lazy evaluation to tasks while Futures trigger them directly.
 
 % Methods used (summary)
 The project aims to compare the state-of-the-art general-purpose framework Spark with
@@ -148,42 +148,43 @@ neuroimaging pipelines.
 For all our experiments, we used Spark v2.4.0 and Dask v1.1.4.
 
 \subsubsection{PySpark RDD~\cite{spark-rdd}} Spark is a general-purpose Big Data
-framework. It provides in-memory computing, data locality and lazy evaluation. Spark
-abstracts resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant. Its
-high-level API provides optimizations for transformations applied data. Since
-Spark is written in Scala, this optimization is lessen because it requires a
-serialization from Python to Java. The API offered by Spark is flexible and suits most
-problems however it differs from Python ecosystem. The standalone scheduler is used for
-our experiment. It has a LIFO policy.
+framework. It provides in-memory computing, data locality, and lazy evaluation. Spark
+abstracts resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant.
+Its high-level API provides optimizations for transformations applied data. Since
+Spark is written in Scala, this optimization is lessened because it requires a
+serialization from Python to Java. The API offered by Spark is flexible and suits
+most problems however it differs from the Python ecosystem. The standalone scheduler
+is used for our experiment. It has a LIFO policy.
 
 \subsubsection{Dask Bag~\cite{dask-bag}} Dask Bag is one of the high-level API
-offered by Dask. Like Spark, it provides in-memory computing, data locality and lazy
-evaluation however it does not have fault resilience. Fundamently, it is parallized
-lists. Dask Bag parallelizes computations of large collection of generic python
-objects~\cite{dask-bag}. Also, it offers optimized algorithms that mimic most of the
-toolz~\cite{toolz} library. Our experiment use the Dask Distributed~\cite{dask-distributed}
-scheduler. It has a LIFO policy. In theory it should speed-up the pipeline excution
-by finishing a branch of task computations before starting new ones.
+offered by Dask. Like Spark, it provides in-memory computing, data locality, and lazy
+evaluation however it does not have fault resilience. Fundamentally, it is
+parallelized lists. Dask Bag parallelizes computations across a large collection of
+generic python objects~\cite{dask-bag}. Also, it offers optimized algorithms that
+mimic most of the toolz~\cite{toolz} library. Our experiment uses the Dask
+Distributed~\cite{dask-distributed} scheduler. It has a LIFO policy. In theory, it
+should speed-up the pipeline execution by finishing a branch of task computations
+before starting new ones.
 
 \subsubsection{Dask Delayed~\cite{dask-delayed}} Dask Delayed is a low-level API. It
 does not offer the optimized algorithm as the high-level APIs however it allows the
-user to parallelize custom function that do not fit in the array, dataframe or
-MapReduce framework. This is perfect for more complex function which could easily be
-parallelized. Like Dask Bag, it offers in-memory computing, data locality and lack
-fault resilience. The Dask Distributed scheduler is used.
+user to parallelize custom function that does not fit in the array, dataframe or
+MapReduce framework. This is perfect for the more complex functions which could
+easily be parallelized. Like Dask Bag, it offers in-memory computing, data locality
+and lacks fault resilience. The Dask Distributed scheduler is used.
 
 \subsubsection{Dask Futures~\cite{dask-futures}} Dask Futures is also a low-level API
-from Dask. Like the other Dask APIs, it benifits of in-memory computing and data
-locatlity. However, unlike the other APIs, Dask Futures triggers computation
+from Dask. Like the other Dask APIs, it benefits of in-memory computing and data
+locality. However, unlike the other APIs, Dask Futures triggers computation
 immediately. When the user tries to gather data if available it will return the
 result otherwise it will block until the computation is done. Again, the Dask
 Distributed scheduler is used.
 
 
 \subsection{Dataset}
-For the incrementation and histogram experiment the BigBrain~\cite{Amunts:13} is
+For the incrementation and histogram experiment, the BigBrain~\cite{Amunts:13} is
 used. It is a three-dimensional image of a brain scanned at \SI{40}{\micro\metre}.
-The data set store the intensity of each voxel and their position. This results in a
+The dataset stores the intensity of each voxel and its position. This results in a
 75GB image. It is stored in 125 chunks in the \textit{MINC}~\cite{minc} format. To
 perform our experiment we convert the chunks into the \textit{NifTI}~\cite{nifti}
 format. Also, using \textit{sam}~\cite{sam} we combine the chunks and split them into
@@ -195,10 +196,10 @@ format. Also, using \textit{sam}~\cite{sam} we combine the chunks and split them
 As our first experiment to benchmark the frameworks, we used a simple incrementation
 pipeline (see Algorithm~\ref{alg:incrementation}). It reads chunks from the BigBrain
 image, increments the intensity value of each voxel by 1 for a specified amount of
-iterations, and write the result to an NFS as a NifTI image. Incrementing the data
+iterations, and writes the result to an NFS as a NifTI image. Incrementing the data
 reduce the caching effect. This experiment allows us to study the behavior of the
-frameworks when all input are processed independently; i.e.\ each task in the graph
-only depends on the previous one (see Figure~\ref{fig:tg-inc}). This mimic the
+frameworks when all inputs are processed independently; i.e.\ each task in the graph
+only depends on the previous one (see Figure~\ref{fig:tg-inc}). This mimics the
 behavior of analyzing multiple independent subjects in parallel.
 
 This experiment refers to the implementation of the Spark pipelines purposed
@@ -229,14 +230,14 @@ in Ref.~\cite{Hayot-Sasson:17}.
 \end{figure}
 
 \subsubsection{\textbf{Histogram}}
-Our second experiment consist to calculate the histogram of the intensity of the
+Our second experiment consists to calculate the histogram of the intensity of the
 voxel in BigBrain (see Algorithm~\ref{alg:histogram}). It reads the images from the
-nfs, calculate inividual image frequency, aggregate the images frequency together,
-and write the result to a file. In this experiment, the result depends on all the
-input (see Fig.~\ref{fig:tg-histo}). This allows to study the behavior of the
-frameworks when tasks are dependent. Also, this application requires data shuffling
-thus inter-worker communication. We decided to omit Dask Futures as it does not had
-any value over Dask Delayed in this application.
+NFS, calculate individual image frequency, aggregate the frequency of the images
+together, and write the result to a file. In this experiment, the result depends on
+all the input (see Fig.~\ref{fig:tg-histo}). This allows the study of the behavior of
+the frameworks when tasks are dependent. Also, this application requires data
+shuffling thus inter-worker communication. We decided to omit Dask Futures as it does
+not have any value over Dask Delayed in this application.
 
 \begin{algorithm}[!t]
     \caption{Histogram}\label{alg:histogram}
@@ -266,23 +267,23 @@ The applications are benchmarked according to up to four parameters
 
 \textbf{Number of workers:} Varying the numbers of workers helps in assessing the
 scaling of the frameworks in a cluster. Also, it helps in determining the level of
-parallelism of the frameworks.
+the parallelism of the frameworks.
 
-\textbf{Number of chunks:} Evaluating the frameworks on different amount of chunks
+\textbf{Number of chunks:} Evaluating the frameworks on a different amount of chunks
 allows us to understand their behavior with different task size and IO requirements.
 
-\textbf{Number of iterations:} We change the amount of iterations for the
-incrementation~\ref{alg:incrementation} to study the effect of the job size.
+\textbf{Number of iterations:} We change the number of iterations for the
+incrementation~\ref{alg:incrementation} to study the effect of the job length.
 
 \textbf{Sleep delay:} We modify the sleep delay in the
-incrementation~\ref{alg:incrementation} to understand the behavior of task of
-different length.
+incrementation~\ref{alg:incrementation} to understand the behavior of different task
+lengths.
 
 The baseline for our experiments is: 8 workers, 125 chunks, 10 iterations and 4
 seconds sleep delay.
 
 
-\begin{table}[!b]
+\begin{table}[!t]
     \renewcommand{\arraystretch}{1.3}
     \caption{Parameters for the experiments}\label{tab:param}
     \centering
@@ -299,9 +300,10 @@ seconds sleep delay.
 
 \subsection{Infrastructure}
 All experiments were performed on Arbutus Cloud Compute Canda. Each node has CentOS
-7.5.1804 as base operating system and have the Linux kernel version
+7.5.1804 as the base operating system and have the Linux kernel version
 3.10.0\-862.11.6.el7.x86\_64. The nodes have an Intel Xeon Gold 6130 processor with
-30GB 2666 MHz memory. The networks has a 10GB/s bandwidth. The filesystem is 2TB NFS v4.
+30GB 2666 MHz memory. The network has a 10GB/s bandwidth. The filesystem is 2TB NFS
+v4.
 
 
 
@@ -310,19 +312,20 @@ All experiments were performed on Arbutus Cloud Compute Canda. Each node has Cen
 
 %%% INCREMENTATION %%%
 %% worker
-\subsection{Experiment 1: Number of instances}
-Figure~\ref{fig:inc_worker}(a) shows that the increase in performance is not
-proportional to the number of workers which differ from what we would expect; it even
-decrease when we reach 8 workers. This is explained by an increase in IO overhead
-correlated to the number of workers (Figure~\ref{fig:inc_worker}(b)), as more worker
-access the NFS simultaneously it increases the stress put on the system which results
-in bottleneck, errors and slow down.
+\subsection{Experiment 1: Number of workers}
+Figure~\ref{fig:inc_ms_worker} shows the makespan for the incrementation algorithm on
+the y-axis and the number of workers on the x-axis; the color represents the
+different frameworks. Overall, there is no substantial makespan difference between
+the frameworks. Also, the increase in performance is not proportional to the number
+of workers; performance even decreases when we reach 8 workers.
 
-On the one hand, Dask seems better when using a single worker. On the other hand,
-Spark makespan decreases faster for a higher level of parallelism. Dask is constantly
-faster than Spark which makes us think it has a better scheduler.
+In Figure~\ref{fig:inc_tt_worker}, the y-axis shows the total execution time of the
+incrementation application. The hatch indicates that the time is spent for: read,
+compute, write, and overhead. Again, the color represents the frameworks. The
+computing time stays similar when the number of workers increases. However, the IO
+time and overhead increase proportionally to the number of workers.
 
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_worker.png}%
@@ -338,18 +341,23 @@ faster than Spark which makes us think it has a better scheduler.
 
 % Chunks
 \subsection{Experiment 1: Number of chunks}
-In Figure~\ref{fig:inc_chunk} Spark is not compared for 30 chunks. This is because
-Spark has a 2GB limitation in the task size it can compute. Note from
-Figure~\ref{fig:inc_chunk}(b) that the compute time increase when there are more
-chunks. This is expected because the sleep delay is constant throughout this
-experiment and there are more compute tasks when the number of chunks increases. We
-also note that in Figure~\ref{fig:inc_tt_chunk} for 30 chunks the Dask bag API has a
-much lower overhead time. This is because we only calculate the idle time of the used
-core. Dask bag was only using one thread per block in comparison to Dask delayed and
-Dask futures which was offloading the calculations on multiple threads of the same
-worker. From Figure~\ref{fig:inc_chunk} we observe that when the dataset is separated
-in more (smaller) chunks it saves IO time however it increases the overhead by a
-similar amount; the inverse happens when we reduce the number of chunks.
+In Figure~\ref{fig:inc_chunk}, Spark is not compared for 30 chunks. This is because
+Spark has a 2GB limitation in the task size it can compute.
+
+The Figure~\ref{fig:inc_ms_chunk} shows the makespan evolution when varying the
+number of chunks. The compute time increase when there are more chunks. This is
+because the sleep delay is constant throughout this experiment and there are more
+compute tasks when the number of chunks increases.
+
+In Figure~\ref{fig:inc_tt_chunk}, the total execution time of each function is shown.
+For 30 chunks the Dask Bag API has a much lower overhead time. This is because we
+only calculate the idle time of the used core. Dask Bag was only using one thread per
+block in comparison to Dask Delayed and Dask Futures which was offloading a block
+calculations on multiple threads of the same worker. Furthermore, the variance of the
+overhead increases proportionally to the number of chunks. Also, the IO time reduces
+with more chunks however the overhead time increase by a similar amount. This is not
+observed for 30 chunks as the workers are not used at full capacity; i.e.\ some
+threads are idle.
 
 \begin{figure}[!t]
     \centering
@@ -367,95 +375,115 @@ similar amount; the inverse happens when we reduce the number of chunks.
 
 %% Iterations
 \subsection{Experiment 1: Number of iterations}
-In Figure~\ref{fig:inc_itr}, Spark and the Dask bag API are equivalent in terms of
-performance. The Dask delayed API seems to perform well with a low amount of task but
-grow faster the Spark and Dask bag. We think this is because Dask delayed often
-schedule a block on a different thread of the same worker which causes small delays
-every time due to inter-thread data communication. This is good when there are fewer
-tasks as is make the IO between blocks go out of sync hence lowering the IO
-bottleneck however as the number of tasks increases those small delays become
-significant. The Dask futures API seems to outperform all the other APIs but this is
-most likely because the tasks are not interdependent thus this application benefits
-from the less optimal but faster scheduling brought by Dask futures.
+Figure~\ref{fig:inc_ms_itr} shows the makespan of the application for the various
+number of iterations. Spark and the Dask Bag API are equivalent in terms of
+performance. The Dask Delayed API is slightly faster with few iterations (tasks) but
+it has a similar makespan to Spark and Dask Bag when the number of iterations
+increases. Overall, Dask Futures seems to be faster but the difference is not
+substantial.
+
+In Figure~\ref{fig:inc_tt_itr}, the execution time of the function type is shown. The
+compute time increase proportionally to the number of iterations. This is because
+each computing task has a constant sleep delay. Also, the overhead increases when the
+number of iterations (tasks) increases while the IO time decreases; however this is
+not substantial.
+
+% We think this is because Dask Delayed often
+% schedule a block on a different thread of the same worker which causes small delays
+% every time due to inter-thread data communication. This is good when there are fewer
+% tasks as is make the IO between blocks go out of sync hence lowering the IO
+% bottleneck however as the number of tasks increases those small delays become
+% significant.
+
+%  The Dask Futures API seems to outperform all the other APIs but this is
+% most likely because the tasks are not interdependent thus this application benefits
+% from the less optimal but faster scheduling brought by Dask Futures.
 
 \begin{figure}[!t]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_itr.png}%
-        \caption{Incrementation makespan}\label{fig:inc_ms_chunk}
+        \caption{Incrementation makespan}\label{fig:inc_ms_itr}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
-        \caption{Incrementation total time}\label{fig:inc_tt_chunk}
+        \caption{Incrementation total time}\label{fig:inc_tt_itr}
     \end{subfigure}
-    \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_itr}
+    \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}
 \end{figure}
 
 
 %% Sleep time
 \subsection{Experiment 1: Sleep delay}
-As Figure~\ref{fig:inc_sleep}(b) and Table~\ref{tb:inc-sleep} shows Spark has the
-smallest overhead all around and it is also the one that reduces the most with longer
-task length. In term of overhead, Dask bag trailing slightly behind Spark although is
-better than Dask delayed and Dask futures. The opposite happens for the IO time.
-% Not sure what to conclude.
+Figure~\ref{fig:inc_ms_sleep} shows the makespan of the incrementation algorithm for
+different sleep delays. Spark is initially slower than the Dask APIs, however, it is
+because faster when increasing the sleep time. Also, within the Dask APIs, Dask Bag
+is slower than the other two but it is not considerable.
 
-%%%% CHANGE NUMBER
+Figure~\ref{fig:inc_tt_sleep} shows the execution time for each type of function. On
+one hand, Spark has the smallest overhead. Table~\ref{tab:inc_sleep_overhead} shows
+that it is substantial; especially with a 64 seconds sleep delay. On the other hand,
+Spark has a high IO time. In contrast, Dask Delayed and Futures have the largest
+overhead time but the smallest IO time. Then, Dask Bag stands in the middle for both
+overhead and IO time.
+
 \begin{table}[!t]
-    \renewcommand{\arraystretch}{1.3}
-    \caption{Distribution of the execution time in seconds for our baseline: 125
-    chunks, 4 sec.\ sleep delay, 10 iterations, and 8 workers}\label{tb:inc-sleep}
-    \centering
-    \begin{tabular*}{\columnwidth}{llllll}
-    \hline
-                 & Read  & Compute & Write & Overhead & Total \\ \hline
-    Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
-    Dask.bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
-    Dask.delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
-    Dask.futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
-    \end{tabular*}
+    \caption{Function time for the sleep experiment}
+    \begin{subtable}[b]{\columnwidth}
+        \renewcommand{\arraystretch}{1.3}
+        \caption{Overhead time in second}\label{tab:inc_sleep_overhead}
+        \centering
+        \begin{tabular}{lllll}
+        \hline
+                     & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
+        Spark        & 14992  & 17076  & 16069   & 9769    \\
+        Dask.Bag     & 20690  & 21388  & 17759   & 18720   \\
+        Dask.Delayed & 27481  & 26199  & 22080   & 24624   \\
+        Dask.Futures & 27069  & 27984  & 23538   & 24762   \\ \hline
+        \end{tabular}
+    \end{subtable}
+    \vskip 0.2cm
+    \begin{subtable}[b]{\columnwidth}
+        \renewcommand{\arraystretch}{1.3}
+        \caption{IO time in second}\label{tab:inc_sleep_io}
+        \centering
+        \begin{tabular}{lllll}
+        \hline
+                     & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
+        Spark        & 63622  & 57144  & 51070   & 57078   \\
+        Dask.Bag     & 54630  & 52312  & 53743   & 53612   \\
+        Dask.Delayed & 45239  & 44142  & 45133   & 46198   \\
+        Dask.Futures & 46537  & 43161  & 44749   & 45846   \\ \hline
+        \end{tabular}
+    \end{subtable}
  \end{table}
 
-\begin{figure}[!t]
+
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_sleep.png}%
-        \caption{Incrementation makespan}\label{fig:inc_ms_chunk}
+        \caption{Incrementation makespan}\label{fig:inc_ms_sleep}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
-        \caption{Incrementation total time}\label{fig:inc_tt_chunk}
+        \caption{Incrementation total time}\label{fig:inc_tt_sleep}
     \end{subfigure}
-    \caption{125 chunks, 10 iterations, 8 instances}\label{fig:inc_sleep}
+    \caption{125 chunks, 10 iterations, 8 instances}
 \end{figure}
 
 %% Baseline gantt chart
 \subsection{Experimentation 1: Baseline timeline}
-From Table~\ref{tb:inc_base} and Figure~\ref{fig:inc_gantt}, the frameworks have
+From Table~\ref{tab:inc_base} and Figure, the frameworks have
 similar makespan however the time spend for each type of task differs significantly.
 Spark tends to spend more time than other frameworks for IO however it has a much
-lower overhead. Dask delayed and futures have the lowest IO time but a much higher
-overhead. Dask bag stands in the middle for both IO and overhead. Compute time is
+lower overhead. Dask Delayed and Futures have the lowest IO time but a much higher
+overhead. Dask Bag stands in the middle for both IO and overhead. Compute time is
 approximately the same for all frameworks.
 
-\begin{table}[!t]
-    \renewcommand{\arraystretch}{1.3}
-    \caption{Distribution of the execution time in seconds for our baseline: 125
-    chunks, 4 sec.\ sleep delay, 10 iterations, and 8 workers}\label{tb:inc_base}
-    \centering
-    \begin{tabular*}{\columnwidth}{llllll}
-    \hline
-                    & Read  & Compute & Write & Overhead & Total \\ \hline
-    Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
-    Dask.bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
-    Dask.delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
-    Dask.futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
-    \end{tabular*}
- \end{table}
-
-\begin{figure*}[!t]
+\begin{figure*}[!htb]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/spark_inc_baseline_gantt.png}
@@ -464,21 +492,35 @@ approximately the same for all frameworks.
     \hfill
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/Dask_bag_inc_baseline_gantt.png}%
-        \caption{Dask bag execution timeline}\label{fig:inc_dask_bag_gantt}
+        \caption{Dask Bag execution timeline}\label{fig:inc_dask_bag_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/Dask_delayed_inc_baseline_gantt.png}%
-        \caption{Dask delayed execution timeline}\label{fig:inc_dask_delayed_gantt}
+        \caption{Dask Delayed execution timeline}\label{fig:inc_dask_delayed_gantt}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/Dask_futures_inc_baseline_gantt.png}%
-        \caption{Dask futures execution timeline}\label{fig:inc_dask_futures_gantt}
+        \caption{Dask Futures execution timeline}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
     \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}
 \end{figure*}
 
+\begin{table}[!b]
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Distribution of the execution time in second: 125 chunks, 4 sec.\ sleep
+    delay, 10 iterations, and 8 workers}\label{tab:inc_base}
+    \centering
+    \begin{tabular*}{\columnwidth}{llllll}
+    \hline
+                 & Read  & Compute & Write & Overhead & Total \\ \hline
+    Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
+    Dask Bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
+    Dask Delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
+    Dask Futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
+    \end{tabular*}
+ \end{table}
 
 %%% HISTOGRAM %%%
 \subsection{Experiment 2: Number of instances}
@@ -550,7 +592,6 @@ chunks are of equal size.
 
 We would like to thanks Compute Canada Cloud for the infrastructure.
 
-\section*{References}
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,reference}
 
