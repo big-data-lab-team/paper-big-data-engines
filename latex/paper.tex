@@ -150,7 +150,7 @@ For all our experiments, we used Spark v2.4.0 and Dask v1.1.4.
 \subsubsection{PySpark RDD~\cite{spark-rdd}} Spark is a general-purpose Big Data
 framework. It provides in-memory computing, data locality, and lazy evaluation. Spark
 abstracts resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant.
-Its high-level API provides optimizations for transformations applied data. Since
+Its high-level API provides optimization for transformations applied on data. Since
 Spark is written in Scala, this optimization is lessened because it requires a
 serialization from Python to Java. The API offered by Spark is flexible and suits
 most problems however it differs from the Python ecosystem. The standalone scheduler
@@ -170,8 +170,8 @@ before starting new ones.
 does not offer the optimized algorithm as the high-level APIs however it allows the
 user to parallelize custom function that does not fit in the array, dataframe or
 MapReduce framework. This is perfect for the more complex functions which could
-easily be parallelized. Like Dask Bag, it offers in-memory computing, data locality
-and lacks fault resilience. The Dask Distributed scheduler is used.
+potentially be parallelized. Like Dask Bag, it offers in-memory computing, data
+locality and lacks fault resilience. The Dask Distributed scheduler is also used.
 
 \subsubsection{Dask Futures~\cite{dask-futures}} Dask Futures is also a low-level API
 from Dask. Like the other Dask APIs, it benefits of in-memory computing and data
@@ -320,7 +320,7 @@ the frameworks. Also, the increase in performance is not proportional to the num
 of workers; performance even decreases when we reach 8 workers.
 
 In Figure~\ref{fig:inc_tt_worker}, the y-axis shows the total execution time of the
-incrementation application. The hatch indicates that the time is spent for: read,
+incrementation application. The hatch indicates the total time spent for: read,
 compute, write, and overhead. Again, the color represents the frameworks. The
 computing time stays similar when the number of workers increases. However, the IO
 time and overhead increase proportionally to the number of workers.
@@ -418,8 +418,8 @@ not substantial.
 \subsection{Experiment 1: Sleep delay}
 Figure~\ref{fig:inc_ms_sleep} shows the makespan of the incrementation algorithm for
 different sleep delays. Spark is initially slower than the Dask APIs, however, it is
-because faster when increasing the sleep time. Also, within the Dask APIs, Dask Bag
-is slower than the other two but it is not considerable.
+faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
+slower than the other two but it is not considerable.
 
 Figure~\ref{fig:inc_tt_sleep} shows the execution time for each type of function. On
 one hand, Spark has the smallest overhead. Table~\ref{tab:inc_sleep_overhead} shows
