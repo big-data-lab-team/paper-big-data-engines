@@ -457,10 +457,10 @@ overhead and IO time.
         Dask.Futures & 46537  & 43161  & 44749   & 45846   \\ \hline
         \end{tabular}
     \end{subtable}
+    \vspace{-3mm}
  \end{table}
 
-
-\begin{figure}[!b]
+\begin{figure}[!t]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_sleep.png}%
@@ -476,12 +476,21 @@ overhead and IO time.
 
 %% Baseline gantt chart
 \subsection{Experimentation 1: Baseline timeline}
-From Table~\ref{tab:inc_base} and Figure, the frameworks have
-similar makespan however the time spend for each type of task differs significantly.
-Spark tends to spend more time than other frameworks for IO however it has a much
-lower overhead. Dask Delayed and Futures have the lowest IO time but a much higher
-overhead. Dask Bag stands in the middle for both IO and overhead. Compute time is
-approximately the same for all frameworks.
+Figure\ref{fig:inc_gantt} shows the tasks timeline for each worker thread. On the
+x-axis is the time in seconds and on the y-axis is the workers and their threads. The
+color represents the type of different tasks; note that the color differs from one
+graph to another. The first section of reading tasks is much larger than the
+following ones. This is because, initially, the NFS is saturated by the number of
+workers accessing it. Also, a substantial amount of overhead happens near the IO
+tasks. Moreover, for the computing tasks, there is more overhead for the latter tasks.
+
+% The frameworks have similar makespan however the time spend for each type of
+% task differs considerably (see Table~\ref{tab:inc_base}). Spark tends to spend more
+% time than other frameworks for IO however it has a much lower overhead. Dask Delayed
+% and Futures have the lowest IO time but a much higher overhead. Dask Bag stands in
+% the middle for both IO and overhead. Compute time is approximately the same for all
+% frameworks. Apart from the first IO section, there is a large amount of ovehead
+% everytime time IO is performed. This is true for all frameworks.
 
 \begin{figure*}[!htb]
     \centering
@@ -504,23 +513,23 @@ approximately the same for all frameworks.
         \includegraphics[clip,width=\columnwidth]{images/Dask_futures_inc_baseline_gantt.png}%
         \caption{Dask Futures execution timeline}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}
+    \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_gantt}
 \end{figure*}
 
-\begin{table}[!b]
-    \renewcommand{\arraystretch}{1.3}
-    \caption{Distribution of the execution time in second: 125 chunks, 4 sec.\ sleep
-    delay, 10 iterations, and 8 workers}\label{tab:inc_base}
-    \centering
-    \begin{tabular*}{\columnwidth}{llllll}
-    \hline
-                 & Read  & Compute & Write & Overhead & Total \\ \hline
-    Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
-    Dask Bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
-    Dask Delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
-    Dask Futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
-    \end{tabular*}
- \end{table}
+% \begin{table}[!b]
+%     \renewcommand{\arraystretch}{1.3}
+%     \caption{Distribution of the execution time in second: 125 chunks, 4 sec.\ sleep
+%     delay, 10 iterations, and 8 workers}\label{tab:inc_base}
+%     \centering
+%     \begin{tabular*}{\columnwidth}{llllll}
+%     \hline
+%                  & Read  & Compute & Write & Overhead & Total \\ \hline
+%     Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
+%     Dask Bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
+%     Dask Delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
+%     Dask Futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
+%     \end{tabular*}
+%  \end{table}
 
 %%% HISTOGRAM %%%
 \subsection{Experiment 2: Number of instances}
