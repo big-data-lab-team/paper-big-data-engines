@@ -1,6 +1,5 @@
+from collections import defaultdict
 from time import time
-
-import numpy as np
 
 from utils import benchmark
 
@@ -10,10 +9,9 @@ def calculate_histogram(arr, *, args, start, filename):
 
     arr = arr.flatten('F')
 
-    y = np.bincount(arr)
-    ii = np.nonzero(y)[0]
-    out = np.vstack((ii, y[ii])).T
-    histogram = {k: v for k, v in out}
+    histogram = defaultdict()
+    for x in arr:
+        histogram[x] += 1
 
     end_time = time() - start
 
