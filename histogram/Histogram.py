@@ -9,7 +9,7 @@ def calculate_histogram(arr, *, args, start, filename):
 
     arr = arr.flatten('F')
 
-    histogram = defaultdict()
+    histogram = defaultdict(int)
     for x in arr:
         histogram[x] += 1
 
