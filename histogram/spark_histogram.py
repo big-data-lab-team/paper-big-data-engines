@@ -46,9 +46,7 @@ if __name__ == "__main__":
     paths = sc.parallelize(paths, len(paths))
     img_rdd = paths.map(lambda p: read_img(p, start=start, args=args))
 
-    voxels = img_rdd.map(lambda x: (x[0], x[1].flatten("F")))
-
-    partial_histogram = voxels.map(
+    partial_histogram = img_rdd.map(
         lambda x: calculate_histogram(x[1], args=args, start=start, filename=x[0])
     )
 
