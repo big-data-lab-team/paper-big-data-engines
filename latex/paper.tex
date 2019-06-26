@@ -108,6 +108,7 @@ hard to debug~\cite{Mehta:17}.
 % What issues your work addresses
 Dask was immature at the time and a lot of change was brought to the framework.
 Therefore we think it is valuable to re-compare it with Spark.
+\TG{Cite~\cite{hayot2019performance}}
 
 %% Dask API
 The Dask APIs we decide to use for our comparison are Dask Bag, Delayed and Futures.
@@ -134,7 +135,7 @@ neuroimaging pipelines.
 \subsection{Engines}
 
 \subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data
-framework. It provides in-memory computing, data locality, and lazy
+engine. It provides in-memory computing, data locality, and lazy
 evaluation. Spark's main data structure, the Resilient Distributed Dataset
 (RDD)~\cite{RDD}, is a fault-tolerant and parallel collection of data
 elements. 
@@ -144,8 +145,8 @@ Spark's core is written in Scala, but it also has an R and a Python API
 called PySpark. We used PySpark, given the popularity of Python in
 neuroscience, although the serialization cost of Python objects to Scala
 might be a substantial source of overhead. We used Spark's default
-scheduler, Spark standalone, although YARN~\cite{yarn} and
-Mesos~\cite{mesos} are also available. In the Spark standalone scheduler, a
+scheduler, Spark standalone, although YARN~\cite{vavilapalli2013apache} and
+Mesos~\cite{hindman2011mesos} are also available. In the Spark standalone scheduler, a
 process called the \emph{master} coordinates resources provisioned by
 \emph{workers} on the cluster. The application is submitted to the
 \emph{driver} that in turn requests workers to the master and dispatches
@@ -160,6 +161,7 @@ Apache Spark v2.4.0.
 \subsubsection{Dask} Dask is a Big Data engine that is becoming
 increasingly popular in the scientific Python ecosystem. \TG{A few more
 introductory sentences should be added, following Spark's model.}
+\TG{Explain workers}
 Dask represents application tasks as Dask graphs, produced by a
 user-facing API and executed by a scheduler. We used the \href{https://distributed.dask.org/en/latest/index.html}{Dask
 Distributed} scheduler.
@@ -183,17 +185,42 @@ An \href{https://docs.dask.org/en/latest/array.html}{Array} is used for
 the processing of large arrays. It provides a distributed clone of the
 popular
 NumPy library. \href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports arbitrary
-tasks that do not fit in the Array, DataFrame or Bag frameworks. 
+tasks that do not fit in the Array, DataFrame or Bag APIs. 
 Finally, \href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to
 Delayed as they support arbitrary tasks, but they operate in real-time rather
 than lazily.
 
+\subsection{Infrastructure}
+
+ We used Compute Canada's
+ \href{https://docs.computecanada.ca/wiki/Cloud_resources}{Arbutus Cloud}
+ operated by the \href{https://www.westgrid.ca}{WestGrid} regional
+ organization at the University of Victoria, and running OpenStack
+ \TG{version?}. We used c8-30gb-186 cloud instances with 8 VCPUs, an Intel
+ Xeon Gold 6130 processor, 30~GB of RAM at 2666~MHz, 20~GB of mounted
+ storage, and a base image running CentOS 7.5.1804 with  Linux kernel
+ version
+ 3.10.0\-862.11.6.el7.x86\_64. Instances are connected by a 10Gb/s Ethernet network. 
+ 
+ Cloud instances hosted a single Dask or Spark worker, configured to use 8
+ threads. We used Dask's default configuration that uses all the available
+ memory on the instance. \TG{add a sentence on memory usage policy for Dask, say it's on NFS} We
+ configured Spark to use 1 executor per worker and 25~GB of memory per
+ executor, to leave 5~GB for overhead. \TG{Check spill to disk}
+ 
+ One cloud instance did not host any worker, and had a 2~TB disk volume
+ shared with the other instances using the Network File System (NFS) v4.
+ This instance was also used for the Spark driver and master, and for the
+ Dask scheduler, and for job monitoring with the Spark and Dask user
+ interfaces. We configured the Spark driver to use 25~GB of memory, and
+ used the default configuration for the master.
+
 \subsection{Dataset}
 
 We used BigBrain~\cite{Amunts:13}, a three-dimensional image of a human
-brain. The original data is stored in 125 blocks in the MINC~\cite{minc}
-HDF5-based format, available at
-\url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D_Blocks/40um} at the
+brain with voxel intensities ranging from 0 to 65,535. The original data is
+stored in 125 blocks in the MINC~\cite{minc} HDF5-based format, available
+at \url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D_Blocks/40um} at the
 resolution of \SI{40}{\micro\metre}. We converted the blocks into the
 \href{https://nifti.nimh.nih.gov/nifti-1}{NifTI} format, a popular format
 in neuroimaging. We left the NifTI blocks uncompressed, resulting in 
@@ -214,22 +241,29 @@ subject on average).
 
 
 \subsection{Applications}
-%% Incrementation
-\subsubsection{\textbf{Incrementation}}
-As our first experiment to benchmark the frameworks, we used a simple incrementation
-pipeline (see Algorithm~\ref{alg:incrementation}). It reads blocks from the BigBrain
-image, increments the intensity value of each voxel by 1 for a specified amount of
-iterations, and writes the result to an NFS as a NifTI image. Incrementing the data
-reduce the caching effect. This experiment allows us to study the behavior of the
-frameworks when all inputs are processed independently; i.e.\ each task in the graph
-only depends on the previous one (see Figure~\ref{fig:tg-inc}). This mimics the
-behavior of analyzing multiple independent subjects in parallel.
 
-This experiment refers to the implementation of the Spark pipelines purposed
-in Ref.~\cite{Hayot-Sasson:17}.
+We used three neuroimaging applications to evaluate the engines in
+different conditions. The first two ones, incrementation and histogram, are
+simple synthetic benchmarks representing basic map-only and map-reduce applications.
+The third one is a more realistic application representative of popular
+BIDS applications~\cite{gorgolewski2017bids}. 
+
+%% Incrementation
+\subsubsection{Incrementation}
+We used the simple image incrementation pipeline used
+in~\cite{hayot2019performance} (see Algorithm~\ref{alg:incrementation}).
+The application reads blocks of the BigBrain image from the shared file
+system, increments the intensity value of each voxel by 1 to avoid caching
+effects, sleeps for a configurable amount of time to emulate a more complex
+processing, repeats this process for a specified amount of iterations, and
+finally writes the result as a NifTI image back to the shared file system.
+This application allows us to study the behavior of the engines when all
+inputs are processed independently, in a map-only way (see
+Figure~\ref{fig:tg-inc}). This mimics the behavior of analyzing multiple
+independent subjects in parallel.
 
 \begin{algorithm}[!b]
-    \caption{Incrementation}\label{alg:incrementation}
+    \caption{Incrementation (adapted from~\cite{hayot2019performance})}\label{alg:incrementation}
     \begin{algorithmic}
     \Require{\(x\), a sleep delay in float}
     \Require{\(file\), a file containing a block}
@@ -249,18 +283,25 @@ in Ref.~\cite{Hayot-Sasson:17}.
     \centering
     \includegraphics[width=0.125\textwidth,
     angle=-90]{images/incrementation-task-graph.png}
-    \caption{Task graph for Incrementation}\label{fig:tg-inc}
+    \caption{Task graph for Incrementation with 5 iterations, represented
+    for 3 BigBrain blocks. Circles represent the incrementation and sleep
+    function while rectangles represent image blocks.}\label{fig:tg-inc}
 \end{figure}
 
-\subsubsection{\textbf{Histogram}}
-Our second experiment consists to calculate the histogram of the intensity of the
-voxel in BigBrain (see Algorithm~\ref{alg:histogram}). It reads the images from the
-NFS, calculate individual image frequency, aggregate the frequency of the images
-together, and write the result to a file. In this experiment, the result depends on
-all the input (see Fig.~\ref{fig:tg-histo}). This allows the study of the behavior of
-the frameworks when tasks are dependent. Also, this application requires data
-shuffling thus inter-worker communication. We decided to omit Dask Futures as it does
-not have any value over Dask Delayed in this application.
+\subsubsection{Histogram}
+
+ Our second application calculates the histogram of the BigBrain image (see
+ Algorithm~\ref{alg:histogram}). It reads the image blocks from the shared
+ file system, calculates intensity frequencies, aggregates the frequencies
+ across the blocks, and finally writes the resulting histogram to the
+ shared file system as a single \TG{X}KB file. This application implements
+ a typical map-reduce pattern, where the final result is obtained from all
+ the input blocks (see Fig.~\ref{fig:tg-histo}). This application requires
+ data shuffling thus inter-worker communication. The total amount of shuffled
+ data is however limited to \TG{X}MB as it only consists of image
+ histograms.
+
+ \TG{Add links to the Github repo for applications and any other relevant file.}
 
 \begin{algorithm}[!t]
     \caption{Histogram}\label{alg:histogram}
@@ -284,27 +325,34 @@ not have any value over Dask Delayed in this application.
     \caption{Task graph for Histogram}\label{fig:tg-histo}
 \end{figure}
 
-\subsection{Experiment}
-The applications are benchmarked according to up to four parameters
-(Table~\ref{tab:param}):
+\subsubsection{BIDS app example}
 
-\textbf{Number of workers:} Varying the numbers of workers helps in assessing the
-scaling of the frameworks in a cluster. Also, it helps in determining the level of
-the parallelism of the frameworks.
+We used the \href{https://github.com/BIDS-Apps/example}{BIDS app example}
+application available on GitHub. This application operates in a map-reduce
+way. The map phase, also called participant analysis, extracts the brain
+tissues of a subject's 3D MRI using the popular FMRIB Software Library
+(\href{https://fsl.fmrib.ox.ac.uk/fsl/fslwiki}{FSL}), and writes the
+resulting image (\TG{X}MB on average) to the shared file system. The reduce
+phase, also called group analysis, computes the volume of each brain and
+returns the average volume, shuffling a total of \TG{X}GB image data.
 
-\textbf{Number of blocks:} Evaluating the frameworks on a different amount of blocks
-allows us to understand their behavior with different task size and IO requirements.
+While Incrementation and Histogram were implemented directly in Python,
+BIDS app example requires an external library and is distributed as a
+Docker container image (bids/base\_fsl on DockerHub). To avoid remote file
+transfers from DockerHub, we preloaded our OpenStack instances with the
+Docker image, and started the Docker engine at startup. \TG{explain run.py modifications if relevant.}
 
-\textbf{Number of iterations:} We change the number of iterations for the
-incrementation~\ref{alg:incrementation} to study the effect of the job length.
+\subsection{Experiments}
 
-\textbf{Sleep delay:} We modify the sleep delay in the
-incrementation~\ref{alg:incrementation} to understand the behavior of different task
-lengths.
+We varied four parameters in our experiments, as shown in
+Table~\ref{tab:param}. We varied (1) the number of workers to assess the
+scalability of the engines, (2) the number of BigBrain blocks in
+Incrementation and Histogram to measure the effect of different IO patterns
+and parallelization degrees, and (3) the number of iterations and sleep
+delay in Incrementation to evaluate the effect of job length.
 
-The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
-seconds sleep delay.
-
+% The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
+% seconds sleep delay.
 
 \begin{table}[!t]
     \renewcommand{\arraystretch}{1.3}
@@ -321,12 +369,7 @@ seconds sleep delay.
     \end{table}
 
 
-\subsection{Infrastructure}
-All experiments were performed on Arbutus Cloud Compute Canda. Each node has CentOS
-7.5.1804 as the base operating system and have the Linux kernel version
-3.10.0\-862.11.6.el7.x86\_64. The nodes have an Intel Xeon Gold 6130 processor with
-30GB 2666 MHz memory. The network has a 10GB/s bandwidth. The filesystem is 2TB NFS
-v4.
+
 
 
 
@@ -586,7 +629,8 @@ tasks. Moreover, for the computing tasks, there is more overhead for the latter 
     \end{subfigure}
     \caption{8 workers}
 \end{figure}
-
+\TG{We decided to omit Dask Futures as it does not have any value over Dask
+Delayed in this application.}
 %%% BIDS EXAMPLE %%%
 \subsection{Experiment 3: Number of instances}
 
