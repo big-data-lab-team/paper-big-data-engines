@@ -167,44 +167,57 @@ Dask Distributed also has a LIFO policy. In theory, it should speed-up the
 pipeline execution by finishing a branch of task computations before
 starting new ones \TG{This is meant to reduce the memory footprint of the
 application}. \TG{Here we should add a few comparison sentences between
-Spark's and Dask's schedulers.} Dask has five main APIs: Dask Bags, Dask
-Arrays, Dask Futures, Dask Delayed and DataFrames. We compared them all
-except DataFrames as they are not adapted to the type of data we
-considered. All APIs provide in-memory computing, data locality, and lazy
+Spark's and Dask's schedulers.} Dask has five main APIs and data structures: Bag,
+Array, Futures, Delayed and DataFrame. We used them all
+except DataFrame as it is not adapted to the type of data we
+used. All APIs provide in-memory computing, data locality, and lazy
 evaluation, however, none of them has fault tolerance \TG{Check fault
 tolerance in Dask. Fine-grained lineage vs Spark's coarse grained lineage}.
 We used Dask v1.1.4.
 
-\href{https://docs.dask.org/en/latest/bag.html}{Dask Bags}
-are parallel collections of Python objects, similar to Spark's RDD. Dask
-Bags also offers optimized algorithms \TG{``optimized algorithms'' is
-inaccurate: you should explain what they do} that mimic most of the
-toolz~\cite{toolz} library. \href{https://docs.dask.org/en/latest/array.html}{Dask
-Arrays} are used for the
-processing of large arrays. They provide a parallel clone of the popular
-NumPy library. \href{https://docs.dask.org/en/latest/delayed.html}{Dask
-Delayed} supports arbitrary
-tasks that does not fit in the Array, DataFrame or MapReduce \TG{Do you
-mean Bags?} frameworks. Finally, \href{https://docs.dask.org/en/latest/futures.html}{Dask
-Futures} is similar to Dask
-Delayed as it supports arbitrary tasks, but it operates in real-time rather
+In Dask, a \href{https://docs.dask.org/en/latest/bag.html}{Bag} is a parallel
+collection of Python objects, similar to Spark's RDD. It offers a
+programming abstraction similar to the
+\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}.
+An \href{https://docs.dask.org/en/latest/array.html}{Array} is used for
+the processing of large arrays. It provides a distributed clone of the
+popular
+NumPy library. \href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports arbitrary
+tasks that do not fit in the Array, DataFrame or Bag frameworks. 
+Finally, \href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to
+Delayed as they support arbitrary tasks, but they operate in real-time rather
 than lazily.
 
-
 \subsection{Dataset}
-For the incrementation and histogram experiment, the BigBrain~\cite{Amunts:13} is
-used. It is a three-dimensional image of a brain scanned at \SI{40}{\micro\metre}.
-The dataset stores the intensity of each voxel and its position. This results in a
-75GB image. It is stored in 125 chunks in the \textit{MINC}~\cite{minc} format. To
-perform our experiment we convert the chunks into the \textit{NifTI}~\cite{nifti}
-format. Also, using \textit{sam}~\cite{sam} we combine the chunks and split them into
-30, 125 and 750 chunks of equal size; each of 2.5GB, 0.6GB, and 0.1GB, respectively.
+
+We used BigBrain~\cite{Amunts:13}, a three-dimensional image of a human
+brain. The original data is stored in 125 blocks in the MINC~\cite{minc}
+HDF5-based format, available at
+\url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D_Blocks/40um} at the
+resolution of \SI{40}{\micro\metre}. We converted the blocks into the
+\href{https://nifti.nimh.nih.gov/nifti-1}{NifTI} format, a popular format
+in neuroimaging. We left the NifTI blocks uncompressed, resulting in 
+a total data size of 76~GiB \TG{Check if GiB or GB}. 
+To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of 
+2.5GB, 0.6GB, and
+0.1GB \TG{check sizes}, using the sam~\cite{sam} library.
+
+We also used the dataset provided by the Consortium for Reliability and
+Reproducibility
+(\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR}) as
+available on
+\href{http://datasets.datalad.org/?dir=/corr/RawDataBIDS}{DataLad}. The
+entire dataset is 408.4~GB, containing anatomical, diffusion and functional
+images of 1,397 subjects acquired in 29 sites. Among these, we only used
+data from \TG{X} subjects, representing \TG{Y}GB overall (\TG{Z}GB by
+subject on average).
+
 
 \subsection{Applications}
 %% Incrementation
 \subsubsection{\textbf{Incrementation}}
 As our first experiment to benchmark the frameworks, we used a simple incrementation
-pipeline (see Algorithm~\ref{alg:incrementation}). It reads chunks from the BigBrain
+pipeline (see Algorithm~\ref{alg:incrementation}). It reads blocks from the BigBrain
 image, increments the intensity value of each voxel by 1 for a specified amount of
 iterations, and writes the result to an NFS as a NifTI image. Incrementing the data
 reduce the caching effect. This experiment allows us to study the behavior of the
@@ -219,16 +232,16 @@ in Ref.~\cite{Hayot-Sasson:17}.
     \caption{Incrementation}\label{alg:incrementation}
     \begin{algorithmic}
     \Require{\(x\), a sleep delay in float}
-    \Require{\(file\), a file containing a chunk}
+    \Require{\(file\), a file containing a block}
     \Require{\(fs\), NFS to write image to.}
-    \State{Read \(chunk\) from \(file\)}
+    \State{Read \(block\) from \(file\)}
     \ForEach{\(i \in iterations\)}
-        \ForEach{\(chunk \in image\)}
-            \State{\(chunk\gets chunk+1\)}
+        \ForEach{\(block \in image\)}
+            \State{\(block\gets block+1\)}
             \State{Sleep \(x\)}
         \EndFor
     \EndFor
-    \State{Write \(chunk\) to \(fs\)}
+    \State{Write \(block\) to \(fs\)}
 \end{algorithmic}
 \end{algorithm}
 
@@ -255,8 +268,8 @@ not have any value over Dask Delayed in this application.
     \Require{\(files\), files containing BigBrain}
     \Require{\(fs\), NFS to save image to.}
     \ForEach{\(file \in files\)}
-        \State{Read \(chunk\) from \(file\)}
-        \State{{Calculate \(frequency\) of \(chunks\)}}
+        \State{Read \(block\) from \(file\)}
+        \State{{Calculate \(frequency\) of \(blocks\)}}
     \EndFor
     
     \State{\(histogram\gets\)Aggregate \(frequency\) of each \(file\)}
@@ -279,7 +292,7 @@ The applications are benchmarked according to up to four parameters
 scaling of the frameworks in a cluster. Also, it helps in determining the level of
 the parallelism of the frameworks.
 
-\textbf{Number of chunks:} Evaluating the frameworks on a different amount of chunks
+\textbf{Number of blocks:} Evaluating the frameworks on a different amount of blocks
 allows us to understand their behavior with different task size and IO requirements.
 
 \textbf{Number of iterations:} We change the number of iterations for the
@@ -289,7 +302,7 @@ incrementation~\ref{alg:incrementation} to study the effect of the job length.
 incrementation~\ref{alg:incrementation} to understand the behavior of different task
 lengths.
 
-The baseline for our experiments is: 8 workers, 125 chunks, 10 iterations and 4
+The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 seconds sleep delay.
 
 
@@ -301,7 +314,7 @@ seconds sleep delay.
     \hline
                         & Incrementation & Histogram             & BIDS Example          \\ \hline
     \# of worker        & 1, 2, 4, 8     & 1, 2, 4, 8            & 1, 2, 4, 8            \\
-    \# of chunks        & 30, 125, 750   & 30, 125, 750          & 30, 125, 750          \\
+    \# of blocks        & 30, 125, 750   & 30, 125, 750          & 30, 125, 750          \\
     \# of iterations    & 1, 10, 100     & \multicolumn{1}{c}{-} & \multicolumn{1}{c}{-} \\
     Sleep delay {[}s{]} & 1, 4, 16, 64   & \multicolumn{1}{c}{-} & \multicolumn{1}{c}{-} \\ \hline
     \end{tabular*}
@@ -346,41 +359,41 @@ time and overhead increase proportionally to the number of workers.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_worker.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_worker}
     \end{subfigure}
-    \caption{125 chunks, 10 iterations, 4 sec.\ sleep delay}\label{fig:inc_worker}
+    \caption{125 blocks, 10 iterations, 4 sec.\ sleep delay}\label{fig:inc_worker}
 \end{figure}
 
-% Chunks
-\subsection{Experiment 1: Number of chunks}
-In Figure~\ref{fig:inc_chunk}, Spark is not compared for 30 chunks. This is because
+% blocks
+\subsection{Experiment 1: Number of blocks}
+In Figure~\ref{fig:inc_block}, Spark is not compared for 30 blocks. This is because
 Spark has a 2GB limitation in the task size it can compute.
 
-The Figure~\ref{fig:inc_ms_chunk} shows the makespan evolution when varying the
-number of chunks. The compute time increase when there are more chunks. This is
+The Figure~\ref{fig:inc_ms_block} shows the makespan evolution when varying the
+number of blocks. The compute time increase when there are more blocks. This is
 because the sleep delay is constant throughout this experiment and there are more
-compute tasks when the number of chunks increases.
+compute tasks when the number of blocks increases.
 
-In Figure~\ref{fig:inc_tt_chunk}, the total execution time of each function is shown.
-For 30 chunks the Dask Bag API has a much lower overhead time. This is because we
+In Figure~\ref{fig:inc_tt_block}, the total execution time of each function is shown.
+For 30 blocks the Dask Bag API has a much lower overhead time. This is because we
 only calculate the idle time of the used core. Dask Bag was only using one thread per
 block in comparison to Dask Delayed and Dask Futures which was offloading a block
 calculations on multiple threads of the same worker. Furthermore, the variance of the
-overhead increases proportionally to the number of chunks. Also, the IO time reduces
-with more chunks however the overhead time increase by a similar amount. This is not
-observed for 30 chunks as the workers are not used at full capacity; i.e.\ some
+overhead increases proportionally to the number of blocks. Also, the IO time reduces
+with more blocks however the overhead time increase by a similar amount. This is not
+observed for 30 blocks as the workers are not used at full capacity; i.e.\ some
 threads are idle.
 
 \begin{figure}[!t]
     \centering
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/inc_chunk.png}%
-        \caption{Incrementation makespan}\label{fig:inc_ms_chunk}
+        \includegraphics[clip,width=\columnwidth]{images/inc_block.png}%
+        \caption{Incrementation makespan}\label{fig:inc_ms_block}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/inc_idle_chunk.png}%
-        \caption{Incrementation total time}\label{fig:inc_tt_chunk}
+        \includegraphics[clip,width=\columnwidth]{images/inc_idle_block.png}%
+        \caption{Incrementation total time}\label{fig:inc_tt_block}
     \end{subfigure}
-    \caption{10 iterations, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_chunk}
+    \caption{10 iterations, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_block}
 \end{figure}
 
 %% Iterations
@@ -420,7 +433,7 @@ not substantial.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_itr}
     \end{subfigure}
-    \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}
+    \caption{125 blocks, 4 sec.\ sleep delay, 8 instances}
 \end{figure}
 
 
@@ -481,7 +494,7 @@ overhead and IO time.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_sleep}
     \end{subfigure}
-    \caption{125 chunks, 10 iterations, 8 instances}
+    \caption{125 blocks, 10 iterations, 8 instances}
 \end{figure}
 
 %% Baseline gantt chart
@@ -523,12 +536,12 @@ tasks. Moreover, for the computing tasks, there is more overhead for the latter 
         \includegraphics[clip,width=\columnwidth]{images/Dask_futures_inc_baseline_gantt.png}%
         \caption{Dask Futures execution timeline}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{125 chunks, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_gantt}
+    \caption{125 blocks, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_gantt}
 \end{figure*}
 
 % \begin{table}[!b]
 %     \renewcommand{\arraystretch}{1.3}
-%     \caption{Distribution of the execution time in second: 125 chunks, 4 sec.\ sleep
+%     \caption{Distribution of the execution time in second: 125 blocks, 4 sec.\ sleep
 %     delay, 10 iterations, and 8 workers}\label{tab:inc_base}
 %     \centering
 %     \begin{tabular*}{\columnwidth}{llllll}
@@ -555,21 +568,21 @@ tasks. Moreover, for the computing tasks, there is more overhead for the latter 
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_instances.png}%
         \caption{Histogram total time}\label{fig:histo_tt_worker}
     \end{subfigure}
-    \caption{125 chunks}
+    \caption{125 blocks}
 \end{figure}
 
-\subsection{Experiment 2: Number of chunks}
+\subsection{Experiment 2: Number of blocks}
 
 \begin{figure}[!t]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/histo_splits.png}%
-        \caption{Histogram makespan}\label{fig:histo_ms_chunk}
+        \caption{Histogram makespan}\label{fig:histo_ms_block}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_splits.png}%
-        \caption{Histogram total time}\label{fig:histo_tt_chunk}
+        \caption{Histogram total time}\label{fig:histo_tt_block}
     \end{subfigure}
     \caption{8 workers}
 \end{figure}
@@ -605,7 +618,7 @@ worker. More work would be needed to investigate that issue.
 \subsection{Caching}
 We think that caching plays an effect on the results. As seen in the Gantt chart
 previously, some of the read tasks are significantly shorter than others while all
-chunks are of equal size.
+blocks are of equal size.
 
 \section*{Acknowledgment}
 
