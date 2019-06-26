@@ -11,10 +11,14 @@
 \usepackage{siunitx}
 \usepackage{latexsym}
 \usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,filecolor=black,urlcolor=blue}
 \usepackage{algpseudocode}
 \usepackage{algorithm}
 \usepackage{caption}
 \usepackage{subcaption}
+
+\newcommand{\TG}[1]{\color{blue}From Tristan: #1 \color{black}}
+
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -22,29 +26,11 @@
 
 \begin{document}
 
-\title{Comparative study of Dask and Spark for neuroimaging pipelines\\
-{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
-should not be used}
-\thanks{Natural Sciences and Engineering Research Council}
-}
+\title{A Comparative study of Dask and Spark for neuroimaging pipelines}
 
-\author{\IEEEauthorblockN{1\textsuperscript{st} Mathieu Dugr\'e}
-\IEEEauthorblockA{\textit{Computer Science and Software Engineering} \\
-\textit{Concordia University}\\
-Montreal, Canada \\
-mathieu.dugre@mail.concordia.ca}
-\and
-\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
-\IEEEauthorblockA{\textit{Computer Science and Software Engineering} \\
-\textit{Concordia University}\\
-Montreal, Canada \\
-email address}
-\and
-\IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
-\IEEEauthorblockA{\textit{Computer Science and Software Engineering} \\
-\textit{Concordia University}\\
-Montreal, Canada \\
-email address}
+\author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
+Department of Computer Science and Software Engineering\\
+Montr\'eal, Qu\'ebec, Canada
 }
 
 \maketitle
@@ -95,6 +81,7 @@ written framework, could bring better or similar performances while facilitating
 usage.
 
 %Similarities
+\TG{Note for later: explain the following concepts in the intro: lazy eval, data locality, in-memory computing.}
 Spark and Dask offer in-memory computing, data locality, and lazy evaluation; which
 is common for Big Data framework. Both their scheduler operates dynamically. This is
 good when the runtimes are not known ahead of time~\cite{Dask:15}. Over these
@@ -145,40 +132,63 @@ neuroimaging pipelines.
 \section{Material and Methods}
 
 \subsection{Engines}
-For all our experiments, we used Spark v2.4.0 and Dask v1.1.4.
 
-\subsubsection{PySpark RDD~\cite{spark-rdd}} Spark is a general-purpose Big Data
-framework. It provides in-memory computing, data locality, and lazy evaluation. Spark
-abstracts resilient distributed dataset (RDD)~\cite{RDD} making it fault-tolerant.
-Its high-level API provides optimization for transformations applied on data. Since
-Spark is written in Scala, this optimization is lessened because it requires a
-serialization from Python to Java. The API offered by Spark is flexible and suits
-most problems however it differs from the Python ecosystem. The standalone scheduler
-is used for our experiment. It has a LIFO policy.
+\subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data
+framework. It provides in-memory computing, data locality, and lazy
+evaluation. Spark's main data structure, the Resilient Distributed Dataset
+(RDD)~\cite{RDD}, is a fault-tolerant and parallel collection of data
+elements. 
+Dataframes, Spark's other popular API, are an overlay of RDDs with similar 
+performance features. 
+Spark's core is written in Scala, but it also has an R and a Python API
+called PySpark. We used PySpark, given the popularity of Python in
+neuroscience, although the serialization cost of Python objects to Scala
+might be a substantial source of overhead. We used Spark's default
+scheduler, Spark standalone, although YARN~\cite{yarn} and
+Mesos~\cite{mesos} are also available. In the Spark standalone scheduler, a
+process called the \emph{master} coordinates resources provisioned by
+\emph{workers} on the cluster. The application is submitted to the
+\emph{driver} that in turn requests workers to the master and dispatches
+tasks to them. The Spark standalone scheduler uses a LIFO
+(Last-In-First-Out) task scheduling policy \TG{we should describe it
+briefly and refer to the paper}. The Spark standalone scheduler has two
+execution modes: client mode, where the driver runs in a dedicated  process
+on the cluster, and cluster mode, where the driver runs in a worker. We
+used client mode as PySpark is not available in cluster mode. We used
+Apache Spark v2.4.0.
 
-\subsubsection{Dask Bag~\cite{dask-bag}} Dask Bag is one of the high-level API
-offered by Dask. Like Spark, it provides in-memory computing, data locality, and lazy
-evaluation however it does not have fault resilience. Fundamentally, it is
-parallelized lists. Dask Bag parallelizes computations across a large collection of
-generic python objects~\cite{dask-bag}. Also, it offers optimized algorithms that
-mimic most of the toolz~\cite{toolz} library. Our experiment uses the Dask
-Distributed~\cite{dask-distributed} scheduler. It has a LIFO policy. In theory, it
-should speed-up the pipeline execution by finishing a branch of task computations
-before starting new ones.
+\subsubsection{Dask} Dask is a Big Data engine that is becoming
+increasingly popular in the scientific Python ecosystem. \TG{A few more
+introductory sentences should be added, following Spark's model.}
+Dask represents application tasks as Dask graphs, produced by a
+user-facing API and executed by a scheduler. We used the \href{https://distributed.dask.org/en/latest/index.html}{Dask
+Distributed} scheduler.
+Dask Distributed also has a LIFO policy. In theory, it should speed-up the
+pipeline execution by finishing a branch of task computations before
+starting new ones \TG{This is meant to reduce the memory footprint of the
+application}. \TG{Here we should add a few comparison sentences between
+Spark's and Dask's schedulers.} Dask has five main APIs: Dask Bags, Dask
+Arrays, Dask Futures, Dask Delayed and DataFrames. We compared them all
+except DataFrames as they are not adapted to the type of data we
+considered. All APIs provide in-memory computing, data locality, and lazy
+evaluation, however, none of them has fault tolerance \TG{Check fault
+tolerance in Dask. Fine-grained lineage vs Spark's coarse grained lineage}.
+We used Dask v1.1.4.
 
-\subsubsection{Dask Delayed~\cite{dask-delayed}} Dask Delayed is a low-level API. It
-does not offer the optimized algorithm as the high-level APIs however it allows the
-user to parallelize custom function that does not fit in the array, dataframe or
-MapReduce framework. This is perfect for the more complex functions which could
-potentially be parallelized. Like Dask Bag, it offers in-memory computing, data
-locality and lacks fault resilience. The Dask Distributed scheduler is also used.
-
-\subsubsection{Dask Futures~\cite{dask-futures}} Dask Futures is also a low-level API
-from Dask. Like the other Dask APIs, it benefits of in-memory computing and data
-locality. However, unlike the other APIs, Dask Futures triggers computation
-immediately. When the user tries to gather data if available it will return the
-result otherwise it will block until the computation is done. Again, the Dask
-Distributed scheduler is used.
+\href{https://docs.dask.org/en/latest/bag.html}{Dask Bags}
+are parallel collections of Python objects, similar to Spark's RDD. Dask
+Bags also offers optimized algorithms \TG{``optimized algorithms'' is
+inaccurate: you should explain what they do} that mimic most of the
+toolz~\cite{toolz} library. \href{https://docs.dask.org/en/latest/array.html}{Dask
+Arrays} are used for the
+processing of large arrays. They provide a parallel clone of the popular
+NumPy library. \href{https://docs.dask.org/en/latest/delayed.html}{Dask
+Delayed} supports arbitrary
+tasks that does not fit in the Array, DataFrame or MapReduce \TG{Do you
+mean Bags?} frameworks. Finally, \href{https://docs.dask.org/en/latest/futures.html}{Dask
+Futures} is similar to Dask
+Delayed as it supports arbitrary tasks, but it operates in real-time rather
+than lazily.
 
 
 \subsection{Dataset}
@@ -599,7 +609,11 @@ chunks are of equal size.
 
 \section*{Acknowledgment}
 
-We would like to thanks Compute Canada Cloud for the infrastructure.
+Mathieu Dugr\'e was funded by a Undergraduate Summer Research Assistant
+award from the National Science and Engineering Research Council. We warmly
+thank Compute Canada and \TG{Westgrid?} for providing the cloud
+infrastructure used in these experiments, and the McGill Center for
+Integrative Neurocience for giving us access to their cloud allocation.
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,reference}
