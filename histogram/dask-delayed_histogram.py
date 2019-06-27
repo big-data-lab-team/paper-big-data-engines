@@ -42,7 +42,7 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from Histogram import calculate_histogram, combine_histogram
+    from Histogram import calculate_histogram, combine_histogram, flatten
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -50,6 +50,8 @@ if __name__ == "__main__":
     partial_histogram = []
     for path in paths:
         img = dask.delayed(read_img)(path, start=start, args=args)
+
+        img = dask.delayed(flatten)(img[1], start=start, args=args, filename=img[0])
 
         partial_histogram.append(
             dask.delayed(calculate_histogram)(

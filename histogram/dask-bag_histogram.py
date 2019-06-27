@@ -41,12 +41,14 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from Histogram import calculate_histogram, combine_histogram
+    from Histogram import calculate_histogram, combine_histogram, flatten
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
     paths = db.from_sequence(paths, npartitions=len(paths))
     img = paths.map(lambda p: read_img(p, start=start, args=args))
+
+    img = img.map(lambda x: flatten(x[1], start=start, args=args, filename=x[0]))
 
     partial_histogram = img.map(
         lambda x: calculate_histogram(x[1], args=args, start=start, filename=x[0])

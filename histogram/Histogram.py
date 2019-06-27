@@ -4,10 +4,27 @@ from time import time
 from utils import benchmark
 
 
-def calculate_histogram(arr, *, args, start, filename):
+def flatten(arr, *, args, start, filename):
     start_time = time() - start
 
-    arr = arr.flatten('F')
+    arr = arr.flatten("F")
+
+    end_time = time() - start
+
+    if args.benchmark:
+        benchmark(
+            start_time,
+            end_time,
+            filename,
+            args.output_dir,
+            args.experiment,
+            "flatten",
+        )
+    return filename, arr
+
+
+def calculate_histogram(arr, *, args, start, filename):
+    start_time = time() - start
 
     histogram = defaultdict(int)
     for x in arr:
