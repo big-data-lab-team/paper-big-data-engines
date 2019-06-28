@@ -8,7 +8,7 @@
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{times}
-\usepackage{siunitx}
+\usepackage[binary-units=true]{siunitx}
 \usepackage{latexsym}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,filecolor=black,urlcolor=blue}
@@ -139,23 +139,32 @@ neuroimaging pipelines.
 \subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data engine. It
 provides in-memory computing, data locality, and lazy evaluation. Spark's main data
 structure, the Resilient Distributed Dataset (RDD)~\cite{RDD}, is a fault-tolerant
-and a parallel collection of data elements. Dataframes, Spark's API for tabular data, is
-an overlay of RDDs with similar performance features \VHS{It's probably fine, but the SparkSQL Engine available for Scala and Java do bring an added peformance value}.\VHS{Spark has another API (Datasets). i know you used 'popular' for DataFrames, but it's not like Spark has a plethora of APIs. I think the APIs should be mentioned after the API languages such that you only list the APIs relevant to Python (RDD and Dataframes)} Spark's core is written in
-Scala, but it also has a Java, an R, and a Python API called PySpark. \MD{Sentence is
-ambiguous? could think that all three APIs are named PySpark} We used PySpark, given
-the popularity of Python in neuroscience, although the serialization cost of Python
-objects to Scala might be a substantial source of overhead. We used Spark's default
-scheduler, Spark standalone, although YARN~\cite{vavilapalli2013apache} and
+and a parallel collection of data elements. Dataframes, Spark's API for tabular data,
+is an overlay of RDDs with similar performance features \VHS{It's probably fine, but
+the SparkSQL Engine available for Scala and Java do bring an added peformance
+value}.\VHS{Spark has another API (Datasets). i know you used 'popular' for
+DataFrames, but it's not like Spark has a plethora of APIs. I think the APIs should
+be mentioned after the API languages such that you only list the APIs relevant to
+Python (RDD and Dataframes)} Spark's core is written in Scala, but it also has a
+Java, an R, and a Python API called PySpark. \MD{Sentence is ambiguous? could think
+that all three APIs are named PySpark} We used PySpark, given the popularity of
+Python in neuroscience, although the serialization cost of Python objects to Scala
+might be a substantial source of overhead. We used Spark's default scheduler, Spark
+standalone, although YARN~\cite{vavilapalli2013apache} and
 Mesos~\cite{hindman2011mesos} are also available. In the Spark standalone scheduler,
 a process called the \emph{master} coordinates resources provisioned by
 \emph{workers} on the cluster. The application is submitted to the \emph{driver} that
-in turn requests workers to the master and dispatches jobs to them\VHS{maybe say tasks instead of jobs, otherwise it sounds like 1 job/worker}. A job is divided
-into stages to be processed onto the workers. Each stage's operation is represented
-as a high-level task in the computation graph. The Spark standalone scheduler uses a
-FIFO (First-In-First-Out) job scheduling policy. Processing jobs in order helps in
-increasing the page hit rate. As our applications only have one job, the LIFO
-(Last-In-First-Out) policy used for the stages is more pertinent \MD{Find better
-phrasing} \TG{refer to the paper (\MD{Not sure which one})} \VHS{I wouldn't explicitly state LIFO here. It's a bit complicated to be frank. Basically both Spark and Dask opt to complete a chain of dependencies rather than start a bunch of ``new chains''. And in this context, LIFO is great for the page hit rate, so you might want to reword the prior sentence as well}. The Spark standalone
+in turn requests workers to the master and dispatches tasks to them. A job is divided
+into stages to be excuted in a different process onto the workers. Each stage's
+operation is represented as a high-level task in the computation graph. The Spark
+standalone scheduler uses a FIFO (First-In-First-Out) job scheduling policy.
+Processing jobs in order helps in increasing the page hit rate. As our applications
+only have one job, the LIFO (Last-In-First-Out) policy used for the stages is more
+pertinent \MD{Find better phrasing} \TG{refer to the paper (\MD{Not sure which one})}
+\VHS{I wouldn't explicitly state LIFO here. It's a bit complicated to be frank.
+Basically both Spark and Dask opt to complete a chain of dependencies rather than
+start a bunch of ``new chains''. And in this context, LIFO is great for the page hit
+rate, so you might want to reword the prior sentence as well}. The Spark standalone
 scheduler has two execution modes: client mode, where the driver runs in a dedicated
 process on the cluster, and cluster mode, where the driver runs in a worker. We used
 client mode as cluster mode is not available in PySpark. We used Apache Spark v2.4.0.
@@ -184,12 +193,13 @@ memory footprint of the application by finishing the computation of a branch in 
 Dask graph before starting new ones. We used Dask v1.1.4. 
 
 In Dask, a \href{https://docs.dask.org/en/latest/bag.html}{Bag} is a parallel
-collection of Python objects, similar to Spark's RDD. It offers a programming
-abstraction similar to the \href{https://toolz.readthedocs.io/en/latest/}{PyToolz
-library}. An \href{https://docs.dask.org/en/latest/array.html}{Array} is used for the
-processing of large arrays. It provides a distributed clone of the popular NumPy
-library. A \href{https://docs.dask.org/en/latest/dataframe.html}{Dataframe} is a
-parallel composition of
+collection of Python objects, similar to Spark's RDD. It use multi-process to enable
+parallelism. It offers a programming abstraction similar to the
+\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}. An
+\href{https://docs.dask.org/en/latest/array.html}{Array} is used for the processing
+of large arrays. It provides a distributed clone of the popular NumPy library. A
+\href{https://docs.dask.org/en/latest/dataframe.html}{Dataframe} is a parallel
+composition of
 \href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas
 Dataframes} used to process a large amount of tabular data.
 \href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports arbitrary tasks
@@ -210,18 +220,21 @@ as they support arbitrary tasks, but they operate in real-time rather than lazil
  version
  3.10.0\-862.11.6.el7.x86\_64. Instances are connected by a 10Gb/s Ethernet network. 
  
- Cloud instances hosted a single Dask or Spark worker, configured to use 8
- threads. We used Dask's default configuration that uses all the available
- memory on the instance. \TG{add a sentence on memory usage policy for Dask, say it's on NFS} We
- configured Spark to use 1 executor per worker and 25~GB of memory per
- executor, to leave 5~GB for off-heap. \TG{Check spill to disk}
+ Cloud instances hosted a single Dask or Spark worker, configured to use 8 CPUs. We
+ used Dask's default configuration that uses all the available memory on the
+ instance. Its default heuristic is to: target a 60\% memory load, spill to disk at
+ 70\%, pause the worker at 80\%, and terminate the worker at 95\%. We configured
+ Spark to use 1 executor per worker and 25~GB of memory per executor, to leave 5~GB
+ for off-heap. We configured the Spark driver to use 25~GB of memory, and used the
+ default configuration for the master. We used the default confirguration for worker
+ memory management: at 60\% it spill data to disk, and 50\% of that amount is
+ reserved for storage and is immuned from eviction.
  
  One cloud instance did not host any worker, and had a 2~TB disk volume
  shared with the other instances using the Network File System (NFS) v4.
  This instance was also used for the Spark driver and master, and for the
  Dask scheduler, and for job monitoring with the Spark and Dask user
- interfaces. We configured the Spark driver to use 25~GB of memory, and
- used the default configuration for the master.
+ interfaces. For both Spark and Dask, spilled data is evicted to the NFS.
 
 \subsection{Dataset}
 
@@ -232,10 +245,10 @@ at \url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D_Blocks/40um} at the
 resolution of \SI{40}{\micro\metre}. We converted the blocks into the
 \href{https://nifti.nimh.nih.gov/nifti-1}{NifTI} format, a popular format
 in neuroimaging. We left the NifTI blocks uncompressed, resulting in 
-a total data size of 76~GiB \TG{Check if GiB or GB}. 
+a total data size of \SI{81}{\giga\byte}. 
 To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of 
-2.5GB, 0.6GB, and
-0.1GB \TG{check sizes}, using the sam~\cite{sam} library.
+\SI{2.7}{\giga\byte}, \SI{0.648}{\giga\byte}, and
+\SI{0.108}{\giga\byte}, using the sam~\cite{sam} library.
 
 We also used the dataset provided by the Consortium for Reliability and
 Reproducibility
@@ -246,6 +259,7 @@ entire dataset is 408.4~GB, containing anatomical, diffusion and functional
 images of 1,397 subjects acquired in 29 sites. Among these, we only used
 data from \TG{X} subjects, representing \TG{Y}GB overall (\TG{Z}GB by
 subject on average).
+\MD{X, Y, Z values TBD after testing the makespan with different number of subjects.}
 
 
 \subsection{Applications}
