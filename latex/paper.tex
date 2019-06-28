@@ -19,6 +19,7 @@
 
 \newcommand{\TG}[1]{\color{cyan}From Tristan: #1 \color{black}}
 \newcommand{\MD}[1]{\color{magenta}From Mathieu: #1 \color{black}}
+\newcommand{\VHS}[1]{\color{green}From Valerie: #1 \color{black}}
 
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
@@ -138,8 +139,8 @@ neuroimaging pipelines.
 \subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data engine. It
 provides in-memory computing, data locality, and lazy evaluation. Spark's main data
 structure, the Resilient Distributed Dataset (RDD)~\cite{RDD}, is a fault-tolerant
-and a parallel collection of data elements. Dataframes, Spark's other popular API, is
-an overlay of RDDs with similar performance features. Spark's core is written in
+and a parallel collection of data elements. Dataframes, Spark's API for tabular data, is
+an overlay of RDDs with similar performance features \VHS{It's probably fine, but the SparkSQL Engine available for Scala and Java do bring an added peformance value}.\VHS{Spark has another API (Datasets). i know you used 'popular' for DataFrames, but it's not like Spark has a plethora of APIs. I think the APIs should be mentioned after the API languages such that you only list the APIs relevant to Python (RDD and Dataframes)} Spark's core is written in
 Scala, but it also has a Java, an R, and a Python API called PySpark. \MD{Sentence is
 ambiguous? could think that all three APIs are named PySpark} We used PySpark, given
 the popularity of Python in neuroscience, although the serialization cost of Python
@@ -148,26 +149,28 @@ scheduler, Spark standalone, although YARN~\cite{vavilapalli2013apache} and
 Mesos~\cite{hindman2011mesos} are also available. In the Spark standalone scheduler,
 a process called the \emph{master} coordinates resources provisioned by
 \emph{workers} on the cluster. The application is submitted to the \emph{driver} that
-in turn requests workers to the master and dispatches jobs to them. A job is divided
+in turn requests workers to the master and dispatches jobs to them\VHS{maybe say tasks instead of jobs, otherwise it sounds like 1 job/worker}. A job is divided
 into stages to be processed onto the workers. Each stage's operation is represented
 as a high-level task in the computation graph. The Spark standalone scheduler uses a
 FIFO (First-In-First-Out) job scheduling policy. Processing jobs in order helps in
 increasing the page hit rate. As our applications only have one job, the LIFO
 (Last-In-First-Out) policy used for the stages is more pertinent \MD{Find better
-phrasing} \TG{refer to the paper (\MD{Not sure which one})}. The Spark standalone
+phrasing} \TG{refer to the paper (\MD{Not sure which one})} \VHS{I wouldn't explicitly state LIFO here. It's a bit complicated to be frank. Basically both Spark and Dask opt to complete a chain of dependencies rather than start a bunch of ``new chains''. And in this context, LIFO is great for the page hit rate, so you might want to reword the prior sentence as well}. The Spark standalone
 scheduler has two execution modes: client mode, where the driver runs in a dedicated
 process on the cluster, and cluster mode, where the driver runs in a worker. We used
-client mode as PySpark is not available in cluster mode. We used Apache Spark v2.4.0.
+client mode as cluster mode is not available in PySpark. We used Apache Spark v2.4.0.
 
 \subsubsection{Dask} Dask is a Big Data engine that is becoming increasingly popular
 in the scientific Python ecosystem. Dask has five main APIs and data structures:
-Array, Bag, DataFrame, Delayed, and Futures. We used them all except DataFrame as it
-is not adapted to the type of data we used. Like Spark, all Dask APIs provide
+Array, Bag, DataFrame, Delayed, and Futures. All APIs were used in our experiments,
+with the exception of Dask Dataframes, which is intended for use with tabular data.
+Like Spark, all Dask APIs provide
 in-memory computing, data locality, lazy evaluation, and fault tolerance by mean of
-lineage. Dask's core is purely in Python and bypass most of the
+lineage. Dask's core is purely in Python and bypasses most of the
 \href{https://docs.python.org/3/glossary.html#term-gil}{GIL} to provide parallelism.
 We used Dask due to the common use of the scientific Python ecosystem in
-neuroscience. Dask represents application tasks as Dask graphs, produced by a
+neuroscience\VHS{If you add Dask Arrays to your experiments here, i'd mention that their
+APIs might be particularly well suited for the processing of high resolution neuroimaging data}. Dask represents application tasks as Dask graphs, produced by a
 user-facing API and executed by a scheduler. In Dask, operations generate multiple
 tiny tasks in the computation graph allowing an easier representation of complex
 algorithms. We used the \href{https://distributed.dask.org/en/latest/index.html}{Dask
@@ -193,6 +196,7 @@ Dataframes} used to process a large amount of tabular data.
 that do not fit in the Array, DataFrame or Bag APIs. Finally,
 \href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to Delayed
 as they support arbitrary tasks, but they operate in real-time rather than lazily.
+\VHS{maybe mention which one use threads and which use processes}
 
 \subsection{Infrastructure}
 
