@@ -17,7 +17,8 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
-\newcommand{\TG}[1]{\color{blue}From Tristan: #1 \color{black}}
+\newcommand{\TG}[1]{\color{cyan}From Tristan: #1 \color{black}}
+\newcommand{\MD}[1]{\color{magenta}From Mathieu: #1 \color{black}}
 
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
@@ -134,61 +135,64 @@ neuroimaging pipelines.
 
 \subsection{Engines}
 
-\subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data
-engine. It provides in-memory computing, data locality, and lazy
-evaluation. Spark's main data structure, the Resilient Distributed Dataset
-(RDD)~\cite{RDD}, is a fault-tolerant and parallel collection of data
-elements. 
-Dataframes, Spark's other popular API, are an overlay of RDDs with similar 
-performance features. 
-Spark's core is written in Scala, but it also has an R and a Python API
-called PySpark. We used PySpark, given the popularity of Python in
-neuroscience, although the serialization cost of Python objects to Scala
-might be a substantial source of overhead. We used Spark's default
+\subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data engine. It
+provides in-memory computing, data locality, and lazy evaluation. Spark's main data
+structure, the Resilient Distributed Dataset (RDD)~\cite{RDD}, is a fault-tolerant
+and a parallel collection of data elements. Dataframes, Spark's other popular API, is
+an overlay of RDDs with similar performance features. Spark's core is written in
+Scala, but it also has a Java, an R, and a Python API called PySpark. \MD{Sentence is
+ambiguous? could think that all three APIs are named PySpark} We used PySpark, given
+the popularity of Python in neuroscience, although the serialization cost of Python
+objects to Scala might be a substantial source of overhead. We used Spark's default
 scheduler, Spark standalone, although YARN~\cite{vavilapalli2013apache} and
-Mesos~\cite{hindman2011mesos} are also available. In the Spark standalone scheduler, a
-process called the \emph{master} coordinates resources provisioned by
-\emph{workers} on the cluster. The application is submitted to the
-\emph{driver} that in turn requests workers to the master and dispatches
-tasks to them. The Spark standalone scheduler uses a LIFO
-(Last-In-First-Out) task scheduling policy \TG{we should describe it
-briefly and refer to the paper}. The Spark standalone scheduler has two
-execution modes: client mode, where the driver runs in a dedicated  process
-on the cluster, and cluster mode, where the driver runs in a worker. We
-used client mode as PySpark is not available in cluster mode. We used
-Apache Spark v2.4.0.
+Mesos~\cite{hindman2011mesos} are also available. In the Spark standalone scheduler,
+a process called the \emph{master} coordinates resources provisioned by
+\emph{workers} on the cluster. The application is submitted to the \emph{driver} that
+in turn requests workers to the master and dispatches jobs to them. A job is divided
+into stages to be processed onto the workers. Each stage's operation is represented
+as a high-level task in the computation graph. The Spark standalone scheduler uses a
+FIFO (First-In-First-Out) job scheduling policy. Processing jobs in order helps in
+increasing the page hit rate. As our applications only have one job, the LIFO
+(Last-In-First-Out) policy used for the stages is more pertinent \MD{Find better
+phrasing} \TG{refer to the paper (\MD{Not sure which one})}. The Spark standalone
+scheduler has two execution modes: client mode, where the driver runs in a dedicated
+process on the cluster, and cluster mode, where the driver runs in a worker. We used
+client mode as PySpark is not available in cluster mode. We used Apache Spark v2.4.0.
 
-\subsubsection{Dask} Dask is a Big Data engine that is becoming
-increasingly popular in the scientific Python ecosystem. \TG{A few more
-introductory sentences should be added, following Spark's model.}
-\TG{Explain workers}
-Dask represents application tasks as Dask graphs, produced by a
-user-facing API and executed by a scheduler. We used the \href{https://distributed.dask.org/en/latest/index.html}{Dask
-Distributed} scheduler.
-Dask Distributed also has a LIFO policy. In theory, it should speed-up the
-pipeline execution by finishing a branch of task computations before
-starting new ones \TG{This is meant to reduce the memory footprint of the
-application}. \TG{Here we should add a few comparison sentences between
-Spark's and Dask's schedulers.} Dask has five main APIs and data structures: Bag,
-Array, Futures, Delayed and DataFrame. We used them all
-except DataFrame as it is not adapted to the type of data we
-used. All APIs provide in-memory computing, data locality, and lazy
-evaluation, however, none of them has fault tolerance \TG{Check fault
-tolerance in Dask. Fine-grained lineage vs Spark's coarse grained lineage}.
-We used Dask v1.1.4.
+\subsubsection{Dask} Dask is a Big Data engine that is becoming increasingly popular
+in the scientific Python ecosystem. Dask has five main APIs and data structures:
+Array, Bag, DataFrame, Delayed, and Futures. We used them all except DataFrame as it
+is not adapted to the type of data we used. Like Spark, all Dask APIs provide
+in-memory computing, data locality, lazy evaluation, and fault tolerance by mean of
+lineage. Dask's core is purely in Python and bypass most of the
+\href{https://docs.python.org/3/glossary.html#term-gil}{GIL} to provide parallelism.
+We used Dask due to the common use of the scientific Python ecosystem in
+neuroscience. Dask represents application tasks as Dask graphs, produced by a
+user-facing API and executed by a scheduler. In Dask, operations generate multiple
+tiny tasks in the computation graph allowing an easier representation of complex
+algorithms. We used the \href{https://distributed.dask.org/en/latest/index.html}{Dask
+Distributed} scheduler, although \href{https://github.com/dask/dask-yarn}{Dask-Yarn}
+and \href{https://github.com/mrocklin/dask-mesos}{Dask-Mesos} is also available. In
+the Dask Distributed scheduler, a process called \textit{dask-scheduler}
+administrates the resources provided by \textit{workers} in the cluster. The
+scheduler receives jobs from clients and assigns tasks to available workers. Like
+Spark scheduler, Dask Distributed also use a LIFO policy, it is meant to reduce the
+memory footprint of the application by finishing the computation of a branch in the
+Dask graph before starting new ones. We used Dask v1.1.4. 
 
 In Dask, a \href{https://docs.dask.org/en/latest/bag.html}{Bag} is a parallel
-collection of Python objects, similar to Spark's RDD. It offers a
-programming abstraction similar to the
-\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}.
-An \href{https://docs.dask.org/en/latest/array.html}{Array} is used for
-the processing of large arrays. It provides a distributed clone of the
-popular
-NumPy library. \href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports arbitrary
-tasks that do not fit in the Array, DataFrame or Bag APIs. 
-Finally, \href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to
-Delayed as they support arbitrary tasks, but they operate in real-time rather
-than lazily.
+collection of Python objects, similar to Spark's RDD. It offers a programming
+abstraction similar to the \href{https://toolz.readthedocs.io/en/latest/}{PyToolz
+library}. An \href{https://docs.dask.org/en/latest/array.html}{Array} is used for the
+processing of large arrays. It provides a distributed clone of the popular NumPy
+library. A \href{https://docs.dask.org/en/latest/dataframe.html}{Dataframe} is a
+parallel composition of
+\href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas
+Dataframes} used to process a large amount of tabular data.
+\href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports arbitrary tasks
+that do not fit in the Array, DataFrame or Bag APIs. Finally,
+\href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to Delayed
+as they support arbitrary tasks, but they operate in real-time rather than lazily.
 
 \subsection{Infrastructure}
 
@@ -206,7 +210,7 @@ than lazily.
  threads. We used Dask's default configuration that uses all the available
  memory on the instance. \TG{add a sentence on memory usage policy for Dask, say it's on NFS} We
  configured Spark to use 1 executor per worker and 25~GB of memory per
- executor, to leave 5~GB for overhead. \TG{Check spill to disk}
+ executor, to leave 5~GB for off-heap. \TG{Check spill to disk}
  
  One cloud instance did not host any worker, and had a 2~TB disk volume
  shared with the other instances using the Network File System (NFS) v4.
@@ -378,7 +382,7 @@ delay in Incrementation to evaluate the effect of job length.
 
 %%% INCREMENTATION %%%
 %% worker
-\subsection{Experiment 1: Number of workers}
+\subsection{Incrementation: Number of workers}
 Figure~\ref{fig:inc_ms_worker} shows the makespan for the incrementation algorithm on
 the y-axis and the number of workers on the x-axis; the color represents the
 different frameworks. Overall, there is no substantial makespan difference between
@@ -406,7 +410,7 @@ time and overhead increase proportionally to the number of workers.
 \end{figure}
 
 % blocks
-\subsection{Experiment 1: Number of blocks}
+\subsection{Incrementation: Number of blocks}
 In Figure~\ref{fig:inc_block}, Spark is not compared for 30 blocks. This is because
 Spark has a 2GB limitation in the task size it can compute.
 
@@ -440,7 +444,7 @@ threads are idle.
 \end{figure}
 
 %% Iterations
-\subsection{Experiment 1: Number of iterations}
+\subsection{Incrementation: Number of iterations}
 Figure~\ref{fig:inc_ms_itr} shows the makespan of the application for the various
 number of iterations. Spark and the Dask Bag API are equivalent in terms of
 performance. The Dask Delayed API is slightly faster with few iterations (tasks) but
@@ -481,7 +485,7 @@ not substantial.
 
 
 %% Sleep time
-\subsection{Experiment 1: Sleep delay}
+\subsection{Incrementation: Sleep delay}
 Figure~\ref{fig:inc_ms_sleep} shows the makespan of the incrementation algorithm for
 different sleep delays. Spark is initially slower than the Dask APIs, however, it is
 faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
