@@ -264,15 +264,15 @@ subject on average).
 
 \subsection{Applications}
 
-We used three neuroimaging applications to evaluate the engines in
-different conditions. The first two ones, incrementation and histogram, are
-simple synthetic benchmarks representing basic map-only and map-reduce applications.
-The third one is a more realistic application representative of popular
-BIDS applications~\cite{gorgolewski2017bids}. 
+We used three neuroimaging applications to evaluate the engines in different
+conditions. The first two ones, incrementation and histogram, are simple synthetic
+benchmarks representing basic map-only and map-reduce applications. The third one is
+a realistic application representative of popular BIDS
+applications~\cite{gorgolewski2017bids}. 
 
 %% Incrementation
 \subsubsection{Incrementation}
-We used the simple image incrementation pipeline used
+We used an adaptation of the simple image incrementation pipeline used
 in~\cite{hayot2019performance} (see Algorithm~\ref{alg:incrementation}).
 The application reads blocks of the BigBrain image from the shared file
 system, increments the intensity value of each voxel by 1 to avoid caching
@@ -305,23 +305,22 @@ independent subjects in parallel.
     \centering
     \includegraphics[width=0.125\textwidth,
     angle=-90]{images/incrementation-task-graph.png}
-    \caption{Task graph for Incrementation with 5 iterations, represented
-    for 3 BigBrain blocks. Circles represent the incrementation and sleep
-    function while rectangles represent image blocks.}\label{fig:tg-inc}
+    \caption{Task graph for Incrementation with 5 iterations and 3 BigBrain blocks.
+    Circles represent the incrementation and sleep function while rectangles
+    represent stages of the image blocks.}\label{fig:tg-inc}
 \end{figure}
 
 \subsubsection{Histogram}
 
  Our second application calculates the histogram of the BigBrain image (see
- Algorithm~\ref{alg:histogram}). It reads the image blocks from the shared
- file system, calculates intensity frequencies, aggregates the frequencies
- across the blocks, and finally writes the resulting histogram to the
- shared file system as a single \TG{X}KB file. This application implements
- a typical map-reduce pattern, where the final result is obtained from all
- the input blocks (see Fig.~\ref{fig:tg-histo}). This application requires
- data shuffling thus inter-worker communication. The total amount of shuffled
- data is however limited to \TG{X}MB as it only consists of image
- histograms.
+ Algorithm~\ref{alg:histogram}). It reads the image blocks from the shared file
+ system, calculates intensity frequencies, aggregates the frequencies across the
+ blocks, and finally writes the resulting histogram to the shared file system as a
+ single \SI{766}{\kilo\byte} file. This application implements a typical map-reduce
+ pattern, where the final result is obtained from all the input blocks (see
+ Fig.~\ref{fig:tg-histo}). This application requires data shuffling thus inter-worker
+ communication. The total amount of shuffled data is however limited to
+ \SI{2.62}{\mega\byte} per blocks as it only consists of image histograms.
 
  \TG{Add links to the Github repo for applications and any other relevant file.}
 
@@ -344,7 +343,9 @@ independent subjects in parallel.
 \begin{figure}[!t]
     \centering
     \includegraphics[width=0.16\textwidth, angle=-90]{images/histogram-task-graph.png}
-    \caption{Task graph for Histogram}\label{fig:tg-histo}
+    \caption{Task graph for Histogram with 3 BigBrain blocks. Circles represent the
+    functions while rectangles represent stages of the image blocks.
+    }\label{fig:tg-histo}
 \end{figure}
 
 \subsubsection{BIDS app example}
@@ -357,6 +358,7 @@ tissues of a subject's 3D MRI using the popular FMRIB Software Library
 resulting image (\TG{X}MB on average) to the shared file system. The reduce
 phase, also called group analysis, computes the volume of each brain and
 returns the average volume, shuffling a total of \TG{X}GB image data.
+\MD{Determine values when dataset is determined for the application.}
 
 While Incrementation and Histogram were implemented directly in Python,
 BIDS app example requires an external library and is distributed as a
@@ -372,6 +374,8 @@ scalability of the engines, (2) the number of BigBrain blocks in
 Incrementation and Histogram to measure the effect of different IO patterns
 and parallelization degrees, and (3) the number of iterations and sleep
 delay in Incrementation to evaluate the effect of job length.
+We run the experiments in a non-deterministic order and clear the cache of each
+worker before each benchmark.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
