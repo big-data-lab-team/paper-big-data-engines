@@ -158,7 +158,7 @@ increasing the page hit rate. As our applications only have one job, the LIFO
 phrasing} \TG{refer to the paper (\MD{Not sure which one})} \VHS{I wouldn't explicitly state LIFO here. It's a bit complicated to be frank. Basically both Spark and Dask opt to complete a chain of dependencies rather than start a bunch of ``new chains''. And in this context, LIFO is great for the page hit rate, so you might want to reword the prior sentence as well}. The Spark standalone
 scheduler has two execution modes: client mode, where the driver runs in a dedicated
 process on the cluster, and cluster mode, where the driver runs in a worker. We used
-client mode as cluster mode in not available in PySpark. We used Apache Spark v2.4.0.
+client mode as cluster mode is not available in PySpark. We used Apache Spark v2.4.0.
 
 \subsubsection{Dask} Dask is a Big Data engine that is becoming increasingly popular
 in the scientific Python ecosystem. Dask has five main APIs and data structures:
