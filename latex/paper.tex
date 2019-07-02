@@ -28,7 +28,7 @@
 
 \begin{document}
 
-\title{A Comparative study of Dask and Spark for neuroimaging pipelines}
+\title{A Comparative study of Dask and Spark for data-intensive neuroimaging pipelines}
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
@@ -134,6 +134,10 @@ voxels intensity in a 3d images (2) BIDS example.
 The result from our project help in deciding if Dask is a good choice to build
 neuroimaging pipelines.
 
+\TG{Say that it is often said that Spark has a larger overhead but scales 
+worse than Dask. In the dicussion, get back to it and mention that (1) we don't
+always observe that, (2) for data-intensive applications, overheads don't really matter
+as reducing them increases data trasnfers.}
 
 %%%%% MATERIAL AND METHODS %%%%%%
 \section{Material and Methods}
@@ -384,6 +388,12 @@ delay. To avoid any potential external bias such as background load on the
 network, we ran the experiments in a randomized order and cleared the page
 cache of each worker before each execution.
 
+For each run, we measured the application makespan as well as the cumulative 
+data read, compute, data write, and engine overhead across all application tasks. 
+We measured the overhead by \TG{\ldots, maybe add a figure}.
+
+\TG{explain that number of iterations may impact futures.}
+
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
 
@@ -413,7 +423,9 @@ cache of each worker before each execution.
 %% worker
 \subsection{Incrementation: Number of workers}
 Figure~\ref{fig:inc_ms_worker} shows the makespan of the Incrementation
-application for different numbers of workers and for different engines.
+application for different numbers of workers and for different engines. 
+The bars show the average makespan over 5 repetitions while the error bars 
+are the standard deviation \TG{check this}.
 Overall, there is no substantial makespan difference between the engines.
 Dask seems to have a slight advantage over Spark, \TG{X (toutes les Dask vs Spark)} seconds on
 average, with Delayed and Futures being slightly better than Bags.
@@ -457,18 +469,20 @@ Figure~\ref{fig:inc_ms_block} shows the Incrementation makespan when
 varying the number of image blocks for a constant BigBrain image size. We
 were not able to run Spark for 30 blocks due to its 2GB limitation in the
 task size it can compute. Once again, we do not observe any significant
-difference among the engines. 
+difference among the engines. For all engines, makespan variability
+increases with the number of blocks, however, engines scale very well in
+general.
 
 
 In Figure~\ref{fig:inc_tt_block}, the total execution time of each function is shown.
-For 30 blocks the Dask Bag API has a much lower overhead time. This is because we
-only calculate the idle time of the used core. Dask Bag was only using one thread per
-block in comparison to Dask Delayed and Dask Futures which was offloading a block
-calculations on multiple threads of the same worker. Furthermore, the variance of the
-overhead increases proportionally to the number of blocks. Also, the IO time reduces
-with more blocks however the overhead time increase by a similar amount. This is not
-observed for 30 blocks as the workers are not used at full capacity; i.e.\ some
-threads are idle.
+For 30 blocks the Dask Bag API has a much lower overhead time. This is because Dask Bag was only using one thread per
+block in comparison to Dask Delayed and Dask Futures which were offloading a block
+calculations on multiple threads of the same worker.  Once again, the data transfer time reduces
+with more blocks however the overhead time increases by a similar amount. This is not
+observed for 30 blocks as the workers are not used at full capacity, i.e., some
+threads are idle. Finally, the variability of the
+overhead increases with the number of blocks, which explains the makespan
+variability mentioned previously.
 
 \begin{figure}[!t]
     \centering
@@ -486,18 +500,16 @@ threads are idle.
 
 %% Iterations
 \subsection{Incrementation: Number of iterations}
-Figure~\ref{fig:inc_ms_itr} shows the makespan of the application for the various
-number of iterations. Spark and the Dask Bag API are equivalent in terms of
-performance. The Dask Delayed API is slightly faster with few iterations (tasks) but
-it has a similar makespan to Spark and Dask Bag when the number of iterations
-increases. Overall, Dask Futures seems to be faster but the difference is not
-substantial.
+Figure~\ref{fig:inc_ms_itr} shows the makespan of the application while
+varying the number of iterations. Overall,  Spark and Dask APIs are once
+again equivalent, although Dask Delayed and Futures are slightly faster
+than Bags and Spark for 1 and 10 few iterations, and Fuures are faster than
+Delayed, Bags and Spark for 100 iterations. Differences remain minor
+though.
 
-In Figure~\ref{fig:inc_tt_itr}, the execution time of the function type is shown. The
-compute time increase proportionally to the number of iterations. This is because
-each computing task has a constant sleep delay. Also, the overhead increases when the
-number of iterations (tasks) increases while the IO time decreases; however this is
-not substantial.
+In Figure~\ref{fig:inc_tt_itr}, the total execution time breakdown is
+shown. We observe good scalability of all the engines with the number of
+iterations.
 
 % We think this is because Dask Delayed often
 % schedule a block on a different thread of the same worker which causes small delays
@@ -521,55 +533,54 @@ not substantial.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_itr}
     \end{subfigure}
-    \caption{125 blocks, 4 sec.\ sleep delay, 8 instances}
+    \caption{125 blocks, 4-s delay, 8 workers, 8 threads/worker}
 \end{figure}
-
 
 %% Sleep time
 \subsection{Incrementation: Sleep delay}
-Figure~\ref{fig:inc_ms_sleep} shows the makespan of the incrementation algorithm for
-different sleep delays. Spark is initially slower than the Dask APIs, however, it is
-faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
-slower than the other two but it is not considerable.
+Figure~\ref{fig:inc_ms_sleep} shows the makespan of the Incrementation
+application for different sleep delays. Overall, all engines again perform the same, and scale well with task duration.
+ Spark is initially slower than the
+Dask APIs, however, it is faster when increasing the sleep delay. Also,
+within the Dask APIs, Dask Bag is slower than the other two but it is not
+considerable.
 
-Figure~\ref{fig:inc_tt_sleep} shows the execution time for each type of function. On
-one hand, Spark has the smallest overhead. Table~\ref{tab:inc_sleep_overhead} shows
-that it is substantial; especially with a 64 seconds sleep delay. On the other hand,
-Spark has a high IO time. In contrast, Dask Delayed and Futures have the largest
-overhead time but the smallest IO time. Then, Dask Bag stands in the middle for both
-overhead and IO time.
+Figure~\ref{fig:inc_tt_sleep} shows the total execution time breakdown. On
+one hand, Spark has the smallest overhead. As previously observed,
+variations in overhead time are almost exactly compensated by variations in data
+transfer time.
 
-\begin{table}[!t]
-    \caption{Function time for the sleep experiment}
-    \begin{subtable}[b]{\columnwidth}
-        \renewcommand{\arraystretch}{1.3}
-        \caption{Overhead time in second}\label{tab:inc_sleep_overhead}
-        \centering
-        \begin{tabular}{lllll}
-        \hline
-                     & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
-        Spark        & 14992  & 17076  & 16069   & 9769    \\
-        Dask.Bag     & 20690  & 21388  & 17759   & 18720   \\
-        Dask.Delayed & 27481  & 26199  & 22080   & 24624   \\
-        Dask.Futures & 27069  & 27984  & 23538   & 24762   \\ \hline
-        \end{tabular}
-    \end{subtable}
-    \vskip 0.2cm
-    \begin{subtable}[b]{\columnwidth}
-        \renewcommand{\arraystretch}{1.3}
-        \caption{IO time in second}\label{tab:inc_sleep_io}
-        \centering
-        \begin{tabular}{lllll}
-        \hline
-                     & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
-        Spark        & 63622  & 57144  & 51070   & 57078   \\
-        Dask.Bag     & 54630  & 52312  & 53743   & 53612   \\
-        Dask.Delayed & 45239  & 44142  & 45133   & 46198   \\
-        Dask.Futures & 46537  & 43161  & 44749   & 45846   \\ \hline
-        \end{tabular}
-    \end{subtable}
-    \vspace{-3mm}
- \end{table}
+% \begin{table}[!t]
+%     \caption{Function time for the sleep experiment}
+%     \begin{subtable}[b]{\columnwidth}
+%         \renewcommand{\arraystretch}{1.3}
+%         \caption{Overhead time in second}\label{tab:inc_sleep_overhead}
+%         \centering
+%         \begin{tabular}{lllll}
+%         \hline
+%                      & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
+%         Spark        & 14992  & 17076  & 16069   & 9769    \\
+%         Dask.Bag     & 20690  & 21388  & 17759   & 18720   \\
+%         Dask.Delayed & 27481  & 26199  & 22080   & 24624   \\
+%         Dask.Futures & 27069  & 27984  & 23538   & 24762   \\ \hline
+%         \end{tabular}
+%     \end{subtable}
+%     \vskip 0.2cm
+%     \begin{subtable}[b]{\columnwidth}
+%         \renewcommand{\arraystretch}{1.3}
+%         \caption{IO time in second}\label{tab:inc_sleep_io}
+%         \centering
+%         \begin{tabular}{lllll}
+%         \hline
+%                      & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
+%         Spark        & 63622  & 57144  & 51070   & 57078   \\
+%         Dask.Bag     & 54630  & 52312  & 53743   & 53612   \\
+%         Dask.Delayed & 45239  & 44142  & 45133   & 46198   \\
+%         Dask.Futures & 46537  & 43161  & 44749   & 45846   \\ \hline
+%         \end{tabular}
+%     \end{subtable}
+%     \vspace{-3mm}
+%  \end{table}
 
 \begin{figure}[!t]
     \centering
@@ -582,19 +593,22 @@ overhead and IO time.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_sleep}
     \end{subfigure}
-    \caption{125 blocks, 10 iterations, 8 instances}
+    \caption{125 blocks, 10 iterations, 8 workers, 8 threads/worker}
 \end{figure}
 
 %% Baseline gantt chart
-\subsection{Experimentation 1: Baseline timeline}
-Figure\ref{fig:inc_gantt} shows the tasks timeline for each worker thread. On the
-x-axis is the time in seconds and on the y-axis is the workers and their threads. The
-color represents the type of different tasks; note that the color differs from one
-graph to another. The first section of reading tasks is much larger than the
-following ones. This is because, initially, the NFS is saturated by the number of
-workers accessing it. Also, a substantial amount of overhead happens near the IO
-tasks. Moreover, for the computing tasks, there is more overhead for the latter tasks.
+\subsection{Incrementation: Gantt chart}
 
+Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine
+and API, for a baseline execution with 125 blocks, a 4-second sleep delay
+and 8 workers \TG{Make the colors uniform}. Gantt charts are structured in 
+batches of up to 64 read-compute-write concurrent sequences.
+File reads in the first batch are much longer than in the following ones:
+this is due to the high synchronization of data transfers that leads to a
+high saturation of the shared file system. We also note that overhead,
+represented in white, is concentrated around the data transfer tasks
+\TG{find out why}, and the computing tasks that run concurrently with data
+transfers. 
 % The frameworks have similar makespan however the time spend for each type of
 % task differs considerably (see Table~\ref{tab:inc_base}). Spark tends to spend more
 % time than other frameworks for IO however it has a much lower overhead. Dask Delayed
@@ -624,7 +638,7 @@ tasks. Moreover, for the computing tasks, there is more overhead for the latter 
         \includegraphics[clip,width=\columnwidth]{images/Dask_futures_inc_baseline_gantt.png}%
         \caption{Dask Futures execution timeline}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{125 blocks, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_gantt}
+    \caption{125 blocks, 4 sec.\ sleep delay, 8 workers}\label{fig:inc_gantt}
 \end{figure*}
 
 % \begin{table}[!b]
@@ -643,7 +657,7 @@ tasks. Moreover, for the computing tasks, there is more overhead for the latter 
 %  \end{table}
 
 %%% HISTOGRAM %%%
-\subsection{Experiment 2: Number of instances}
+\subsection{Experiment 2: Number of workers}
 
 \begin{figure}[!t]
     \centering
@@ -677,7 +691,7 @@ tasks. Moreover, for the computing tasks, there is more overhead for the latter 
 \TG{We decided to omit Dask Futures as it does not have any value over Dask
 Delayed in this application.}
 %%% BIDS EXAMPLE %%%
-\subsection{Experiment 3: Number of instances}
+\subsection{Experiment 3: Number of workers}
 
 
 
@@ -686,6 +700,10 @@ Delayed in this application.}
 
 \TG{Talk about engine overhead: (1) where is it coming from? (2) 
 explain the impact on data transfers with a graph.}
+
+\TG{In the dicussion, get back to it and mention that (1) we don't
+always observe that, (2) for data-intensive applications, overheads don't really matter
+as reducing them increases data trasnfers.}
 
 \subsection{IO Time}
 
