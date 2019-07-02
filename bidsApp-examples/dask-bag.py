@@ -2,8 +2,8 @@ import argparse
 import sys
 from time import time
 
-import dask
-from dask.distributed import Client, fire_and_forget
+import dask.bag as db
+from dask.distributed import Client
 
 sys.path.append("/nfs/paper-big-data-engines")
 
@@ -41,22 +41,20 @@ if __name__ == "__main__":
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
-    subjects = subject_crawler(args.bids_dir)
+    subjects_to_analyze = db.from_sequence(subject_crawler(args.bids_dir))
 
-    results = list()
-    for subject in subjects:
-        results.append(
-            dask.delayed(run_participant)(
-                subject_dir=subject[1],
-                start=start,
-                args=args,
-                input_dir=subject[0],
-                output_dir=args.output_dir,
-            )
+    subjects_to_analyze.map(
+        lambda x: run_participant(
+            subject_dir=x[1],
+            start=start,
+            args=args,
+            input_dir=x[0],
+            output_dir=args.output_dir,
         )
+    )
 
-    client.scatter(results)
-    futures = client.compute(results)
-    client.gather(futures)
-
-    dask.delayed(run_group)(start=start, args=args, output_dir=args.output_dir)
+    run_group(
+        start=start,
+        args=args,
+        output_dir=args.output_dir,
+    )

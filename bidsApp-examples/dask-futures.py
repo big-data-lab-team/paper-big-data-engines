@@ -42,11 +42,13 @@ if __name__ == "__main__":
 
     # Retrieve all subject path
     subjects = subject_crawler(args.bids_dir)
+    client.scatter(subjects)
 
     results = list()
     for subject in subjects:
         results.append(
-            dask.delayed(run_participant)(
+            client.submit(
+                run_participant,
                 subject_dir=subject[1],
                 start=start,
                 args=args,
@@ -55,8 +57,7 @@ if __name__ == "__main__":
             )
         )
 
-    client.scatter(results)
-    futures = client.compute(results)
-    client.gather(futures)
+    client.gather(results)
 
-    dask.delayed(run_group)(start=start, args=args, output_dir=args.output_dir)
+    group = client.submit(run_group, start=start, args=args, output_dir=args.output_dir)
+    client.gather(group)
