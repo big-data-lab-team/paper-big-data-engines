@@ -72,15 +72,19 @@ Big Data, Dask, Spark, performance, neuroimaging
 
 \section{Introduction}
 % Context
-With the increasing number of data available in neuroimaging,~\cite{ALFAROALMAGRO:18,
-UKBioBank:18} the processing of Big Data becomes critical. Frameworks like
-Nipype~\cite{Nipype:11} are usually used to create neuroimaging pipelines however it
-is worth considering the use of general purpose Big Data
-frameworks~\cite{Hayot-Sasson:17}. In that research, Spark~\cite{Spark:16} was a
-natural choice as it is the state-of-the-art framework for Big Data. Since our
-laboratory mostly works with Python, we want to know if Dask~\cite{Dask:15}, a Python
-written framework, could bring better or similar performances while facilitating
-usage.
+\VHS{it's not the the processing of BD becomes critical, it's that the results obtained
+from processing more data should be more reliable\dots and the data is there too}
+The recent rise in data sharing and improved data collection strategies
+have brought neuroimaging to the Big Data era ~\cite{ALFAROALMAGRO:18,
+UKBioBank:18}. Existing neuroimaging frameworks, such as Nipype~\cite{Nipype:11},
+are well suited for processing the standard compute-intensive neuroimaging pipelines,
+but lack incorporation Big Data strategies (i.e. in-memory computing,
+data locality and lazy-evaluation) to improve performance of the increasingly
+prevalent data-intensive pipelines. As was noted in ~\cite{Hayot-Sasson:17}, 
+in-memory computing, coupled with data locality, can bring significant performance
+improvements to data intensive neuroimaging pipelines. We extend this work by studying
+the differences between two Big Data frameworks, Dask~\cite{Dask:15} and Apache Spark~\cite{Spark:16},
+for their suitability in the processing neuroimaging pipelines. 
 
 %Similarities
 \TG{Note for later: explain the following concepts in the intro: lazy eval, data locality, in-memory computing.}
