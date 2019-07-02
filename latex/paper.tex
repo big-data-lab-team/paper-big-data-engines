@@ -374,8 +374,11 @@ scalability of the engines, (2) the number of BigBrain blocks in
 Incrementation and Histogram to measure the effect of different IO patterns
 and parallelization degrees, and (3) the number of iterations and sleep
 delay in Incrementation to evaluate the effect of job length.
-We run the experiments in a non-deterministic order and clear the cache of each
-worker before each benchmark.
+It should be noted that increasing the number of blocks or iterations also
+increases the total compute time of the application for a given sleep
+delay. To avoid any potential external bias such as background load on the
+network, we ran the experiments in a randomized order and cleared the page
+cache of each worker before each execution.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
@@ -405,17 +408,29 @@ worker before each benchmark.
 %%% INCREMENTATION %%%
 %% worker
 \subsection{Incrementation: Number of workers}
-Figure~\ref{fig:inc_ms_worker} shows the makespan for the incrementation algorithm on
-the y-axis and the number of workers on the x-axis; the color represents the
-different frameworks. Overall, there is no substantial makespan difference between
-the frameworks. Also, the increase in performance is not proportional to the number
-of workers; performance even decreases when we reach 8 workers.
+Figure~\ref{fig:inc_ms_worker} shows the makespan of the Incrementation
+application for different numbers of workers and for different engines.
+Overall, there is no substantial makespan difference between the engines.
+Dask seems to have a slight advantage over Spark, \TG{X (toutes les Dask vs Spark)} seconds on
+average, with Delayed and Futures being slightly better than Bags.
 
-In Figure~\ref{fig:inc_tt_worker}, the y-axis shows the total execution time of the
-incrementation application. The hatch indicates the total time spent for: read,
-compute, write, and overhead. Again, the color represents the frameworks. The
-computing time stays similar when the number of workers increases. However, the IO
-time and overhead increase proportionally to the number of workers.
+For all engines, the makespan is far from decreasing linearly with the
+number of workers. Note that there are 8 threads per worker. The makespan
+even increases between 4 and 8 workers. This is due to the high impact of
+data transfers and engine overhead on the application. 
+
+Figure~\ref{fig:inc_tt_worker} shows the total execution time of the
+Incrementation application, broken down into data transfer (read and
+write), compute (sleep), and overhead time. As expected, the computing time
+stays similar when the number of workers increases. However, the data
+transfer time and overhead increase proportionally to the number of
+workers \TG{check if indeed proprotional, add regression slopes}.
+
+On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
+slightly lower than Dask's in particular as the number of workers increase.
+Within Dask, Delayed and Futures have a higher overhead than Bags. However,
+overhead differences are compensated by an increase of data transfer time,
+as a reduced overhead increases the concurrency between data transfers. 
 
 \begin{figure}[!b]
     \centering
@@ -428,18 +443,18 @@ time and overhead increase proportionally to the number of workers.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_worker.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_worker}
     \end{subfigure}
-    \caption{125 blocks, 10 iterations, 4 sec.\ sleep delay}\label{fig:inc_worker}
+    \caption{125 blocks, 10 iterations, 4-s delay, 8 threads/worker}\label{fig:inc_worker}
 \end{figure}
 
 % blocks
 \subsection{Incrementation: Number of blocks}
-In Figure~\ref{fig:inc_block}, Spark is not compared for 30 blocks. This is because
-Spark has a 2GB limitation in the task size it can compute.
 
-The Figure~\ref{fig:inc_ms_block} shows the makespan evolution when varying the
-number of blocks. The compute time increase when there are more blocks. This is
-because the sleep delay is constant throughout this experiment and there are more
-compute tasks when the number of blocks increases.
+Figure~\ref{fig:inc_ms_block} shows the Incrementation makespan when
+varying the number of image blocks for a constant BigBrain image size. We
+were not able to run Spark for 30 blocks due to its 2GB limitation in the
+task size it can compute. Once again, we do not observe any significant
+difference among the engines. 
+
 
 In Figure~\ref{fig:inc_tt_block}, the total execution time of each function is shown.
 For 30 blocks the Dask Bag API has a much lower overhead time. This is because we
@@ -462,7 +477,7 @@ threads are idle.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_block.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_block}
     \end{subfigure}
-    \caption{10 iterations, 4 sec.\ sleep delay, 8 instances}\label{fig:inc_block}
+    \caption{10 iterations, 4-s delay, 8 workers, 8 threads/worker}\label{fig:inc_block}
 \end{figure}
 
 %% Iterations
@@ -664,6 +679,10 @@ Delayed in this application.}
 
 %%%%% DISCUSSION %%%%%
 \section{Discussion}
+
+\TG{Talk about engine overhead: (1) where is it coming from? (2) 
+explain the impact on data transfers with a graph.}
+
 \subsection{IO Time}
 
 
