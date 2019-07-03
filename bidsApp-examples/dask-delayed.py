@@ -37,7 +37,7 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("/nfs/paper-big-data-engines/Example.py")
+    client.upload_file("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
@@ -46,17 +46,14 @@ if __name__ == "__main__":
     results = list()
     for subject in subjects:
         results.append(
-            dask.delayed(run_participant)(
-                subject_dir=subject[1],
-                start=start,
-                args=args,
-                input_dir=subject[0],
-                output_dir=args.output_dir,
-            )
+            dask.delayed(run_participant)(subject_id=subject[1], start=start, args=args)
         )
 
     client.scatter(results)
     futures = client.compute(results)
     client.gather(futures)
 
-    dask.delayed(run_group)(start=start, args=args, output_dir=args.output_dir)
+    group = dask.delayed(run_group)(start=start, args=args)
+    client.scatter(group)
+    futures = client.compute(group)
+    client.gather(futures)

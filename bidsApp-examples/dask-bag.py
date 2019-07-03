@@ -37,24 +37,14 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("/nfs/paper-big-data-engines/Example.py")
+    client.upload_file("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
     subjects_to_analyze = db.from_sequence(subject_crawler(args.bids_dir))
 
     subjects_to_analyze.map(
-        lambda x: run_participant(
-            subject_dir=x[1],
-            start=start,
-            args=args,
-            input_dir=x[0],
-            output_dir=args.output_dir,
-        )
-    )
+        lambda x: run_participant(subject_id=x[1], start=start, args=args)
+    ).compute()
 
-    run_group(
-        start=start,
-        args=args,
-        output_dir=args.output_dir,
-    )
+    run_group(start=start, args=args)
