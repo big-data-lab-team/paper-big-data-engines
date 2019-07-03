@@ -7,24 +7,27 @@ from utils import benchmark
 
 def subject_crawler(path):
     return [
-        (site_dir, subj_dir.split("/")[-2].split("-")[-1])
+        (site_dir, subj_id.split("/")[-2].split("-")[-1])
         for site_dir in glob(f"{path}")
-        for subj_dir in glob(f"{site_dir}/*/")
+        for subj_id in glob(f"{site_dir}/*/")
     ]
 
 
-def run_participant(*, subject_dir, start, args, input_dir, output_dir):
+def run_participant(*, subject_id, start, args):
     start_time = time() - start
 
-    path = "../"
     subprocess.run(
         [
-            f"{path}/bids_example.img",
-            input_dir,
-            output_dir,
-            "participant",
-            "--participant_label",
-            subject_dir,
+            "singularity",
+            "exec",
+            "-B",
+            "/nfs/singularity-image:/run",
+            "bids_example.simg",
+            "bash",
+            "/run/participant.sh",
+            args.bids_dir,
+            args.output_dir,
+            subject_id,
         ],
         shell=True,
     )
@@ -35,19 +38,29 @@ def run_participant(*, subject_dir, start, args, input_dir, output_dir):
         benchmark(
             start_time,
             end_time,
-            subject_dir,
+            subject_id,
             args.output_dir,
             args.experiment,
             run_participant.__name__,
         )
 
 
-def run_group(*, start, args, file_, output_dir):
+def run_group(*, start, args):
     start_time = time() - start
 
-    path = "../"
     subprocess.run(
-        [f"{path}/bids_example.img", "/nfs/bids-data/RawDataBIDS", output_dir, "group"],
+        [
+            "singularity",
+            "exec",
+            "-B",
+            "/nfs/singularity-image:/run",
+            "bids_example.simg",
+            "bash",
+            "/run/group.sh",
+            "/nfs/bids-data",
+            args.bids_dir,
+            args.output_dir,
+        ],
         shell=True,
     )
 
@@ -57,7 +70,7 @@ def run_group(*, start, args, file_, output_dir):
         benchmark(
             start_time,
             end_time,
-            file_,
+            "all_file",
             args.output_dir,
             args.experiment,
             run_group.__name__,

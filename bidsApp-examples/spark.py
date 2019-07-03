@@ -5,8 +5,6 @@ from time import time
 
 from pyspark import SparkConf, SparkContext
 
-from Example import run_group, run_participant, subject_crawler
-
 sys.path.append("/nfs/paper-big-data-engines")
 
 
@@ -39,17 +37,14 @@ if __name__ == "__main__":
     sc = SparkContext.getOrCreate(conf=conf)
     print("Connected")
 
+    sc.addFile("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
+    from Example import run_group, run_participant, subject_crawler
+
     # Retrieve all subject path
     subjects_to_analyze = sc.parallelize(subject_crawler(args.bids_dir))
 
     subjects_to_analyze.map(
-        lambda x: run_participant(
-            subject_dir=x[1],
-            start=start,
-            args=args,
-            input_dir=x[0],
-            output_dir=args.output_dir,
-        )
-    )
+        lambda x: run_participant(subject_id=x[1], start=start, args=args)
+    ).collect()
 
-    run_group(start=start, args=args, output_dir=args.output_dir)
+    run_group(start=start, args=args)
