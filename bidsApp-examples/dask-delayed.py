@@ -53,7 +53,4 @@ if __name__ == "__main__":
     futures = client.compute(results)
     client.gather(futures)
 
-    group = dask.delayed(run_group)(start=start, args=args)
-    client.scatter(group)
-    futures = client.compute(group)
-    client.gather(futures)
+    run_group(start=start, args=args)
