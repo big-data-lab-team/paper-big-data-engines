@@ -17,18 +17,9 @@ def run_participant(*, subject_id, start, args):
     start_time = time() - start
 
     subprocess.run(
-        [
-            "singularity",
-            "exec",
-            "-B",
-            "/nfs/singularity-image:/run,/nfs:/nfs",
-            "/nfs/singularity-image/bids_example.simg",
-            "bash",
-            "/run/participant.sh",
-            args.bids_dir,
-            args.output_dir,
-            subject_id,
-        ],
+        "singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs "
+        + "/nfs/singularity-image/bids_example.simg bash /run/participant.sh "
+        + f"{args.bids_dir} {args.output_dir} {subject_id}",
         shell=True,
     )
 
@@ -49,17 +40,9 @@ def run_group(*, start, args):
     start_time = time() - start
 
     subprocess.run(
-        [
-            "singularity",
-            "exec",
-            "-B",
-            "/nfs/singularity-image:/run,/nfs:/nfs",
-            "/nfs/singularity-image/bids_example.simg",
-            "bash",
-            "/run/group.sh",
-            args.bids_dir,
-            args.output_dir,
-        ],
+        "singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs "
+        + "/nfs/singularity-image/bids_example.simg bash /run/group.sh "
+        + f"{args.bids_dir} {args.output_dir}",
         shell=True,
     )
 
