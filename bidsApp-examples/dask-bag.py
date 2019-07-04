@@ -38,10 +38,13 @@ if __name__ == "__main__":
 
     print(client)
     client.upload_file("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
+    client.upload_file("/nfs/paper-big-data-engines/utils.py")
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
-    subjects_to_analyze = db.from_sequence(subject_crawler(args.bids_dir), npartitions=128)
+    subjects_to_analyze = db.from_sequence(
+        subject_crawler(args.bids_dir), npartitions=128
+    )
 
     subjects_to_analyze.map(
         lambda x: run_participant(subject_id=x[1], start=start, args=args)
