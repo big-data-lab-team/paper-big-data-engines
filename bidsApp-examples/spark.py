@@ -12,7 +12,6 @@ if __name__ == "__main__":
     start = time()
 
     parser = argparse.ArgumentParser(description="Example BIDS App entrypoint script.")
-    parser.add_argument("scheduler", type=str, help="Scheduler ip and port")
     parser.add_argument(
         "bids_dir",
         help="The directory with the input dataset "
