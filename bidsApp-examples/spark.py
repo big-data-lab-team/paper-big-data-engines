@@ -40,7 +40,7 @@ if __name__ == "__main__":
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
-    subjects_to_analyze = sc.parallelize(subject_crawler(args.bids_dir))
+    subjects_to_analyze = sc.parallelize(subject_crawler(args.bids_dir), 128)
 
     subjects_to_analyze.map(
         lambda x: run_participant(subject_id=x[1], start=start, args=args)
