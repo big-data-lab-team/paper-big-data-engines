@@ -27,7 +27,7 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
                     "25G",
                     "--driver-memory",
                     "25G",
-                    "/nfs/paper-big-data-engines/bidsApp_examples/" + filename,
+                    "/nfs/paper-big-data-engines/bidsApp-examples/" + filename,
                     "/nfs/bids-data/ds005",
                     "/nfs/bids/outputs",
                     experiment,
@@ -38,7 +38,7 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
             subprocess.run(
                 [
                     "python",
-                    "/nfs/paper-big-data-engines/bidsApp_examples/" + filename,
+                    "/nfs/paper-big-data-engines/bidsApp-examples/" + filename,
                     "192.168.73.10:8786",
                     "/nfs/bids-data/ds005",
                     "/nfs/bids/outputs",
