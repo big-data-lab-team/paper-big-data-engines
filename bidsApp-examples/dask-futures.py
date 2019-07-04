@@ -54,5 +54,4 @@ if __name__ == "__main__":
 
     client.gather(results)
 
-    group = client.submit(run_group, start=start, args=args)
-    client.gather(group)
+    run_group(start=start, args=args)
