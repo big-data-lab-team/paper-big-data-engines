@@ -32,11 +32,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cluster scheduler
-    conf = SparkConf().setAppName("Spark Incrementation")
+    conf = SparkConf().setAppName("BidsApp example")
     sc = SparkContext.getOrCreate(conf=conf)
     print("Connected")
 
     sc.addFile("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
+    sc.addFile("/nfs/paper-big-data-engines/utils.py")
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
