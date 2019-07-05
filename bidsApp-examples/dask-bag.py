@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # Retrieve all subject path
     subjects_to_analyze = db.from_sequence(
-        subject_crawler(args.bids_dir), npartitions=128
+        subject_crawler(args.bids_dir), npartitions=512
     )
 
     subjects_to_analyze.map(
@@ -55,5 +55,5 @@ if __name__ == "__main__":
         )
     ).compute()
 
-    sites = db.from_sequence(site_crawler(args.bids_dir), npartitions=128)
-    sites.map(lambda x: run_group(start=start, args=args, sitre=x)).collect()
+    sites = db.from_sequence(site_crawler(args.bids_dir), npartitions=512)
+    sites.map(lambda x: run_group(start=start, args=args, sitre=x)).compute()
