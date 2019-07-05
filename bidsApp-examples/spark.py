@@ -5,7 +5,7 @@ from time import time
 
 from pyspark import SparkConf, SparkContext
 
-sys.path.append("/nfs/paper-big-data-engines")
+sys.path.append("/nfs/paper-big-data-engines/bids-examples")
 
 
 if __name__ == "__main__":
@@ -36,8 +36,8 @@ if __name__ == "__main__":
     sc = SparkContext.getOrCreate(conf=conf)
     print("Connected")
 
-    sc.addFile("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
     sc.addFile("/nfs/paper-big-data-engines/utils.py")
+    sc.addFile("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path

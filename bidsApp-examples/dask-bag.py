@@ -5,7 +5,7 @@ from time import time
 import dask.bag as db
 from dask.distributed import Client
 
-sys.path.append("/nfs/paper-big-data-engines")
+sys.path.append("/nfs/paper-big-data-engines/bids-examples")
 
 
 if __name__ == "__main__":
@@ -37,8 +37,8 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     print(client)
-    client.upload_file("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
+    client.upload_file("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
     from Example import run_group, run_participant, subject_crawler
 
     # Retrieve all subject path
