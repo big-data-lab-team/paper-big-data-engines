@@ -8,8 +8,8 @@ from utils import benchmark
 def subject_crawler(path):
     return [
         (site_dir, subj_id.split("/")[-2].split("-")[-1])
-        for site_dir in glob(f"{path}")
-        for subj_id in glob(f"{site_dir}/*/")
+        for site_dir in glob(f"{path}/*/")
+        for subj_id in glob(f"{site_dir}/sub-*/")
     ]
 
 
