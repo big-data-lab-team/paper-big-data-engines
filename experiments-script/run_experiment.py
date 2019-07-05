@@ -30,6 +30,7 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
                     "/nfs/paper-big-data-engines/bidsApp-examples/" + filename,
                     "/nfs/bids-data/RawDataBIDS",
                     "/nfs/bids/outputs",
+                    "/nfs/results",
                     experiment,
                     "--benchmark",
                 ]
@@ -42,6 +43,7 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
                     "192.168.73.10:8786",
                     "/nfs/bids-data/RawDataBIDS",
                     "/nfs/bids/outputs",
+                    "/nfs/results",
                     experiment,
                     "--benchmark",
                 ]

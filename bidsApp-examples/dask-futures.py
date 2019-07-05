@@ -26,6 +26,9 @@ if __name__ == "__main__":
         "participant level analysis.",
     )
     parser.add_argument(
+        "benchmark_dir", help="Directory where thebenchmark files are written."
+    )
+    parser.add_argument(
         "experiment", type=str, help="Name of the experiment being performed"
     )
     parser.add_argument("--benchmark", action="store_true", help="benchmark results")
@@ -39,7 +42,7 @@ if __name__ == "__main__":
     print(client)
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/bidsApp-examples/Example.py")
-    from Example import run_group, run_participant, subject_crawler
+    from Example import run_group, run_participant, site_crawler, subject_crawler
 
     # Retrieve all subject path
     subjects = subject_crawler(args.bids_dir)
@@ -49,10 +52,20 @@ if __name__ == "__main__":
     for subject in subjects:
         results.append(
             client.submit(
-                run_participant, subject_id=subject[1], start=start, args=args
+                run_participant,
+                subject_id=subject[1],
+                start=start,
+                args=args,
+                site=subject[0],
             )
         )
 
     client.gather(results)
 
-    run_group(start=start, args=args)
+    sites = site_crawler(args.bids_dir)
+
+    results = list()
+    for site in sites:
+        results.append(client.submit(run_group(start=start, args=args, site=site)))
+
+    client.gather(results)

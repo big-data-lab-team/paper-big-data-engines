@@ -7,19 +7,21 @@ from utils import benchmark
 
 def subject_crawler(path):
     return [
-        (site_dir, subj_id.split("/")[-2].split("-")[-1])
+        (site_dir.split("/")[-2], subj_id.split("/")[-2].split("-")[-1])
         for site_dir in glob(f"{path}/*/")
         for subj_id in glob(f"{site_dir}/sub-*/")
     ]
 
 
-def run_participant(*, subject_id, start, args):
+def site_crawler(path):
+    return [(site_dir) for site_dir in glob(f"{path}/*/")]
+
+
+def run_participant(*, subject_id, start, args, site):
     start_time = time() - start
 
     subprocess.run(
-        "singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs "
-        + "/nfs/singularity-image/bids_example.simg bash /run/participant.sh "
-        + f"{args.bids_dir} {args.output_dir} {subject_id}",
+        f"singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs /nfs/singularity-image/bids_example.simg bash /run/participant.sh {args.bids_dir}/{site} {args.output_dir}/{site} {subject_id}",
         shell=True,
     )
 
@@ -30,19 +32,21 @@ def run_participant(*, subject_id, start, args):
             start_time,
             end_time,
             subject_id,
-            args.output_dir,
+            args.benchmark_dir,
             args.experiment,
             run_participant.__name__,
         )
 
 
-def run_group(*, start, args):
+def run_group(*, start, args, site):
     start_time = time() - start
 
+    output_folder = f"{args.bids_dir}-{site}"
+
+    subprocess.run(f"mkdir -p {output_folder}")
+
     subprocess.run(
-        "singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs "
-        + "/nfs/singularity-image/bids_example.simg bash /run/group.sh "
-        + f"{args.bids_dir} {args.output_dir}",
+        f"singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs /nfs/singularity-image/bids_example.simg bash /run/group.sh {args.bids_dir}/{site} {output_folder}",
         shell=True,
     )
 
@@ -53,7 +57,7 @@ def run_group(*, start, args):
             start_time,
             end_time,
             "all_file",
-            args.output_dir,
+            args.benchmark_dir,
             args.experiment,
             run_group.__name__,
         )
