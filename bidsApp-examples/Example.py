@@ -14,7 +14,7 @@ def subject_crawler(path):
 
 
 def site_crawler(path):
-    return [(site_dir) for site_dir in glob(f"{path}/*/")]
+    return [(site_dir.split("/")[-2]) for site_dir in glob(f"{path}/*/")]
 
 
 def run_participant(*, subject_id, start, args, site):
