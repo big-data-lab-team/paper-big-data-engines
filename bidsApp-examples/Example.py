@@ -20,8 +20,10 @@ def site_crawler(path):
 def run_participant(*, subject_id, start, args, site):
     start_time = time() - start
 
+    output_folder = f"{args.output_dir}-{site}"
+
     subprocess.run(
-        f"singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs /nfs/singularity-image/bids_example.simg bash /run/participant.sh {args.bids_dir}/{site} {args.output_dir}/{site} {subject_id}",
+        f"singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs /nfs/singularity-image/bids_example.simg bash /run/participant.sh {args.bids_dir}/{site} {output_folder} {subject_id}",
         shell=True,
     )
 
@@ -41,7 +43,7 @@ def run_participant(*, subject_id, start, args, site):
 def run_group(*, start, args, site):
     start_time = time() - start
 
-    output_folder = f"{args.bids_dir}-{site}"
+    output_folder = f"{args.output_dir}-{site}"
 
     subprocess.run(f"mkdir -p {output_folder}")
 
