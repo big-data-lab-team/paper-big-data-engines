@@ -56,4 +56,4 @@ if __name__ == "__main__":
     ).compute()
 
     sites = db.from_sequence(site_crawler(args.bids_dir), npartitions=512)
-    sites.map(lambda x: run_group(start=start, args=args, sitre=x)).compute()
+    sites.map(lambda x: run_group(start=start, args=args, site=x)).compute()
