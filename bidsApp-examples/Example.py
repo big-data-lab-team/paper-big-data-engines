@@ -45,8 +45,6 @@ def run_group(*, start, args, site):
 
     output_folder = f"{args.output_dir}-{site}"
 
-    subprocess.run(f"mkdir -p {output_folder}")
-
     subprocess.run(
         f"singularity exec -B /nfs/singularity-image:/run,/nfs:/nfs /nfs/singularity-image/bids_example.simg bash /run/group.sh {args.bids_dir}/{site} {output_folder}",
         shell=True,
