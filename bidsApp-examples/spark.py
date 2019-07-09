@@ -53,4 +53,4 @@ if __name__ == "__main__":
     ).collect()
 
     sites = sc.parallelize(site_crawler(args.bids_dir), 512)
-    sites.map(lambda x: run_group(start=start, args=args, site=x)).compute()
+    sites.map(lambda x: run_group(start=start, args=args, site=x)).collect()
