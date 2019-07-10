@@ -66,6 +66,6 @@ if __name__ == "__main__":
 
     results = list()
     for site in sites:
-        results.append(client.submit(run_group(start=start, args=args, site=site)))
+        results.append(client.submit(run_group, start=start, args=args, site=site))
 
     client.gather(results)
