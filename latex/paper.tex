@@ -452,7 +452,8 @@ as a reduced overhead increases the concurrency between data transfers.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_worker.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_worker}
     \end{subfigure}
-    \caption{125 blocks, 10 iterations, \SI{4}{\second} delay, 8 threads/worker}\label{fig:inc_worker}
+    \caption{125 blocks, 10 iterations, \SI{4}{\second} delay, 8
+    threads/worker}\label{fig:inc_worker}
 \end{figure}
 
 % blocks
@@ -487,7 +488,8 @@ makespan variability mentioned previously.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_block.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_block}
     \end{subfigure}
-    \caption{10 iterations, \SI{4}{\second} delay, 8 workers, 8 threads/worker}\label{fig:inc_block}
+    \caption{10 iterations, \SI{4}{\second} delay, 8 workers, 8
+    threads/worker}\label{fig:inc_block}
 \end{figure}
 
 %% Iterations
@@ -530,12 +532,11 @@ iterations.
 
 %% Sleep time
 \subsection{Incrementation: Sleep delay}
-Figure~\ref{fig:inc_ms_sleep} shows the makespan of the Incrementation
-application for different sleep delays. Overall, all engines again perform the same, and scale well with task duration.
- Spark is initially slower than the
-Dask APIs, however, it is faster when increasing the sleep delay. Also,
-within the Dask APIs, Dask Bag is slower than the other two but it is not
-considerable.
+Figure~\ref{fig:inc_ms_sleep} shows the makespan of the Incrementation application
+for different sleep delays. Overall, all engines again perform the same, and scale
+well with task duration. Spark is initially slower than the Dask APIs, however, it is
+faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
+slower than the other two but it is not considerable.
 
 Figure~\ref{fig:inc_tt_sleep} shows the total execution time breakdown. On
 one hand, Spark has the smallest overhead. As previously observed,
@@ -591,14 +592,13 @@ transfer time.
 %% Baseline gantt chart
 \subsection{Incrementation: Gantt chart}
 
-Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine and API,
-for a baseline execution with 125 blocks, a \SI{4}{\second} sleep delay and 8
-workers. Gantt charts are structured in batches of up to 64 read-compute-write
-concurrent sequences. File reads in the first batch are much longer than in the
-following ones: this is due to the high synchronization of data transfers that leads
-to a high saturation of the shared file system. We also note that overhead,
-represented in white, is concentrated around the data transfer tasks \TG{find out
-why}, and the computing tasks that run concurrently with data transfers. 
+Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine and API.
+Gantt charts are structured in batches of up to 64 read-compute-write concurrent
+sequences. File reads in the first batch are much longer than in the following ones:
+this is due to the high synchronization of data transfers that leads to a high
+saturation of the shared file system. We also note that overhead, represented in
+white, is concentrated around the data transfer tasks \TG{find out why}, and the
+computing tasks that run concurrently with data transfers. 
 % The frameworks have similar makespan however the time spend for each type of
 % task differs considerably (see Table~\ref{tab:inc_base}). Spark tends to spend more
 % time than other frameworks for IO however it has a much lower overhead. Dask Delayed
@@ -628,7 +628,8 @@ why}, and the computing tasks that run concurrently with data transfers.
         \includegraphics[clip,width=\columnwidth]{images/futures_inc_gantt.png}%
         \caption{Dask Futures}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{Gantt chart with 125 blocks, \SI{4}{\second} delay, 8 workers}\label{fig:inc_gantt}
+    \caption{Gantt chart with 125 blocks, 10 iterations, \SI{4}{\second} delay, 8
+    workers, 8 threads/worker}\label{fig:inc_gantt}
 \end{figure*}
 
 % \begin{table}[!b]
@@ -660,7 +661,7 @@ why}, and the computing tasks that run concurrently with data transfers.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_worker.png}%
         \caption{Histogram total time}\label{fig:histo_tt_worker}
     \end{subfigure}
-    \caption{125 blocks}
+    \caption{125 blocks, 8 threads/worker}
 \end{figure}
 
 \subsection{Histogram: Number of blocks}
@@ -676,15 +677,36 @@ why}, and the computing tasks that run concurrently with data transfers.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_block.png}%
         \caption{Histogram total time}\label{fig:histo_tt_block}
     \end{subfigure}
-    \caption{8 workers}
+    \caption{8 workers, 8 threads/worker}
 \end{figure}
 \TG{We decided to omit Dask Futures as it does not have any value over Dask
 Delayed in this application.}
 
 
-
 %%% BIDS EXAMPLE %%%
 \subsection{BidsApp example: Number of workers}
+Figure~\ref{fig:bids_ms_worker} shows the makespan of the application while varying
+the amount of worker. Overall, there is no substantial difference between the
+engines however Futures are always slightly faster. The performance difference between
+Futures and the other APIs increase with the number of workers. The makespan scales
+well with the increase in workers however the scaling reduces considerably when
+reaching 8 workers. This due to the IO requirement increasing with the number of
+workers, since more tasks are read concurrently, and the application becomes more data
+intensive.
+
+In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
+shown. \MD{Maybe mention why Spark overhead is so big.} Overall, the computation time
+for the group analysis is equal for all engines and numbers of workers. Bag and
+Delayed takes much longer to compute the participant analysis with 8 workers,
+otherwise, the makespan is similar for all engines and numbers of workers. The overhead
+increases as the number of workers increases. \MD{Check regression}
+
+\MD{Depending on how the overhead is calculated spark overhead is either minimal or
+gigantic. It is hard to determine which method should be used to calculate the
+overhead for this application. For this application, since Spark has 2 job this
+causes Spark to have different worker process for the different job and thus some job
+have overlaping process ID while other are uniques (See
+Figure~\ref{fig:bids_spark_gantt}).}
 
 \begin{figure}[!t]
     \centering
@@ -703,22 +725,17 @@ Delayed in this application.}
 
 %% Baseline gantt chart
 \subsection{BidsApp example: Gantt chart}
-
-% Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine and API,
-% for a baseline execution with 125 blocks, a \SI{4}{\second} sleep delay and 8
-% workers. Gantt charts are structured in batches of up to 64 read-compute-write
-% concurrent sequences. File reads in the first batch are much longer than in the
-% following ones: this is due to the high synchronization of data transfers that leads
-% to a high saturation of the shared file system. We also note that overhead,
-% represented in white, is concentrated around the data transfer tasks \TG{find out
-% why}, and the computing tasks that run concurrently with data transfers. 
-% The frameworks have similar makespan however the time spend for each type of
-% task differs considerably (see Table~\ref{tab:inc_base}). Spark tends to spend more
-% time than other frameworks for IO however it has a much lower overhead. Dask Delayed
-% and Futures have the lowest IO time but a much higher overhead. Dask Bag stands in
-% the middle for both IO and overhead. Compute time is approximately the same for all
-% frameworks. Apart from the first IO section, there is a large amount of ovehead
-% everytime time IO is performed. This is true for all frameworks.
+Figure~\ref{fig:bids_gantt} shows the Gantt charts obtained for each engine and API.
+The Gantt charts are structured in three main parts: participant analysis (orange),
+group analysis (blue), and the transition in between.\MD{rephrase} The Gantt chart
+for Spark seems to have more workers however it does not. This is due to the
+computation of the participant and group analysis on two different jobs with their
+worker processes; usually with different process id. The tasks differ considerably in
+length. This is due to the high IO requirement of the application. During the
+participant analysis phase, Spark and Futures have less overhead than Delayed and
+Bag. At the end of the participant analysis phase, Futures and Delayed has less
+overhead than Bag while Spark has way more than Dask engine. The group analysis is
+similar for all engines and APIs.
 
 \begin{figure*}[!htb]
     \centering
@@ -784,11 +801,11 @@ as reducing them increases data trasnfers.}
 
 \section*{Acknowledgment}
 
-Mathieu Dugr\'e was funded by a Undergraduate Summer Research Assistant
-award from the National Science and Engineering Research Council. We warmly
-thank Compute Canada and \TG{Westgrid?} for providing the cloud
-infrastructure used in these experiments, and the McGill Center for
-Integrative Neurocience for giving us access to their cloud allocation.
+Mathieu Dugr\'e was funded by a Undergraduate Student Research Assistant award from
+the National Science and Engineering Research Council of Canada. We warmly thank
+Compute Canada and \TG{Westgrid?} for providing the cloud infrastructure used in
+these experiments, and the McGill Center for Integrative Neurocience for giving us
+access to their cloud allocation.
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,reference}
