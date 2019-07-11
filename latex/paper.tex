@@ -611,24 +611,24 @@ why}, and the computing tasks that run concurrently with data transfers.
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/spark_inc_gantt.png}
-        \caption{Spark execution timeline}\label{fig:inc_spark_gantt}
+        \caption{Spark}\label{fig:inc_spark_gantt}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/bag_inc_gantt.png}%
-        \caption{Dask Bag execution timeline}\label{fig:inc_dask_bag_gantt}
+        \caption{Dask Bag}\label{fig:inc_dask_bag_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/delayed_inc_gantt.png}%
-        \caption{Dask Delayed execution timeline}\label{fig:inc_dask_delayed_gantt}
+        \caption{Dask Delayed}\label{fig:inc_dask_delayed_gantt}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/futures_inc_gantt.png}%
-        \caption{Dask Futures execution timeline}\label{fig:inc_dask_futures_gantt}
+        \caption{Dask Futures}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{125 blocks, 4 sec.\ sleep delay, 8 workers}\label{fig:inc_gantt}
+    \caption{Gantt chart with 125 blocks, \SI{4}{\second} delay, 8 workers}\label{fig:inc_gantt}
 \end{figure*}
 
 % \begin{table}[!b]
@@ -647,7 +647,7 @@ why}, and the computing tasks that run concurrently with data transfers.
 %  \end{table}
 
 %%% HISTOGRAM %%%
-\subsection{Experiment 2: Number of workers}
+\subsection{Histogram: Number of workers}
 
 \begin{figure}[!t]
     \centering
@@ -663,7 +663,7 @@ why}, and the computing tasks that run concurrently with data transfers.
     \caption{125 blocks}
 \end{figure}
 
-\subsection{Experiment 2: Number of blocks}
+\subsection{Histogram: Number of blocks}
 
 \begin{figure}[!t]
     \centering
@@ -680,8 +680,69 @@ why}, and the computing tasks that run concurrently with data transfers.
 \end{figure}
 \TG{We decided to omit Dask Futures as it does not have any value over Dask
 Delayed in this application.}
+
+
+
 %%% BIDS EXAMPLE %%%
-\subsection{Experiment 3: Number of workers}
+\subsection{BidsApp example: Number of workers}
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/bids_worker.png}%
+        \caption{Histogram makespan}\label{fig:bids_ms_worker}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/bids_idle_worker.png}%
+        \caption{Histogram total time}\label{fig:bids_tt_worker}
+    \end{subfigure}
+    \caption{Variation of the amount of worker, 8 threads/worker}
+\end{figure}
+
+
+%% Baseline gantt chart
+\subsection{BidsApp example: Gantt chart}
+
+% Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine and API,
+% for a baseline execution with 125 blocks, a \SI{4}{\second} sleep delay and 8
+% workers. Gantt charts are structured in batches of up to 64 read-compute-write
+% concurrent sequences. File reads in the first batch are much longer than in the
+% following ones: this is due to the high synchronization of data transfers that leads
+% to a high saturation of the shared file system. We also note that overhead,
+% represented in white, is concentrated around the data transfer tasks \TG{find out
+% why}, and the computing tasks that run concurrently with data transfers. 
+% The frameworks have similar makespan however the time spend for each type of
+% task differs considerably (see Table~\ref{tab:inc_base}). Spark tends to spend more
+% time than other frameworks for IO however it has a much lower overhead. Dask Delayed
+% and Futures have the lowest IO time but a much higher overhead. Dask Bag stands in
+% the middle for both IO and overhead. Compute time is approximately the same for all
+% frameworks. Apart from the first IO section, there is a large amount of ovehead
+% everytime time IO is performed. This is true for all frameworks.
+
+\begin{figure*}[!htb]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/spark_bids_gantt.png}
+        \caption{Spark}\label{fig:bids_spark_gantt}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/bag_bids_gantt.png}%
+        \caption{Dask Bag}\label{fig:bids_dask_bag_gantt}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/delayed_bids_gantt.png}%
+        \caption{Dask Delayed}\label{fig:bids_dask_delayed_gantt}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/futures_bids_gantt.png}%
+        \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
+    \end{subfigure}
+    \caption{Gantt chart with 8 workers}\label{fig:bids_gantt}
+\end{figure*}
 
 
 
