@@ -687,11 +687,11 @@ Delayed in this application.}
 Figure~\ref{fig:bids_ms_worker} shows the makespan of the application while varying
 the amount of worker. Overall, there is no substantial difference between the
 engines however Futures are always slightly faster. The performance difference between
-Futures and the other APIs increase with the number of workers. The makespan scales
+Futures and the other APIs increases with the number of workers. The makespan scales
 well with the increase in workers however the scaling reduces considerably when
-reaching 8 workers. This due to the IO requirement increasing with the number of
-workers, since more tasks are read concurrently, and the application becomes more data
-intensive.
+reaching 8 workers. This is due to the IO requirement increasing with the number of
+workers, since more tasks are read concurrently, and the application becomes more
+data-intensive.
 
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
 shown. \MD{Maybe mention why Spark overhead is so big.} Overall, the computation time
