@@ -648,6 +648,15 @@ computing tasks that run concurrently with data transfers.
 
 %%% HISTOGRAM %%%
 \subsection{Histogram: Number of workers}
+Figure~\ref{fig:histo_ms_worker} shows the makespan of the application for various
+amounts of workers. Spark is tremendiously faster than Dask APIs. The difference
+narrows as the number of workers increases. Between Dask APIs there is no substantial
+difference, however, Bag is slightly faster on average.
+
+From Figure~\ref{fig:histo_tt_worker} the total time spend in each function is shown.
+The computation time is significantly larger in Dask than Spark. This is potentially
+due to Python's GIL preventing Dask to parallelize the computation on multiple thread.
+Overall, the IO and overhead is comparable for all engines.
 
 \begin{figure}[!t]
     \centering
@@ -664,6 +673,7 @@ computing tasks that run concurrently with data transfers.
 \end{figure}
 
 \subsection{Histogram: Number of blocks}
+Figure~\ref{fig:histo_ms_block}
 
 \begin{figure}[!t]
     \centering
@@ -711,12 +721,12 @@ Figure~\ref{fig:bids_spark_gantt}).}
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/bids_worker.png}%
-        \caption{Histogram makespan}\label{fig:bids_ms_worker}
+        \caption{BIDS App example makespan}\label{fig:bids_ms_worker}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/bids_idle_worker.png}%
-        \caption{Histogram total time}\label{fig:bids_tt_worker}
+        \caption{BIDS App example total time}\label{fig:bids_tt_worker}
     \end{subfigure}
     \caption{Variation of the amount of worker, 8 threads/worker}
 \end{figure}
@@ -736,29 +746,29 @@ Bag. At the end of the participant analysis phase, Futures and Delayed has less
 overhead than Bag while Spark has way more than Dask engine. The group analysis is
 similar for all engines and APIs.
 
-\begin{figure*}[!htb]
-    \centering
-    \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/spark_bids_gantt.png}
-        \caption{Spark}\label{fig:bids_spark_gantt}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/bag_bids_gantt.png}%
-        \caption{Dask Bag}\label{fig:bids_dask_bag_gantt}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/delayed_bids_gantt.png}%
-        \caption{Dask Delayed}\label{fig:bids_dask_delayed_gantt}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/futures_bids_gantt.png}%
-        \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
-    \end{subfigure}
-    \caption{Gantt chart with 8 workers}\label{fig:bids_gantt}
-\end{figure*}
+% \begin{figure*}[!htb]
+%     \centering
+%     \begin{subfigure}[b]{\columnwidth}
+%         \includegraphics[clip,width=\columnwidth]{images/spark_bids_gantt.png}
+%         \caption{Spark}\label{fig:bids_spark_gantt}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}[b]{\columnwidth}
+%         \includegraphics[clip,width=\columnwidth]{images/bag_bids_gantt.png}%
+%         \caption{Dask Bag}\label{fig:bids_dask_bag_gantt}
+%     \end{subfigure}
+%     \\
+%     \begin{subfigure}[b]{\columnwidth}
+%         \includegraphics[clip,width=\columnwidth]{images/delayed_bids_gantt.png}%
+%         \caption{Dask Delayed}\label{fig:bids_dask_delayed_gantt}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}[b]{\columnwidth}
+%         \includegraphics[clip,width=\columnwidth]{images/futures_bids_gantt.png}%
+%         \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
+%     \end{subfigure}
+%     \caption{Gantt chart with 8 workers}\label{fig:bids_gantt}
+% \end{figure*}
 
 
 
