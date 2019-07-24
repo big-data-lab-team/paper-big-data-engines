@@ -88,13 +88,12 @@ pipelines. Our goal is to test whether Spark or Dask has a clear
 performance advantage to process Big neuroimaging Data. 
 
 %Similarities
-Spark and Dask both offer in-memory computing, data locality, and lazy
-evaluation; which is common for Big Data frameworks. Both their schedulers
-operate dynamically, which is good when task runtimes are not known ahead of
-time~\cite{Dask:15}. They also provide rich, high-level programming APIs,
-and support a variety of infrastructure schedulers, such as Mesos (Spark
-only), YARN, or HPC clusters (Dask only). Over these similarities, the
-frameworks have differences.
+Spark and Dask both offer in-memory computing, data locality, and lazy evaluation;
+which is common for Big Data frameworks. Both their schedulers operate dynamically,
+which is good when task runtimes are not known ahead of time~\cite{Dask:15}. They
+also provide rich, high-level programming APIs, and support a variety of
+infrastructure schedulers, such as Mesos, YARN, or HPC clusters (Dask only). Over
+these similarities, the frameworks have differences.
 
 % Differences
 First and foremost, Spark is written in Scala while Dask is in Python.
@@ -111,7 +110,7 @@ these languages, with reduced performance loss.
 % Related work
 Spark and Dask were both included in the evaluation reported
 in~\cite{Mehta:17} that used a neuroimaging and an astronomy application
-processing approximately 100~GB of data each. In this work, Dask was
+processing approximately \SI{100}{\giga\byte} of data each. In this work, Dask was
 reported to have a slight performance advantage over Spark. Overall, Dask's
 end-to-end time (makespan) was measured to be up to 14\% faster than Spark,
 due to ``more efficient pipelining'' %(Fig 10) 
@@ -397,7 +396,7 @@ adjustment depending on how the overhead is calculate (idle vs wasted)}
     \hline
                         & Incrementation & Histogram             & BIDS Example          \\ \hline
     \# of worker        & 1, 2, 4, 8     & 1, 2, 4, 8            & 1, 2, 4, 8            \\
-    \# of blocks        & 30, 125, 750   & 30, 125, 750          & 30, 125, 750          \\
+    \# of blocks        & 30, 125, 750   & 30, 125, 750          & \multicolumn{1}{c}{-} \\
     \# of iterations    & 1, 10, 100     & \multicolumn{1}{c}{-} & \multicolumn{1}{c}{-} \\
     Sleep delay {[}\SI{}{\second}{]} & 1, 4, 16, 64   & \multicolumn{1}{c}{-} & \multicolumn{1}{c}{-} \\ \hline
     \end{tabular*}
