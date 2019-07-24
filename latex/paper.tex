@@ -28,7 +28,7 @@
 
 \begin{document}
 
-\title{A Comparative study of Dask and Spark for data-intensive neuroimaging pipelines}
+\title{A performance comparison of Dask and Spark for data-intensive neuroimaging pipelines}
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
@@ -72,72 +72,71 @@ Big Data, Dask, Spark, performance, neuroimaging
 
 \section{Introduction}
 % Context
-\VHS{it's not the the processing of BD becomes critical, it's that the results obtained
-from processing more data should be more reliable\dots and the data is there too}
 The recent rise in data sharing and improved data collection strategies
 have brought neuroimaging to the Big Data era ~\cite{ALFAROALMAGRO:18,
-UKBioBank:18}. Existing neuroimaging frameworks, such as Nipype~\cite{Nipype:11},
-are well suited for processing the standard compute-intensive neuroimaging pipelines,
-but lack incorporation Big Data strategies (i.e. in-memory computing,
-data locality and lazy-evaluation) to improve performance of the increasingly
-prevalent data-intensive pipelines. As was noted in ~\cite{Hayot-Sasson:17}, 
-in-memory computing, coupled with data locality, can bring significant performance
-improvements to data intensive neuroimaging pipelines. We extend this work by studying
-the differences between two Big Data frameworks, Dask~\cite{Dask:15} and Apache Spark~\cite{Spark:16},
-for their suitability in the processing neuroimaging pipelines. 
+UKBioBank:18}. Existing neuroimaging workflow engines, such as
+Nipype~\cite{Nipype:11}, are well suited for processing the standard
+compute-intensive neuroimaging pipelines, but lack incorporated Big Data
+strategies (i.e. in-memory computing, data locality and lazy-evaluation) to
+improve performance of the increasingly prevalent data-intensive pipelines.
+As was noted in ~\cite{hayot2019performance}, in-memory computing, coupled
+with data locality, can bring significant performance improvements to data
+intensive neuroimaging pipelines. We extend this work by studying the
+differences between two Big Data frameworks, Dask~\cite{Dask:15} and Apache
+Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
+pipelines. Our goal is to test whether Spark or Dask has a clear
+performance advantage to process Big neuroimaging Data. 
 
 %Similarities
-\TG{Note for later: explain the following concepts in the intro: lazy eval, data locality, in-memory computing.}
-Spark and Dask offer in-memory computing, data locality, and lazy evaluation; which
-is common for Big Data framework. Both their scheduler operates dynamically. This is
-good when the runtimes are not known ahead of time~\cite{Dask:15}. Over these
-similarities, the frameworks are quite different.
+Spark and Dask both offer in-memory computing, data locality, and lazy
+evaluation; which is common for Big Data frameworks. Both their schedulers
+operate dynamically, which is good when task runtimes are not known ahead of
+time~\cite{Dask:15}. They also provide rich, high-level programming APIs,
+and support a variety of infrastructure schedulers, such as Mesos (Spark
+only), YARN, or HPC clusters (Dask only). Over these similarities, the
+frameworks have differences.
 
-% Spark
-On the one hand, we have Spark which provides a high-level API. This allows the
-scheduler to perform more optimizations which makes it well suited for neuroimaging
-analysis that often requires the usage of a pipeline with multiple steps. Though,
-Spark's code base is in Scala which theoretically can lead to slow down in execution
-due to a required serialization. Moreover, while Spark's API is flexible and allows
-most implementations, it differs from the ones seen in the Python's ecosystem.
+% Differences
+First and foremost, Spark is written in Scala while Dask is in Python.
+Given the popularity of Python in scientific communities, this arguably
+gives an edge to Dask due to data serialization costs from Python to Scala.
+On the other hand, Python's Global Interpreter Lock (GIL) might reduce
+parallelism in some cases. This difference in programming languages also
+has qualitative implications. As part of the \href{http://scipy.org}{SciPy}
+ecosystem, Dask provides almost transparent parallelization of applications
+manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
+Java, R and Python APIs allow to easily parallelize analyses that combine
+these languages, with reduced performance loss.
 
-% Dask
-On the other hand, Dask was created with the purpose of natively parallelize Python
-pipelines while keeping the syntax of familiar API from the Python's scientific
-ecosystem. However, Dask is still a young framework with work to be done; it's API
-does not completely replicate the library it supports. While its lower-level API
-allows the implementation of more complex algorithms it sacrifices a layer of
-optimization.
 % Related work
-Previous work shows that Dask had significant overhead and was
-hard to debug~\cite{Mehta:17}.
-% What issues your work addresses
-Dask was immature at the time and a lot of change was brought to the framework.
-Therefore we think it is valuable to re-compare it with Spark.
-\TG{Cite~\cite{hayot2019performance}}
+Spark and Dask were both included in the evaluation reported
+in~\cite{Mehta:17} that used a neuroimaging and an astronomy application
+processing approximately 100~GB of data each. In this work, Dask was
+reported to have a slight performance advantage over Spark. Overall, Dask's
+end-to-end time (makespan) was measured to be up to 14\% faster than Spark,
+due to ``more efficient pipelining'' %(Fig 10) 
+and serialization time to
+Python. % (Fig. 12-a)
+Dask, however, was reported to have a larger startup
+time than Spark. % (Fig. 12-c)
+The analysis remains at a quite high level
+though, leaving most of the observed performance difference unexplained. In
+comparison, our study will provide a detailed analysis of performance
+differences and similarities between Spark and Dask.
 
-%% Dask API
-The Dask APIs we decide to use for our comparison are Dask Bag, Delayed and Futures.
-Dask Bag offers an easy API to parallelize data. Dask Delayed offer a lower-level API
-that offers more flexibility; this is good to implement more complex tasks that do
-not fit in the Dask Bag framework. Dask Futures is a real-time API. Both Dask Bag and
-Delayed apply lazy evaluation to tasks while Futures trigger them directly.
+The next section details the design of our experiments. We consider two
+data-intensive neuroimaging applications: high-resolution imaging,
+represented by the Big Brain data~\cite{Amunts:13}, and large functional
+MRI studies, represented by data from the consortium for reliability and
+reproducibility (CoRR~\cite{zuo2014open}). We test application pipelines
+involving different patterns (map-only, map-reduce), and different types of
+implementations (plain Python, command-line,
+containerized). We evaluate performance on a dedicated cluster
+representative of the ones used in today's data-intensive neuroimaging
+studies, using the main Dask and Spark APIs. The following sections present
+our results, discussion and conclusions.
 
-% Methods used (summary)
-The project aims to compare the state-of-the-art general-purpose framework Spark with
-the newcomer Dask. We decide to compare the performance of Spark and Dask on a custom
-incrementation pipeline to simplify the effect of the algorithm on the comparison.
-Then we assess the frameworks on two real-life applications: (1) histogram of the
-voxels intensity in a 3d images (2) BIDS example.
 
-% Implications of our research
-The result from our project help in deciding if Dask is a good choice to build
-neuroimaging pipelines.
-
-\TG{Say that it is often said that Spark has a larger overhead but scales 
-worse than Dask. In the dicussion, get back to it and mention that (1) we don't
-always observe that, (2) for data-intensive applications, overheads don't really matter
-as reducing them increases data trasnfers.}
 
 %%%%% MATERIAL AND METHODS %%%%%%
 \section{Material and Methods}
@@ -781,6 +780,9 @@ explain the impact on data transfers with a graph.}
 \TG{In the dicussion, get back to it and mention that (1) we don't
 always observe that, (2) for data-intensive applications, overheads don't really matter
 as reducing them increases data trasnfers.}
+
+% partitioning issue
+
 
 % \subsection{IO Time}
 % 
