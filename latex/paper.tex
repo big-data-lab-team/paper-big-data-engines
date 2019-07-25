@@ -145,8 +145,10 @@ our results, discussion and conclusions.
 \subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data engine.
 While its core is written in Scala, Spark provides additional APIs in Java, R
 and Python (PySpark). Its main abstraction, the Resilient Distributed Dataset
-(RDD)~\cite{RDD}, is a fault-tolerant, parallel collection of data elements. This
-data structure is the basis of Spark's other data structures, namely, DataFrames
+(RDD)~\cite{RDD}, is a fault-tolerant, parallel collection of data elements. It 
+achieves fault tolerance through recording the data lineage, the sequence of 
+operations required to produce the data. The RDD is the basis of Spark's other
+data structures, namely, DataFrames
 and Datasets. Datasets are similar to RDDs but additionally use Spark SQL's
 optimized execution to further improve performance. DataFrames, used to process
 tabular data, Datasets where the data is organized into named-columns. While 
@@ -196,34 +198,20 @@ Python API due to its suitability for neuroimaging research.
 
 
 \subsubsection{Dask} Dask is a Big Data engine that is becoming increasingly popular
-in the scientific Python ecosystem. Dask has five main data structure APIs:
-Array, Bag, DataFrame, Delayed, and Futures. All APIs were used in our experiments,
-with the exception of Dask Dataframes, which is intended for use with tabular data.
-Like Spark, all Dask APIs provide
-in-memory computing, data locality, lazy evaluation, and fault tolerance by mean of
-lineage. Dask's core is purely in Python and bypasses most of the
-\href{https://docs.python.org/3/glossary.html#term-gil}{GIL} to provide parallelism.
-We used Dask due to the common use of the scientific Python ecosystem in
-neuroscience\VHS{If you add Dask Arrays to your experiments here, i'd mention that their
-APIs might be particularly well suited for the processing of high resolution neuroimaging data}. Dask represents application tasks as Dask graphs, produced by a
-user-facing API and executed by a scheduler. In Dask, operations generate multiple
-tiny tasks in the computation graph allowing an easier representation of complex
-algorithms. We used the \href{https://distributed.dask.org/en/latest/index.html}{Dask
-Distributed} scheduler, although \href{https://github.com/dask/dask-yarn}{Dask-Yarn}
-and \href{https://github.com/mrocklin/dask-mesos}{Dask-Mesos} is also available. In
-the Dask Distributed scheduler, a process called \textit{dask-scheduler}
-administrates the resources provided by \textit{workers} in the cluster. The
-scheduler receives jobs from clients and assigns tasks to available workers. Like
-Spark scheduler, Dask Distributed also use a LIFO policy, it is meant to reduce the
-memory footprint of the application by finishing the computation of a branch in the
-Dask graph before starting new ones. We used Dask v1.1.4. 
+in the scientific Python ecosystem. Like Spark, Dask provides
+in-memory computing, data locality, lazy evaluation, and fault tolerance by
+means of data lineage. In contrast, Dask's core is purely in Python, eliminating
+the cost of serialization to Java. Furthermore, it is lightweight and modular,
+allowing users to only install the components they require.
 
-In Dask, a \href{https://docs.dask.org/en/latest/bag.html}{Bag} is a parallel
-collection of Python objects, similar to Spark's RDD. It use multi-process to enable
-parallelism. It offers a programming abstraction similar to the
-\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}. An
-\href{https://docs.dask.org/en/latest/array.html}{Array} is used for the processing
-of large arrays. It provides a distributed clone of the popular NumPy library. A
+Dask has five main data structure APIs:
+Array, Bag, DataFrame, Delayed, and Futures. A Dask
+\href{https://docs.dask.org/en/latest/array.html}{Array} is used for the
+processing of large arrays. It provides a distributed clone of the popular NumPy
+library. Similar to Spark's RDD, a Dask
+\href{https://docs.dask.org/en/latest/bag.html}{Bag} is a parallel
+collection of Python objects. It offers a programming abstraction similar to the
+\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}. A
 \href{https://docs.dask.org/en/latest/dataframe.html}{Dataframe} is a parallel
 composition of
 \href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas
@@ -232,13 +220,44 @@ Dataframes} used to process a large amount of tabular data.
 that do not fit in the Array, DataFrame or Bag APIs. Finally,
 \href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to Delayed
 as they support arbitrary tasks, but they operate in real-time rather than lazily.
+All Dask data structure APIs, with the exception of Dask Arrays and Dask
+DataFrames, were used in our experiments.
+
+While Python multithreading is limited by the
+\href{https://docs.python.org/3/glossary.html#term-gil}{Global Interpreter Lock (GIL)}
+as a result of CPython's non thread-safe memory management, Dask attempts to
+bypass the GIL whenever possible and use multithreading to provide parallelism.
+With the exception of Dask Bags, all APIs, by default, use the local multithreaded
+scheduler. Dask Bags instead relies on the local multiprocessing scheduler. 
+
+The Dask graph is the internal representation of Dask application to be executed 
+by the scheduler. API Operations generate multiple
+small tasks in the computation graph allowing an easier representation of complex
+algorithms.
+
+The Dask framework is compatible with numerous distributed schedulers, including 
+\href{https://github.com/dask/dask-yarn}{YARN} and
+\href{https://github.com/mrocklin/dask-mesos}{Mesos}, similarly to Spark. Dask 
+also provides its own distributed scheduler, known as the Dask Distributed
+scheduler. Although Dask is compatible with schedulers commonly found in HPC
+clusters, we chose to use Dask's Distributed scheduler, to keep the environment
+balanced between both frameworks.
+
+ In the Dask Distributed scheduler, a process called \textit{dask-scheduler}
+administrates the resources provided by \textit{workers} in the cluster. The
+scheduler receives jobs from clients and assigns tasks to available workers. Similarly
+to Spark's scheduler, Dask Distributed completes the processing of a graph branch
+before moving along to the next one. 
+
+In our experiments, we used Dask v1.1.4.
+
 
 \subsection{Infrastructure}
 
  We used Compute Canada's
- \href{https://docs.computecanada.ca/wiki/Cloud_resources}{Arbutus Cloud} operated by
+ \href{https://docs.computecanada.ca/wiki/Cloud\_resources}{Arbutus Cloud} operated by
  the \href{https://www.westgrid.ca}{WestGrid} regional organization at the University
- of Victoria, and running OpenStack \TG{version?}. We used c8-30gb-186 cloud
+ of Victoria, running OpenStack Queens release. We used c8-30gb-186 cloud
  instances with 8 VCPUs, an Intel Xeon Gold 6130 processor, \SI{30}{\giga\byte} of
  RAM at \SI{2666}{\mega\hertz}, \SI{20}{\giga\byte} of mounted storage, and a base
  image running CentOS 7.5.1804 with Linux kernel version
@@ -253,9 +272,9 @@ as they support arbitrary tasks, but they operate in real-time rather than lazil
  for off-heap. We configured the Spark driver to use 25~GB of memory, and used the
  default configuration for the master. We used the default confirguration for worker
  memory management: at 60\% it spill data to disk, and 50\% of that amount is
- reserved for storage and is immuned from eviction.
+ reserved for storage and is immune to eviction.
  
- One cloud instance did not host any worker, and had a \SI{2}{\tera\byte} disk volume
+ One cloud instance did not host any worker and had a \SI{2}{\tera\byte} disk volume
  shared with the other instances using the Network File System (NFS) v4.
  This instance was also used for the Spark driver and master, and for the
  Dask scheduler, and for job monitoring with the Spark and Dask user
@@ -266,7 +285,7 @@ as they support arbitrary tasks, but they operate in real-time rather than lazil
 We used BigBrain~\cite{Amunts:13}, a three-dimensional image of a human
 brain with voxel intensities ranging from 0 to 65,535. The original data is
 stored in 125 blocks in the MINC~\cite{minc} HDF5-based format, available
-at \url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D_Blocks/40um} at the
+at \url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D\_Blocks/40um} at a
 resolution of \SI{40}{\micro\metre}. We converted the blocks into the
 \href{https://nifti.nimh.nih.gov/nifti-1}{NifTI} format, a popular format
 in neuroimaging. We left the NifTI blocks uncompressed, resulting in 
@@ -286,24 +305,26 @@ average).
 
 \subsection{Applications}
 
-We used three neuroimaging applications to evaluate the engines in different
-conditions. The first two ones, incrementation and histogram, are simple synthetic
-benchmarks representing basic map-only and map-reduce applications. The third one is
-a realistic application representative of popular BIDS
-applications~\cite{gorgolewski2017bids}. All script used for our experiment is availble
-GitHub at \url{https://github.com/big-data-lab-team/paper-big-data-engines}
+Three neuroimaging applications to evaluate the engines in different
+conditions were used. The first two, incrementation and histogram, are simple 
+synthetic applications representing map-only and map-reduce applications,
+respectively. The third one is a real neuroimaging application representative
+of popular BIDS applications~\cite{gorgolewski2017bids}. All scripts used for our
+experiments are available at
+\url{https://github.com/big-data-lab-team/paper-big-data-engines}
 
 %% Incrementation
 \subsubsection{Incrementation}
-We used an adaptation of the simple image incrementation pipeline used
+We used an adaptation of the image incrementation pipeline used
 in~\cite{hayot2019performance} (see Algorithm~\ref{alg:incrementation}).
 The application reads blocks of the BigBrain image from the shared file
 system, increments the intensity value of each voxel by 1 to avoid caching
-effects, sleeps for a configurable amount of time to emulate a more complex
-processing, repeats this process for a specified amount of iterations, and
+effects, sleeps for a configurable amount of time to emulate more
+compute-intensive processing, repeats this process for a specified number of
+iterations, and
 finally writes the result as a NifTI image back to the shared file system.
 This application allows us to study the behavior of the engines when all
-inputs are processed independently, in a map-only way (see
+inputs are processed independently, in a map-only scenario (see
 Figure~\ref{fig:tg-inc}). This mimics the behavior of analyzing multiple
 independent subjects in parallel.
 
@@ -340,9 +361,10 @@ independent subjects in parallel.
  system, calculates intensity frequencies, aggregates the frequencies across the
  blocks, and finally writes the resulting histogram to the shared file system as a
  single \SI{766}{\kilo\byte} file. This application implements a typical map-reduce
- pattern, where the final result is obtained from all the input blocks (see
- Fig.~\ref{fig:tg-histo}). This application requires data shuffling thus inter-worker
- communication. The total amount of shuffled data is however limited to
+ program, where the final result is obtained from all the input blocks (see
+ Fig.~\ref{fig:tg-histo}). This application requires data shuffling, incurring 
+ additional performance costs compared to Algorithm~\ref{alg:incrementation}.
+ The total amount of shuffled data is, however, limited to
  \SI{2.62}{\mega\byte} per blocks as it only consists of image histograms.
 
 \begin{algorithm}[!t]
@@ -372,7 +394,8 @@ independent subjects in parallel.
 \subsubsection{BIDS app example}
 
 We used the \href{https://github.com/BIDS-Apps/example}{BIDS app example} application
-available on GitHub. This application operates in a map-reduce way. The map phase,
+available on GitHub. This application can also be broken down into a map and
+reduce phase. The map phase,
 also called participant analysis, extracts the brain tissues of a subject's 3D MRI
 using the popular FMRIB Software Library
 (\href{https://fsl.fmrib.ox.ac.uk/fsl/fslwiki}{FSL}), and writes the resulting image
