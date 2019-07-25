@@ -681,7 +681,16 @@ Figure~\ref{fig:histo_ms_block} shows the makespan for different block size.
 Again, Spark is significantly faster then Dask engines and Bag is slightly faster
 than Delayed. Overall, the engines do not react to change in block size.
 
-In figure~\ref{fig:histo_tt_block} 
+In figure~\ref{fig:histo_tt_block} the total time for each function is shown.
+Note that at 30 blocks the worker's resources are not fully used since the workers
+can process up to 64 task in parallel. Moreover, the overhead for 30 blocks is
+erroneous due to a lower amount of block than available threads. This leads to thread
+based engines to have higher overhead. Given that, 
+
+Spark has a much lower compute time which makes it significantly faster than Dask
+engines. Overall, for all engines, lower block size results in lower IO time but
+increased overhead time. Again, this is due to the overhead desynchronizing task thus
+reducing the NFS bottle neck.
 %TODO
 
 \begin{figure}[!t]
@@ -701,6 +710,15 @@ In figure~\ref{fig:histo_tt_block}
 Delayed in this application.}
 
 \subsection{Histogram: Gantt chart}
+Figure~\ref{fig:histo_gantt} shows the Gantt chart of the baseline Histogram
+experiment. Spark overhead is distributed through all the execution while Bag
+overhead happens mostly when a thread read subsequent blocks and Delayed overhead is
+concentrated after reading all the blocks.
+
+The reduce is done differently on the engines. While Spark and Delayed compute all
+the reduce task on one process (thread) Spark computes it on the driver process. On
+the other hand, Bag computes the reduce tasks on different workers and sends the
+informations to the driver process afterwards.
 
 \begin{figure}[!htb]
     \centering
@@ -753,16 +771,17 @@ overhead is so large compared to the pure Python implementation}
 
 \subsection{Histogram (NumPy): Number of blocks}
 Figure~\ref{fig:histo_np_ms_block} shows the makespan of the application for
-different block size. Note that the workers can process up to 64 tasks in paralle thus
+different block size. Note that the workers can process up to 64 tasks in parallel thus
 they are not used at full capacity with 30 blocks. Overall, there is no substantial
 difference for all engines and block size.
 
 In figure~\ref{fig:histo_np_tt_block}, shows the total time spent in each function.
-Again, the overhead for 30 blocks is erroneous due a lower amount of task than thread
-which result in higher overhead for thread based engines. Considering the overhead
-error and that at 30 blocks the worker only use half their core, the  total time is
-substantially the same for all block size. This is due lower block sizes having a
-lower IO time, however, it is balanced by the resulting increase in overhead.
+Again, the overhead for 30 blocks is erroneous due a lower amount of task than
+available thread which result in higher overhead for thread based engines.
+Considering the overhead error and that at 30 blocks the worker only use half their
+core, the total time is substantially the same for all block size. This is due lower
+block sizes having a lower IO time, however, it is balanced by the resulting increase
+in overhead.
 
 \begin{figure}[!t]
     \centering
@@ -779,6 +798,17 @@ lower IO time, however, it is balanced by the resulting increase in overhead.
 \end{figure}
 
 \subsection{Histogram (NumPy): Gantt chart}
+Figure~\ref{fig:histo_np_gantt} shows the Gantt chart of the baseline Histogram
+(NumPy) experiment. The overhead for Spark and Bag is mostly located between a read
+and compute task or compute and read task. On the other hand, Delayed overhead is
+dispersed between all type of tasks. This cause Delayed to overlap more compute and
+read tasks amongs the different workers.
+
+In figure~\ref{fig:histo_np_gantt}, The read tasks of all engines are similar initially, however, when computation starts
+the subsequent read tasks are much shorter. This is because read tasks for Delayed
+become desynchronized hence it significanlty reduces the IO bottle neck.
+
+
 
 \begin{figure}[!htb]
     \centering
