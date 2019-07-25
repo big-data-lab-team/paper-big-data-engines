@@ -415,7 +415,7 @@ adjustment depending on how the overhead is calculate (idle vs wasted)}
 \subsection{Incrementation: Number of workers}
 Figure~\ref{fig:inc_ms_worker} shows the makespan of the Incrementation application
 for different numbers of workers and for different engines. The bars show the average
-makespan over 5 repetitions while the error bars are the standard deviation. Overall,
+makespan over 3 repetitions while the error bars are the standard deviation. Overall,
 there is no substantial makespan difference between the engines. Dask seems to have a
 slight advantage over Spark, \SI{83.61}{\second} on average,
 with Delayed and Futures being slightly better than Bags.
@@ -494,7 +494,7 @@ makespan variability mentioned previously.
 Figure~\ref{fig:inc_ms_itr} shows the makespan of the application while
 varying the number of iterations. Overall,  Spark and Dask APIs are once
 again equivalent, although Dask Delayed and Futures are slightly faster
-than Bags and Spark for 1 and 10 few iterations, and Fuures are faster than
+than Bags and Spark for 1 and 10 few iterations, and Futures are faster than
 Delayed, Bags and Spark for 100 iterations. Differences remain minor
 though.
 
@@ -625,8 +625,8 @@ computing tasks that run concurrently with data transfers.
         \includegraphics[clip,width=\columnwidth]{images/futures_inc_gantt.png}%
         \caption{Dask Futures}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{Gantt chart with 125 blocks, 10 iterations, \SI{4}{\second} delay, 8
-    workers, 8 threads/worker}\label{fig:inc_gantt}
+    \caption{Incrementation: Gantt chart with 125 blocks, 10 iterations, \SI{4}{\second}
+delay, 8 workers, 8 threads/worker}\label{fig:inc_gantt}
 \end{figure*}
 
 % \begin{table}[!b]
@@ -655,6 +655,11 @@ From Figure~\ref{fig:histo_tt_worker} the total time spend in each function is s
 The computation time is significantly larger in Dask than Spark. This is potentially
 due to Python's GIL preventing Dask to parallelize the computation on multiple thread.
 Overall, the IO and overhead is comparable for all engines.
+
+On Figure~\ref{fig:histo_tt_worker}, Dask engines have similar total execution time
+when their number of workers varies, except for 8 worker where it incresase slightly.
+On the other hand, Spark total execution time keeps increasing; especially at 8
+workers. This is because Dask engines benefit more from additional workers.
 
 \begin{figure}[!t]
     \centering
@@ -689,31 +694,57 @@ Figure~\ref{fig:histo_ms_block}
 \TG{We decided to omit Dask Futures as it does not have any value over Dask
 Delayed in this application.}
 
+\subsection{Histogram (NumPy): Number of workers}
+Figure~\ref{fig:histo_np_ms_worker}
+
+From Figure~\ref{fig:histo_np_tt_worker}
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_np_worker.png}%
+        \caption{Histogram (NumPy) makespan}\label{fig:histo_np_ms_worker}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_idle_np_worker.png}%
+        \caption{Histogram (NumPy) total time}\label{fig:histo_np_tt_worker}
+    \end{subfigure}
+    \caption{125 blocks, 8 threads/worker}
+\end{figure}
+
+\subsection{Histogram (NumPy): Number of blocks}
+Figure~\ref{fig:histo_np_ms_block}
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_np_block.png}%
+        \caption{Histogram (NumPy) makespan}\label{fig:histo_np_ms_block}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/histo_idle_np_block.png}%
+        \caption{Histogram (NumPy) total time}\label{fig:histo_np_tt_block}
+    \end{subfigure}
+    \caption{8 workers, 8 threads/worker}
+\end{figure}
 
 %%% BIDS EXAMPLE %%%
 \subsection{BidsApp example: Number of workers}
 Figure~\ref{fig:bids_ms_worker} shows the makespan of the application while varying
 the amount of worker. Overall, there is no substantial difference between the
-engines however Futures are always slightly faster. The performance difference between
-Futures and the other APIs increases with the number of workers. The makespan scales
-well with the increase in workers however the scaling reduces considerably when
-reaching 8 workers. This is due to the IO requirement increasing with the number of
-workers, since more tasks are read concurrently, and the application becomes more
-data-intensive.
+engines. The makespan scales well with the increase in workers however the scaling
+reduces considerably when reaching 8 workers. This is due to the IO requirement
+increasing with the number of workers --- more tasks are read concurrently and
+the application becomes more data-intensive.
 
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
-shown. \MD{Maybe mention why Spark overhead is so big.} Overall, the computation time
-for the group analysis is equal for all engines and numbers of workers. Bag and
-Delayed takes much longer to compute the participant analysis with 8 workers,
-otherwise, the makespan is similar for all engines and numbers of workers. The overhead
-increases as the number of workers increases. \MD{Check regression}
-
-\MD{Depending on how the overhead is calculated spark overhead is either minimal or
-gigantic. It is hard to determine which method should be used to calculate the
-overhead for this application. For this application, since Spark has 2 job this
-causes Spark to have different worker process for the different job and thus some job
-have overlaping process ID while other are uniques (See
-Figure~\ref{fig:bids_spark_gantt}).}
+shown. Overall, there is no significant difference between the engines. Each engines
+have similar total time independently of their number of worker. This is because the
+engines scale almost linearly. The overhead increase slowly as the number of workers
+increases. This is due to more communication between the scheduler and workers as
+well as inter-worker communication.
 
 \begin{figure}[!t]
     \centering
@@ -744,29 +775,29 @@ Bag. At the end of the participant analysis phase, Futures and Delayed has less
 overhead than Bag while Spark has way more than Dask engine. The group analysis is
 similar for all engines and APIs.
 
-% \begin{figure*}[!htb]
-%     \centering
-%     \begin{subfigure}[b]{\columnwidth}
-%         \includegraphics[clip,width=\columnwidth]{images/spark_bids_gantt.png}
-%         \caption{Spark}\label{fig:bids_spark_gantt}
-%     \end{subfigure}
-%     \hfill
-%     \begin{subfigure}[b]{\columnwidth}
-%         \includegraphics[clip,width=\columnwidth]{images/bag_bids_gantt.png}%
-%         \caption{Dask Bag}\label{fig:bids_dask_bag_gantt}
-%     \end{subfigure}
-%     \\
-%     \begin{subfigure}[b]{\columnwidth}
-%         \includegraphics[clip,width=\columnwidth]{images/delayed_bids_gantt.png}%
-%         \caption{Dask Delayed}\label{fig:bids_dask_delayed_gantt}
-%     \end{subfigure}
-%     \hfill
-%     \begin{subfigure}[b]{\columnwidth}
-%         \includegraphics[clip,width=\columnwidth]{images/futures_bids_gantt.png}%
-%         \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
-%     \end{subfigure}
-%     \caption{Gantt chart with 8 workers}\label{fig:bids_gantt}
-% \end{figure*}
+\begin{figure*}[!htb]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/spark_bids_gantt.png}
+        \caption{Spark}\label{fig:bids_spark_gantt}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/bag_bids_gantt.png}%
+        \caption{Dask Bag}\label{fig:bids_dask_bag_gantt}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/delayed_bids_gantt.png}%
+        \caption{Dask Delayed}\label{fig:bids_dask_delayed_gantt}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{\columnwidth}
+        \includegraphics[clip,width=\columnwidth]{images/futures_bids_gantt.png}%
+        \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
+    \end{subfigure}
+    \caption{BIDS App example: Gantt chart with 8 workers}\label{fig:bids_gantt}
+\end{figure*}
 
 
 
