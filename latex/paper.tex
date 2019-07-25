@@ -435,7 +435,7 @@ workers \TG{check if indeed proprotional, add regression slopes}.
 On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
 slightly lower than Dask's in particular as the number of workers increase.
 Within Dask, Delayed and Futures have a higher overhead than Bags. However,
-overhead differences are compensated by an increase of data transfer time,
+overhead differences are compensated by an increase in data transfer time,
 as a reduced overhead increases the concurrency between data transfers. 
 
 \begin{figure}[!b]
@@ -457,7 +457,7 @@ as a reduced overhead increases the concurrency between data transfers.
 \subsection{Incrementation: Number of blocks}
 
 Figure~\ref{fig:inc_ms_block} shows the Incrementation makespan when varying the
-number of image blocks for a constant BigBrain image size. We were not able to run
+number of image blocks for constant BigBrain image size. We were not able to run
 Spark for 30 blocks due to its \SI{2}{\giga\byte} limitation in the task size it can
 compute. Once again, we do not observe any significant difference among the engines.
 For all engines, makespan variability increases with the number of blocks, however,
@@ -465,14 +465,14 @@ engines scale very well in general.
 
 
 In Figure~\ref{fig:inc_tt_block}, the total execution time of each function is shown.
-For 30 blocks the Dask Bag API has a much lower overhead time. This is because Dask
-Bag was only using one thread per block in comparison to Dask Delayed and Dask
-Futures which were offloading a block calculations on multiple threads of the same
-worker. Once again, the data transfer time reduces with more blocks however the
-overhead time increases by a similar amount. This is not observed for 30 blocks as
-the workers are not used at full capacity, i.e., some threads are idle. Finally, the
-variability of the overhead increases with the number of blocks, which explains the
-makespan variability mentioned previously.
+For 30 blocks the Dask Bag API has a much lower overhead time. This is because Bag
+was only using one thread per block in comparison to Delayed and Futures that were
+offloading block calculations on multiple threads of the same worker. Once again,
+the data transfer time reduces with more blocks however the overhead time increases
+by a similar amount. This is not observed for 30 blocks as the workers are not used
+at full capacity, i.e., some threads are idle. Finally, the variability of the
+overhead increases with the number of blocks, which explains the makespan variability
+mentioned previously.
 
 \begin{figure}[!t]
     \centering
@@ -494,12 +494,12 @@ makespan variability mentioned previously.
 Figure~\ref{fig:inc_ms_itr} shows the makespan of the application while
 varying the number of iterations. Overall,  Spark and Dask APIs are once
 again equivalent, although Dask Delayed and Futures are slightly faster
-than Bags and Spark for 1 and 10 few iterations, and Futures are faster than
+than Bags and, Spark for 1 and 10 few iterations, and Futures are faster than
 Delayed, Bags and Spark for 100 iterations. Differences remain minor
 though.
 
 In Figure~\ref{fig:inc_tt_itr}, the total execution time breakdown is
-shown. We observe good scalability of all the engines with the number of
+shown. We observe the good scalability of all the engines with the number of
 iterations.
 % TODO
 
@@ -531,7 +531,7 @@ iterations.
 %% Sleep time
 \subsection{Incrementation: Sleep delay}
 Figure~\ref{fig:inc_ms_sleep} shows the makespan of the Incrementation application
-for different sleep delays. Overall, all engines again perform the same, and scale
+for different sleep delays. Overall, all engines again perform the same and scale
 well with task duration. Spark is initially slower than the Dask APIs, however, it is
 faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
 slower than the other two but it is not considerable.
@@ -648,17 +648,17 @@ delay, 8 workers, 8 threads/worker}\label{fig:inc_gantt}
 %%% HISTOGRAM %%%
 \subsection{Histogram: Number of workers}
 Figure~\ref{fig:histo_ms_worker} shows the makespan of the application for various
-amounts of workers. Spark is tremendiously faster than Dask APIs. The difference
+amounts of workers. Spark is tremendously faster than Dask APIs. The difference
 narrows as the number of workers increases. Between Dask APIs there is no substantial
 difference, however, Bag is slightly faster on average.
 
-From Figure~\ref{fig:histo_tt_worker} the total time spend in each function is shown.
+From Figure~\ref{fig:histo_tt_worker}, the total time spent in each function is shown.
 The computation time is significantly larger in Dask than Spark. This is potentially
 due to Python's GIL preventing Dask to parallelize the computation on multiple threads.
-Overall, the IO and overhead is comparable for all engines.
+Overall, the IO and overhead are comparable for all engines.
 
 On Figure~\ref{fig:histo_tt_worker}, Dask engines have similar total execution time
-when their number of workers varies, except for 8 worker where it incresase slightly.
+when their number of workers varies, except for 8 workers where it increases slightly.
 On the other hand, Spark total execution time keeps increasing; especially at 8
 workers. This is because Dask engines benefit more from additional workers.
 
@@ -683,14 +683,14 @@ than Delayed. Overall, the engines do not react to change in block size.
 
 In figure~\ref{fig:histo_tt_block} the total time for each function is shown.
 Note that at 30 blocks the worker's resources are not fully used since the workers
-can process up to 64 task in parallel. Moreover, the overhead for 30 blocks is
+can process up to 64 tasks in parallel. Moreover, the overhead for 30 blocks is
 erroneous due to a lower amount of block than available threads. This leads to thread
 based engines to have higher overhead. Given that, 
 
 Spark has a much lower compute time which makes it significantly faster than Dask
 engines. Overall, for all engines, lower block size results in lower IO time but
-increased overhead time. Again, this is due to the overhead desynchronizing task thus
-reducing the NFS bottle neck.
+increases the overhead time. Again, this is due to the overhead desynchronizing task
+thus reducing the NFS bottleneck.
 %TODO
 
 \begin{figure}[!t]
@@ -716,9 +716,9 @@ overhead happens mostly when a thread read subsequent blocks and Delayed overhea
 concentrated after reading all the blocks.
 
 The reduce is done differently on the engines. While Spark and Delayed compute all
-the reduce task on one process (thread) Spark computes it on the driver process. On
+the reduce tasks on one process (thread) Spark computes it on the driver process. On
 the other hand, Bag computes the reduce tasks on different workers and sends the
-informations to the driver process afterwards.
+information to the driver process afterward.
 
 \begin{figure}[!htb]
     \centering
@@ -742,16 +742,16 @@ delay, 8 workers, 8 threads/worker}\label{fig:histo_gantt}
 
 %%% HISTOGRAM (NumPy) %%%
 \subsection{Histogram (NumPy): Number of workers}
-Figure~\ref{fig:histo_np_ms_worker} shows the makespan for various amount fo workers.
-Overall, the makespan for all engines does not change considerably with an increase 
-in worker. This is beacuse the engines do not scale well.
+Figure~\ref{fig:histo_np_ms_worker} shows the makespan for various amount of workers.
+Overall, the makespan for all engines does not change considerably with an increase
+in the number of workers. This is because the engines do not scale well.
 
 On figure~\ref{fig:histo_np_ms_worker}, there is no substantial difference between
- all engines, althought, Delayed is slightly faster.
+ all engines, although, Delayed is slightly faster.
 
 From Figure~\ref{fig:histo_np_tt_worker}, the total execution time spent in each
 function is shown. The overhead and read time increase proportionally to the number
-of workers thus increasing the total time. This is because (1) most worker read at
+of workers thus increasing the total time. This is because (1) most workers read at
 the same time due to a low computation-IO ratio and (2) \MD{Determine why the
 overhead is so large compared to the pure Python implementation}
 
@@ -771,17 +771,17 @@ overhead is so large compared to the pure Python implementation}
 
 \subsection{Histogram (NumPy): Number of blocks}
 Figure~\ref{fig:histo_np_ms_block} shows the makespan of the application for
-different block size. Note that the workers can process up to 64 tasks in parallel thus
-they are not used at full capacity with 30 blocks. Overall, there is no substantial
-difference for all engines and block size.
+different block size. Note that the workers can process up to 64 tasks in parallel
+thus they are not used at full capacity with 30 blocks. Overall, there is no
+substantial difference for all engines and block size.
 
 In figure~\ref{fig:histo_np_tt_block}, shows the total time spent in each function.
-Again, the overhead for 30 blocks is erroneous due a lower amount of task than
-available thread which result in higher overhead for thread based engines.
-Considering the overhead error and that at 30 blocks the worker only use half their
-core, the total time is substantially the same for all block size. This is due lower
-block sizes having a lower IO time, however, it is balanced by the resulting increase
-in overhead.
+Again, the overhead for 30 blocks is erroneous due to a lower amount of task than
+available threads which result in higher overhead for thread-based engines.
+Considering the overhead error and that at 30 blocks the workers only use half their
+core, the total time is substantially the same for all block size. This is due to
+lower block sizes having a lower IO time, however, it is balanced by the resulting
+increase in overhead.
 
 \begin{figure}[!t]
     \centering
@@ -801,12 +801,12 @@ in overhead.
 Figure~\ref{fig:histo_np_gantt} shows the Gantt chart of the baseline Histogram
 (NumPy) experiment. The overhead for Spark and Bag is mostly located between a read
 and compute task or compute and read task. On the other hand, Delayed overhead is
-dispersed between all type of tasks. This cause Delayed to overlap more compute and
-read tasks amongs the different workers.
+dispersed between all types of tasks. This causes Delayed to overlap more compute and
+read tasks among the different workers.
 
 In figure~\ref{fig:histo_np_gantt}, The read tasks of all engines are similar initially, however, when computation starts
 the subsequent read tasks are much shorter. This is because read tasks for Delayed
-become desynchronized hence it significanlty reduces the IO bottle neck.
+become desynchronized hence it significantly reduces the IO bottleneck.
 
 
 
@@ -840,11 +840,11 @@ increasing with the number of workers --- more tasks are read concurrently and
 the application becomes more data-intensive.
 
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
-shown. Overall, there is no significant difference between the engines. Each engines
-have similar total time independently of their number of worker. This is because the
-engines scale almost linearly. The overhead increase slowly as the number of workers
-increases. This is due to more communication between the scheduler and workers as
-well as inter-worker communication.
+shown. Overall, there is no significant difference between the engines. Each engine
+has a similar total time independently of its number of workers. This is because of
+the, almost, linearly scale of the engines. The overhead increases slowly as the
+number of workers increases. This is due to more communication between the scheduler
+and workers as well as inter-worker communication.
 
 \begin{figure}[!t]
     \centering
@@ -865,11 +865,11 @@ well as inter-worker communication.
 \subsection{BidsApp example: Gantt chart}
 Figure~\ref{fig:bids_gantt} shows the Gantt charts obtained for each engine and API.
 The Gantt charts are structured in two main parts: participant analysis (orange) and
-group analysis (blue). The participant analysis tasks differ greatly in lenght. This
-is due to inqual amount of sessions per subject to process. The group analysis is
-similar for all engines and APIs. Overall, most of the overhead encountered results
-from the transition between the two analysis. This is because the group analysis is
-requires the results of the participant analysis to start.
+group analysis (blue). The participant analysis tasks differ greatly in length. This
+is due to the unequal amount of sessions per subject to process. The group analysis
+is similar for all engines and APIs. Overall, most of the overhead encountered
+results from the transition between the two analysis. This is because the group
+analysis requires the results of the participant analysis to start.
 
 \begin{figure*}[!htb]
     \centering
@@ -938,10 +938,10 @@ as reducing them increases data trasnfers.}
 
 \section*{Acknowledgment}
 
-Mathieu Dugr\'e was funded by a Undergraduate Student Research Assistant award from
+Mathieu Dugr\'e was funded by an Undergraduate Student Research Assistant award from
 the National Science and Engineering Research Council of Canada. We warmly thank
 Compute Canada and \TG{Westgrid?} for providing the cloud infrastructure used in
-these experiments, and the McGill Center for Integrative Neurocience for giving us
+these experiments, and the McGill Center for Integrative Neuroscience for giving us
 access to their cloud allocation.
 
 \bibliographystyle{IEEEtran}
