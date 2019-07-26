@@ -16,7 +16,6 @@
 \usepackage{algorithm}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{dblfloatfix}
 
 \newcommand{\TG}[1]{\color{cyan}From Tristan: #1 \color{black}}
 \newcommand{\MD}[1]{\color{magenta}From Mathieu: #1 \color{black}}
@@ -367,6 +366,7 @@ independent subjects in parallel.
  additional performance costs compared to Algorithm~\ref{alg:incrementation}.
  The total amount of shuffled data is, however, limited to
  \SI{2.62}{\mega\byte} per blocks as it only consists of image histograms.
+Two implementation are studied: pure Python and NumPy.
 
 \begin{algorithm}[!t]
     \caption{Histogram}\label{alg:histogram}
@@ -430,15 +430,12 @@ cache of each worker before each execution.
 
 For each run, we measured the application makespan as well as the cumulative 
 data read, compute, data write, and engine overhead across all application tasks. 
-We measured the overhead by 
+The overhead calculation for each CPU is the end time of its last processed task
+minus the start time of the application; the summation of those results is the total
+overhead.
 
-% \TG{\ldots, maybe add a figure}. \MD{Done but might need
-% adjustment depending on how the overhead is calculate (idle vs wasted)}
-
-% \TG{explain that number of iterations may impact futures.}
-
-The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
-seconds sleep delay.
+% The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
+% seconds sleep delay.
 
 \begin{table}[!t]
     \renewcommand{\arraystretch}{1.3}
