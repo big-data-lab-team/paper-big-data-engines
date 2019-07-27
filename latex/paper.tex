@@ -912,13 +912,71 @@ analysis requires the results of the participant analysis to start.
 \section{Discussion}
 
 \subsection{Effect of Network File System}
+We used an NFS as it is a common approach to store a large amount of data. However,
+it limits the available bandwidth since all workers interact with one disk. This
+causes data-intensive applications to take a significant amount of time for IO. As we
+expect, this effect is amplified when too many tasks simultaneously try to operate
+with the NFS at the same time as
+Fig.~\ref{fig:inc_gantt},\ref{fig:histo_gantt},\ref{fig:histo_np_gantt},\ref{fig:bids_gantt}
+shows. We could use a parallel shared file system, like Lustre \MD{cite lustre if not
+done already}, to reduce the impact of operations with the disk, however, we would
+quickly be limited by the network's bandwidth.
 
-\subsection{Effect of data transfer}
+\subsection{Effect of data-intensive applications}
+In our experiments, Incrementation, Histogram (NumPy) and Histogram for Spark have
+low compute time while BIDS App example and Histogram for Dask have significantly
+longer compute time. When adding additional workers, we observe that data-intensive
+applications scale poorly while compute-intensive applications scale almost linearly
+This is due to the limitation from the NFS, as mentioned above.
+
+Data transfer accounts for the majority of the execution time for data-intensive
+applications (see
+Fig.~\ref{fig:inc_gantt},\ref{fig:histo_spark_gantt},\ref{fig:histo_np_gantt}). We
+see that when a low number of IO tasks are overlapping, this diminishes the bandwidth
+limitation from the NFS. We want to explore solutions to desynchronize IO tasks in
+the aim to reduce the makespan of data-intensive applications.
 
 \subsection{Effect of the Global Interpreter Lock}
+Python's GIL prevents multi-threading in Python. Dask tries to minimize the
+consequences of the GIL by using external Python extensions. We found that Dask has
+issues to parallelize Python functions while Spark did not (see
+Fig.~\ref{fig:histo_tt_worker}). However, Dask was easily able to parallelize
+application with functions in Numpy (see
+Fig.~\ref{fig:inc_tt_worker},\ref{fig:histo_np_tt_worker}) and command-line
+applications (see Fig.~\ref{fig:bids_tt_worker}). This is because, for Dask, the
+instances are configured to have 1 worker process with 8 threads. Since the Histogram
+implementation does not release the GIL it can only use one of the thread at a given
+time thus it slows down the computation significantly.
 
-\subsection{Effect of the number of partitions}
+One should be careful to configure the workers properly depending on the type
+of functions executed in an application.
 
+\subsection{Effect of tasks' size}
+We measured the effect of various block sizes for constant BigBrain image for
+Incrementation, Histogram, and Histogram (NumPy). We observe that larger block size
+results in more IO compensated by lower overhead time. On the other hand, smaller
+block size results in higher overhead time compensated by reduced IO time.
+
+The number of partitions also has an impact on the size of the tasks. We set a
+partition for each block or subject. There is a trade-off for the number of
+partitions. On the one hand, a low amount of partition results in larger tasks thus
+in lower scheduling overhead. On the other hand, a higher number of partition
+results in smaller tasks hence more tasks fit in the workers' memory insuring that
+they always have something to work on.
+
+Varying the block size is equivalent to varying the size of the partitions. We
+observed no difference when varying the task size while using an NFS. However, if
+one uses a parallel shared file system, we suppose it would be preferable to use a
+larger block size as the IO time should be reduced substantially. It is worth noting
+that the Dask developers suggest, in
+\href{https://docs.dask.org/en/latest/best-practices.html}{Dask's best practices}, to
+use a partition size such that workers have 2-3 times as many chunks available to
+work on. More experiments would have to be performed to gain insight on an optimal
+number of partitions to use for a given set of data-intensive applications.
+
+\subsection{Other comments}
+Spark performance should be reduced by the serialization of Python functions to Java,
+however, our results show no significant impact of it. 
 
 
 \TG{Talk about engine overhead: (1) where is it coming from? (2) 
