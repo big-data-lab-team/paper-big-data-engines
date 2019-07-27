@@ -227,8 +227,8 @@ While Python multithreading is limited by the
 \href{https://docs.python.org/3/glossary.html#term-gil}{Global Interpreter Lock (GIL)}
 as a result of CPython's non thread-safe memory management, Dask attempts to
 bypass the GIL whenever possible and use multithreading to provide parallelism.
-With the exception of Dask Bags, all APIs, by default, use the local multithreaded
-scheduler. Dask Bags instead relies on the local multiprocessing scheduler. 
+With the exception of Dask Bag, all APIs, by default, use the local multithreaded
+scheduler. Dask Bag instead relies on the local multiprocessing scheduler. 
 
 The Dask graph is the internal representation of Dask application to be executed 
 by the scheduler. API Operations generate multiple
@@ -347,11 +347,11 @@ independent subjects in parallel.
 
 \begin{figure}[!b]
     \centering
-    \includegraphics[width=0.125\textwidth,
+    \includegraphics[width=2cm, height=\columnwidth,
     angle=-90]{images/incrementation-task-graph.png}
     \caption{Task graph for Incrementation with 5 iterations and 3 BigBrain blocks.
     Circles represent the incrementation and sleep function while rectangles
-    represent stages of the image blocks.}\label{fig:tg-inc}
+    represent stages of the blocks.}\label{fig:tg-inc}
 \end{figure}
 
 \subsubsection{Histogram}
@@ -366,6 +366,7 @@ independent subjects in parallel.
  additional performance costs compared to Algorithm~\ref{alg:incrementation}.
  The total amount of shuffled data is, however, limited to
  \SI{2.62}{\mega\byte} per blocks as it only consists of image histograms.
+Two implementation are studied: pure Python and NumPy.
 
 \begin{algorithm}[!t]
     \caption{Histogram}\label{alg:histogram}
@@ -385,9 +386,10 @@ independent subjects in parallel.
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=0.16\textwidth, angle=-90]{images/histogram-task-graph.png}
+    \includegraphics[width=2cm, height=\columnwidth,
+    angle=-90]{images/histogram-task-graph.png}
     \caption{Task graph for Histogram with 3 BigBrain blocks. Circles represent the
-    functions while rectangles represent stages of the image blocks.
+    functions while rectangles represent stages of the blocks.
     }\label{fig:tg-histo}
 \end{figure}
 
@@ -403,7 +405,7 @@ using the popular FMRIB Software Library
 called group analysis, computes the volume of each brain and returns the average
 volume, shuffling a total of \SI{8.6}{\giga\byte} image data.
 
-While Incrementation and Histogram were implemented directly in Python, BIDS app
+While Incrementation and Histogram were implemented directly in Python, BIDS App
 example requires an external library and is distributed as a Docker container image
 (bids/base\_fsl on DockerHub). We converted the Docker image to a Singularity image,
 given its popularity for HPC and reproducibility, using
@@ -428,10 +430,9 @@ cache of each worker before each execution.
 
 For each run, we measured the application makespan as well as the cumulative 
 data read, compute, data write, and engine overhead across all application tasks. 
-We measured the overhead by \TG{\ldots, maybe add a figure}. \MD{Done but might need
-adjustment depending on how the overhead is calculate (idle vs wasted)}
-
-\TG{explain that number of iterations may impact futures.}
+The overhead calculation for each CPU is the end time of its last processed task
+minus the start time of the application; the summation of those results is the total
+overhead.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
@@ -462,14 +463,14 @@ adjustment depending on how the overhead is calculate (idle vs wasted)}
 %% worker
 \subsection{Incrementation: Number of workers}
 Figure~\ref{fig:inc_ms_worker} shows the makespan of the Incrementation application
-for different numbers of workers and for different engines. The bars show the average
+for different numbers of workers and engines. The bars show the average
 makespan over 3 repetitions while the error bars are the standard deviation. Overall,
 there is no substantial makespan difference between the engines. Dask seems to have a
 slight advantage over Spark, \SI{83.61}{\second} on average,
-with Delayed and Futures being slightly better than Bags.
+with Delayed and Futures being slightly better than Bag.
 
 For all engines, the makespan is far from decreasing linearly with the
-number of workers. Note that there are 8 threads per worker. The makespan
+number of workers. Note that each worker has 8 CPUs. The makespan
 even increases between 4 and 8 workers. This is due to the high impact of
 data transfers and engine overhead on the application. 
 
@@ -478,11 +479,19 @@ Incrementation application, broken down into data transfer (read and
 write), compute (sleep), and overhead time. As expected, the computing time
 stays similar when the number of workers increases. However, the data
 transfer time and overhead increase proportionally to the number of
-workers \TG{check if indeed proprotional, add regression slopes}.
+workers with regression lines:
+
+\hspace{1cm}\(\hat{y}=2336.9499\cdot{x} + 325.00574\) (Spark)
+
+\hspace{1cm}\(\hat{y}=2650.13505\cdot{x} + 1585.37218\) (Bag)
+
+\hspace{1cm}\(\hat{y}=3250.53406\cdot{x} + 1769.50351\) (Delayed)
+
+\hspace{1cm}\(\hat{y}=3570.39758\cdot{x} + 1062.23031\) (Futures)
 
 On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
 slightly lower than Dask's in particular as the number of workers increase.
-Within Dask, Delayed and Futures have a higher overhead than Bags. However,
+Within Dask, Delayed and Futures have a higher overhead than Bag. However,
 overhead differences are compensated by an increase in data transfer time,
 as a reduced overhead increases the concurrency between data transfers. 
 
@@ -498,7 +507,7 @@ as a reduced overhead increases the concurrency between data transfers.
         \caption{Incrementation total time}\label{fig:inc_tt_worker}
     \end{subfigure}
     \caption{125 blocks, 10 iterations, \SI{4}{\second} delay, 8
-    threads/worker}\label{fig:inc_worker}
+    CPUs/worker}\label{fig:inc_worker}
 \end{figure}
 
 % blocks
@@ -513,14 +522,13 @@ engines scale very well in general.
 
 
 In Figure~\ref{fig:inc_tt_block}, the total execution time of each function is shown.
-For 30 blocks the Dask Bag API has a much lower overhead time. This is because Bag
-was only using one thread per block in comparison to Delayed and Futures that were
-offloading block calculations on multiple threads of the same worker. Once again,
-the data transfer time reduces with more blocks however the overhead time increases
-by a similar amount. This is not observed for 30 blocks as the workers are not used
-at full capacity, i.e., some threads are idle. Finally, the variability of the
-overhead increases with the number of blocks, which explains the makespan variability
-mentioned previously.
+For 30 blocks, Delayed and Futres have much higher overhead. This is because they are
+thread-based and use multiple threads to compute a block which affect the calculation
+of the overhead. Once again, the data transfer time reduces with more blocks however
+the overhead time increases by a similar amount. This is not observed for 30 blocks
+as the workers are not used at full capacity, i.e., some threads are idle. Finally,
+the variability of the overhead increases with the number of blocks, which explains
+the makespan variability mentioned previously.
 
 \begin{figure}[!t]
     \centering
@@ -534,33 +542,22 @@ mentioned previously.
         \caption{Incrementation total time}\label{fig:inc_tt_block}
     \end{subfigure}
     \caption{10 iterations, \SI{4}{\second} delay, 8 workers, 8
-    threads/worker}\label{fig:inc_block}
+    CPUs/worker}\label{fig:inc_block}
 \end{figure}
 
 %% Iterations
 \subsection{Incrementation: Number of iterations}
 Figure~\ref{fig:inc_ms_itr} shows the makespan of the application while
 varying the number of iterations. Overall,  Spark and Dask APIs are once
-again equivalent, although Dask Delayed and Futures are slightly faster
-than Bags and, Spark for 1 and 10 few iterations, and Futures are faster than
-Delayed, Bags and Spark for 100 iterations. Differences remain minor
+again equivalent, although Delayed and Futures are slightly faster
+than Bag and, Spark for 1 and 10 iterations, and Futures are faster than
+Delayed, Bag and Spark for 100 iterations. Differences remain minor
 though.
 
 In Figure~\ref{fig:inc_tt_itr}, the total execution time breakdown is
 shown. We observe the good scalability of all the engines with the number of
 iterations.
-% TODO
 
-% We think this is because Dask Delayed often
-% schedule a block on a different thread of the same worker which causes small delays
-% every time due to inter-thread data communication. This is good when there are fewer
-% tasks as is make the IO between blocks go out of sync hence lowering the IO
-% bottleneck however as the number of tasks increases those small delays become
-% significant.
-
-%  The Dask Futures API seems to outperform all the other APIs but this is
-% most likely because the tasks are not interdependent thus this application benefits
-% from the less optimal but faster scheduling brought by Dask Futures.
 
 \begin{figure}[!t]
     \centering
@@ -573,7 +570,7 @@ iterations.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_itr.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_itr}
     \end{subfigure}
-    \caption{125 blocks, \SI{4}{\second} delay, 8 workers, 8 threads/worker}
+    \caption{125 blocks, \SI{4}{\second} delay, 8 workers, 8 CPUs/worker}
 \end{figure}
 
 %% Sleep time
@@ -584,44 +581,11 @@ well with task duration. Spark is initially slower than the Dask APIs, however, 
 faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
 slower than the other two but it is not considerable.
 
-Figure~\ref{fig:inc_tt_sleep} shows the total execution time breakdown. On
-one hand, Spark has the smallest overhead. As previously observed,
-variations in overhead time are almost exactly compensated by variations in data
-transfer time.
+Figure~\ref{fig:inc_tt_sleep} shows the total execution time breakdown. Spark has the
+smallest overhead. As previously observed, variations in overhead time are almost
+exactly compensated by variations in data transfer time.
 
-% \begin{table}[!t]
-%     \caption{Function time for the sleep experiment}
-%     \begin{subtable}[b]{\columnwidth}
-%         \renewcommand{\arraystretch}{1.3}
-%         \caption{Overhead time in second}\label{tab:inc_sleep_overhead}
-%         \centering
-%         \begin{tabular}{lllll}
-%         \hline
-%                      & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
-%         Spark        & 14992  & 17076  & 16069   & 9769    \\
-%         Dask.Bag     & 20690  & 21388  & 17759   & 18720   \\
-%         Dask.Delayed & 27481  & 26199  & 22080   & 24624   \\
-%         Dask.Futures & 27069  & 27984  & 23538   & 24762   \\ \hline
-%         \end{tabular}
-%     \end{subtable}
-%     \vskip 0.2cm
-%     \begin{subtable}[b]{\columnwidth}
-%         \renewcommand{\arraystretch}{1.3}
-%         \caption{IO time in second}\label{tab:inc_sleep_io}
-%         \centering
-%         \begin{tabular}{lllll}
-%         \hline
-%                      & 1 sec. & 4 sec. & 16 sec. & 64 sec. \\ \hline
-%         Spark        & 63622  & 57144  & 51070   & 57078   \\
-%         Dask.Bag     & 54630  & 52312  & 53743   & 53612   \\
-%         Dask.Delayed & 45239  & 44142  & 45133   & 46198   \\
-%         Dask.Futures & 46537  & 43161  & 44749   & 45846   \\ \hline
-%         \end{tabular}
-%     \end{subtable}
-%     \vspace{-3mm}
-%  \end{table}
-
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/inc_sleep.png}%
@@ -632,85 +596,67 @@ transfer time.
         \includegraphics[clip,width=\columnwidth]{images/inc_idle_sleep.png}%
         \caption{Incrementation total time}\label{fig:inc_tt_sleep}
     \end{subfigure}
-    \caption{125 blocks, 10 iterations, 8 workers, 8 threads/worker}
+    \caption{125 blocks, 10 iterations, 8 workers, 8 CPUs/worker}
 \end{figure}
 
 %% Baseline gantt chart
 \subsection{Incrementation: Gantt chart}
 
-Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine and API.
-Gantt charts are structured in batches of up to 64 read-compute-write concurrent
-sequences. File reads in the first batch are much longer than in the following ones:
+Figure~\ref{fig:inc_gantt} shows the Gantt chart obtained for each engine. Gantt
+charts are structured in batches of up to 64 read-compute-write concurrent sequences.
+Files read in the first batch are much longer than the ones in the following batches:
 this is due to the high synchronization of data transfers that leads to a high
 saturation of the shared file system. We also note that overhead, represented in
-white, is concentrated around the data transfer tasks \TG{find out why}, and the
+white, is concentrated around the data transfer tasks, and the
 computing tasks that run concurrently with data transfers. 
-% The frameworks have similar makespan however the time spend for each type of
-% task differs considerably (see Table~\ref{tab:inc_base}). Spark tends to spend more
-% time than other frameworks for IO however it has a much lower overhead. Dask Delayed
-% and Futures have the lowest IO time but a much higher overhead. Dask Bag stands in
-% the middle for both IO and overhead. Compute time is approximately the same for all
-% frameworks. Apart from the first IO section, there is a large amount of ovehead
-% everytime time IO is performed. This is true for all frameworks.
 
-\begin{figure*}[!htb]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/spark_inc_gantt.png}
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/spark_inc_gantt.png}
         \caption{Spark}\label{fig:inc_spark_gantt}
     \end{subfigure}
-    \hfill
+    \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/bag_inc_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/bag_inc_gantt.png}%
         \caption{Dask Bag}\label{fig:inc_dask_bag_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/delayed_inc_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/delayed_inc_gantt.png}%
         \caption{Dask Delayed}\label{fig:inc_dask_delayed_gantt}
     \end{subfigure}
-    \hfill
+    \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/futures_inc_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/futures_inc_gantt.png}%
         \caption{Dask Futures}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{Incrementation: Gantt chart with 125 blocks, 10 iterations, \SI{4}{\second}
-delay, 8 workers, 8 threads/worker}\label{fig:inc_gantt}
-\end{figure*}
-
-% \begin{table}[!b]
-%     \renewcommand{\arraystretch}{1.3}
-%     \caption{Distribution of the execution time in second: 125 blocks, 4 sec.\ sleep
-%     delay, 10 iterations, and 8 workers}\label{tab:inc_base}
-%     \centering
-%     \begin{tabular*}{\columnwidth}{llllll}
-%     \hline
-%                  & Read  & Compute & Write & Overhead & Total \\ \hline
-%     Spark        & 34465 & 5118    & 22679 & 17076    & 79338 \\
-%     Dask Bag     & 36863 & 5121    & 15449 & 21388    & 78821 \\
-%     Dask Delayed & 32769 & 5119    & 11373 & 26199    & 75461 \\
-%     Dask Futures & 31891 & 5120    & 11270 & 27984    & 76265 \\ \hline
-%     \end{tabular*}
-%  \end{table}
+    \caption{Incrementation: 125 blocks, 10 iterations, \SI{4}{\second} delay, 8 workers,
+8 CPUs/worker}\label{fig:inc_gantt}
+\end{figure}
 
 %%% HISTOGRAM %%%
 \subsection{Histogram: Number of workers}
 Figure~\ref{fig:histo_ms_worker} shows the makespan of the application for various
 amounts of workers. Spark is tremendously faster than Dask APIs. The difference
-narrows as the number of workers increases. Between Dask APIs there is no substantial
-difference, however, Bag is slightly faster on average.
+narrows as the number of workers increases but stays significant. Between Dask APIs
+there is no substantial difference, however, Bag is slightly faster on average.
 
-From Figure~\ref{fig:histo_tt_worker}, the total time spent in each function is shown.
-The computation time is significantly larger in Dask than Spark. This is potentially
-due to Python's GIL preventing Dask to parallelize the computation on multiple threads.
-Overall, the IO and overhead are comparable for all engines.
+From Figure~\ref{fig:histo_tt_worker}, the total time spent in each function is
+shown. The computation time is significantly larger for Dask than for Spark. This is
+potentially due to Python's GIL preventing Dask to parallelize the computation on
+multiple threads. Overall, the IO and overhead are comparable for all engines.
 
 On Figure~\ref{fig:histo_tt_worker}, Dask engines have similar total execution time
 when their number of workers varies, except for 8 workers where it increases slightly.
 On the other hand, Spark total execution time keeps increasing; especially at 8
 workers. This is because Dask engines benefit more from additional workers.
 
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/histo_worker.png}%
@@ -721,12 +667,13 @@ workers. This is because Dask engines benefit more from additional workers.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_worker.png}%
         \caption{Histogram total time}\label{fig:histo_tt_worker}
     \end{subfigure}
-    \caption{125 blocks, 8 threads/worker}
+    \caption{125 blocks, 8 CPUs/worker}
 \end{figure}
 
 \subsection{Histogram: Number of blocks}
-Figure~\ref{fig:histo_ms_block} shows the makespan for different block size.
-Again, Spark is significantly faster then Dask engines and Bag is slightly faster
+Figure~\ref{fig:histo_ms_block} shows the makespan for different block size. Again,
+Spark is not compared at 30 blocks due to its \SI{2}{\giga\byte} task limitation.
+Once more, Spark is significantly faster then Dask engines and Bag is slightly faster
 than Delayed. Overall, the engines do not react to change in block size.
 
 In figure~\ref{fig:histo_tt_block} the total time for each function is shown.
@@ -737,9 +684,9 @@ based engines to have higher overhead. Given that,
 
 Spark has a much lower compute time which makes it significantly faster than Dask
 engines. Overall, for all engines, lower block size results in lower IO time but
-increases the overhead time. Again, this is due to the overhead desynchronizing task
+increases the overhead time. Again, this is due to large overhead desynchronizing task
 thus reducing the NFS bottleneck.
-%TODO
+
 
 \begin{figure}[!t]
     \centering
@@ -752,10 +699,10 @@ thus reducing the NFS bottleneck.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_block.png}%
         \caption{Histogram total time}\label{fig:histo_tt_block}
     \end{subfigure}
-    \caption{8 workers, 8 threads/worker}
+    \caption{8 workers, 8 CPUs/worker}
 \end{figure}
-\TG{We decided to omit Dask Futures as it does not have any value over Dask
-Delayed in this application.}
+% \TG{We decided to omit Dask Futures as it does not have any value over Dask
+% Delayed in this application.}
 
 \subsection{Histogram: Gantt chart}
 Figure~\ref{fig:histo_gantt} shows the Gantt chart of the baseline Histogram
@@ -763,47 +710,48 @@ experiment. Spark overhead is distributed through all the execution while Bag
 overhead happens mostly when a thread read subsequent blocks and Delayed overhead is
 concentrated after reading all the blocks.
 
-The reduce is done differently on the engines. While Spark and Delayed compute all
-the reduce tasks on one process (thread) Spark computes it on the driver process. On
-the other hand, Bag computes the reduce tasks on different workers and sends the
-information to the driver process afterward.
+The reduce is done differently for the engines. Spark and Delayed compute all the
+reduce tasks on one process (thread), however, Spark only computes it on the driver
+process. On the other hand, Bag computes the reduce tasks on different workers and
+sends the information to the driver process afterward.
 
-\begin{figure}[!htb]
+\begin{figure}[!t]
     \centering
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/spark_histo_gantt.png}
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/spark_histo_gantt.png}
         \caption{Spark}\label{fig:histo_spark_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/bag_histo_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/bag_histo_gantt.png}%
         \caption{Dask Bag}\label{fig:histo_dask_bag_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/delayed_histo_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/delayed_histo_gantt.png}%
         \caption{Dask Delayed}\label{fig:histo_dask_delayed_gantt}
     \end{subfigure}
-    \caption{Histogram: Gantt chart with 125 blocks, 10 iterations, \SI{4}{\second}
-delay, 8 workers, 8 threads/worker}\label{fig:histo_gantt}
+    \caption{Histogram: 125 blocks, 8 workers, 8
+    CPUs/worker}\label{fig:histo_gantt}
 \end{figure}
 
 %%% HISTOGRAM (NumPy) %%%
 \subsection{Histogram (NumPy): Number of workers}
 Figure~\ref{fig:histo_np_ms_worker} shows the makespan for various amount of workers.
 Overall, the makespan for all engines does not change considerably with an increase
-in the number of workers. This is because the engines do not scale well.
+in the number of workers. This is because the engines do not scale well. There is no
+substantial difference between all engines, although, Delayed is slightly faster.
 
-On figure~\ref{fig:histo_np_ms_worker}, there is no substantial difference between
- all engines, although, Delayed is slightly faster.
+From Figure~\ref{fig:histo_np_tt_worker}, the total execution time breakdown is
+shown. The overhead and read time increase proportionally to the number of workers
+thus increasing the total time. This is because (1) most workers read at the same
+time due to a low computation-IO ratio and (2) there is more intra-worker and
+inter-worker communication.
 
-From Figure~\ref{fig:histo_np_tt_worker}, the total execution time spent in each
-function is shown. The overhead and read time increase proportionally to the number
-of workers thus increasing the total time. This is because (1) most workers read at
-the same time due to a low computation-IO ratio and (2) \MD{Determine why the
-overhead is so large compared to the pure Python implementation}
-
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/histo_np_worker.png}%
@@ -814,22 +762,21 @@ overhead is so large compared to the pure Python implementation}
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_np_worker.png}%
         \caption{Histogram (NumPy) total time}\label{fig:histo_np_tt_worker}
     \end{subfigure}
-    \caption{125 blocks, 8 threads/worker}
+    \caption{125 blocks, 8 CPUs/worker}
 \end{figure}
 
 \subsection{Histogram (NumPy): Number of blocks}
 Figure~\ref{fig:histo_np_ms_block} shows the makespan of the application for
-different block size. Note that the workers can process up to 64 tasks in parallel
-thus they are not used at full capacity with 30 blocks. Overall, there is no
-substantial difference for all engines and block size.
+different block size. Again, Spark is not compared at 30 blocks due to its
+\SI{2}{\giga\byte} task limitation. Overall, there is no substantial difference for
+all engines and block sizes.
 
 In figure~\ref{fig:histo_np_tt_block}, shows the total time spent in each function.
-Again, the overhead for 30 blocks is erroneous due to a lower amount of task than
-available threads which result in higher overhead for thread-based engines.
-Considering the overhead error and that at 30 blocks the workers only use half their
-core, the total time is substantially the same for all block size. This is due to
-lower block sizes having a lower IO time, however, it is balanced by the resulting
-increase in overhead.
+Once more, since Delayed is thread-based its overhead at 30 blocks is seems much
+higher that it really is. Considering the overhead error and that at 30 blocks the
+workers only use half their core, the total time is substantially the same for all
+block size. This is due to lower block sizes having a lower IO time, however, it
+balances out by the resulting increase in overhead.
 
 \begin{figure}[!t]
     \centering
@@ -842,57 +789,69 @@ increase in overhead.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_np_block.png}%
         \caption{Histogram (NumPy) total time}\label{fig:histo_np_tt_block}
     \end{subfigure}
-    \caption{8 workers, 8 threads/worker}
+    \caption{8 workers, 8 CPUs/worker}
 \end{figure}
 
 \subsection{Histogram (NumPy): Gantt chart}
-Figure~\ref{fig:histo_np_gantt} shows the Gantt chart of the baseline Histogram
-(NumPy) experiment. The overhead for Spark and Bag is mostly located between a read
-and compute task or compute and read task. On the other hand, Delayed overhead is
-dispersed between all types of tasks. This causes Delayed to overlap more compute and
-read tasks among the different workers.
+Figure~\ref{fig:histo_np_gantt} shows the Gantt chart of the baseline for the
+Histogram (NumPy) experiment. The overhead for Spark and Bag is mostly located
+between a read and compute task or compute and read task. On the other hand, Delayed
+overhead is dispersed between all types of tasks. This causes Delayed to overlap more
+compute and read tasks simultaneously among the different workers.
 
-In figure~\ref{fig:histo_np_gantt}, The read tasks of all engines are similar initially, however, when computation starts
-the subsequent read tasks are much shorter. This is because read tasks for Delayed
-become desynchronized hence it significantly reduces the IO bottleneck.
+In figure~\ref{fig:histo_np_gantt}, read tasks are initially similar for all engines.
+However, when computation starts the subsequent read tasks are much shorter for
+Delayed. This is due the desynchronization of the task reducing the IO bottleneck.
 
 
 
-\begin{figure}[!htb]
+\begin{figure}[!tb]
     \centering
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/spark_histo_np_gantt.png}
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/spark_histo_np_gantt.png}
         \caption{Spark}\label{fig:histo_np_spark_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/bag_histo_np_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/bag_histo_np_gantt.png}%
         \caption{Dask Bag}\label{fig:histo_np_dask_bag_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/delayed_histo_np_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/delayed_histo_np_gantt.png}%
         \caption{Dask Delayed}\label{fig:histo_np_dask_delayed_gantt}
     \end{subfigure}
-    \caption{Histogram (NumPy): Gantt chart with 125 blocks, 10 iterations, \SI{4}{\second}
-delay, 8 workers, 8 threads/worker}\label{fig:histo_np_gantt}
+    \caption{Histogram (NumPy): 125 blocks, 8 workers, 8
+    CPUs/worker}\label{fig:histo_np_gantt}
 \end{figure}
 
 %%% BIDS EXAMPLE %%%
 \subsection{BidsApp example: Number of workers}
-Figure~\ref{fig:bids_ms_worker} shows the makespan of the application while varying
-the amount of worker. Overall, there is no substantial difference between the
-engines. The makespan scales well with the increase in workers however the scaling
-reduces considerably when reaching 8 workers. This is due to the IO requirement
-increasing with the number of workers --- more tasks are read concurrently and
-the application becomes more data-intensive.
+Figure~\ref{fig:bids_ms_worker} shows the makespan of the application when varying
+the amount of workers. Overall, there is no substantial difference between the
+engines. The makespan scales well with the increase in workers, however, the scaling
+reduces considerably when reaching 8 workers. This is due to an increase in overhead
+and of the IO requirement increasing with the number of workers --- more tasks are
+read concurrently and the application becomes more data-intensive.
 
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
-shown. Overall, there is no significant difference between the engines. Each engine
-has a similar total time independently of its number of workers. This is because of
-the, almost, linearly scale of the engines. The overhead increases slowly as the
-number of workers increases. This is due to more communication between the scheduler
-and workers as well as inter-worker communication.
+shown. Each engine has a similar total time independently of its number of workers.
+This is due to the, almost, linear scaling of the engines. The overhead increases
+proportionally with the number of workers (see regression lines below). This is due
+to more communication between the scheduler and workers as well as intra-worker and
+inter-worker communication.
+
+
+\hspace{1cm}\(\hat{y}=223.53586\cdot{x} + 91.616964\) (Spark)
+
+\hspace{1cm}\(\hat{y}=182.82659\cdot{x} - 11.43834\) (Bag)
+
+\hspace{1cm}\(\hat{y}=172.54183\cdot + 400.69433\) (Delayed)
+
+\hspace{1cm}\(\hat{y}=132.41481\cdot{x} + 90.32813\) (Futures)
 
 \begin{figure}[!t]
     \centering
@@ -905,48 +864,62 @@ and workers as well as inter-worker communication.
         \includegraphics[clip,width=\columnwidth]{images/bids_idle_worker.png}%
         \caption{BIDS App example total time}\label{fig:bids_tt_worker}
     \end{subfigure}
-    \caption{Variation of the amount of worker, 8 threads/worker}
+    \caption{Variation of the amount of worker, 8 CPUs/worker}
 \end{figure}
 
 
 %% Baseline gantt chart
 \subsection{BidsApp example: Gantt chart}
-Figure~\ref{fig:bids_gantt} shows the Gantt charts obtained for each engine and API.
-The Gantt charts are structured in two main parts: participant analysis (orange) and
+Figure~\ref{fig:bids_gantt} shows the Gantt chart obtained for each engine.
+Gantt charts are structured in two parts: participant analysis (orange) and
 group analysis (blue). The participant analysis tasks differ greatly in length. This
-is due to the unequal amount of sessions per subject to process. The group analysis
+is due to the unequal amount of sessions per subject processed. The group analysis
 is similar for all engines and APIs. Overall, most of the overhead encountered
 results from the transition between the two analysis. This is because the group
 analysis requires the results of the participant analysis to start.
 
-\begin{figure*}[!htb]
+\begin{figure}[!htb]
     \centering
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/spark_bids_gantt.png}
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/spark_bids_gantt.png}
         \caption{Spark}\label{fig:bids_spark_gantt}
     \end{subfigure}
-    \hfill
+    \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/bag_bids_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/bag_bids_gantt.png}%
         \caption{Dask Bag}\label{fig:bids_dask_bag_gantt}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/delayed_bids_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/delayed_bids_gantt.png}%
         \caption{Dask Delayed}\label{fig:bids_dask_delayed_gantt}
     \end{subfigure}
-    \hfill
+    \\
     \begin{subfigure}[b]{\columnwidth}
-        \includegraphics[clip,width=\columnwidth]{images/futures_bids_gantt.png}%
+        \includegraphics[clip,width=\columnwidth,
+        height=0.15\textheight]{images/futures_bids_gantt.png}%
         \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
     \end{subfigure}
-    \caption{BIDS App example: Gantt chart with 8 workers}\label{fig:bids_gantt}
-\end{figure*}
+    \caption{BIDS App example: 8 workers}\label{fig:bids_gantt}
+\end{figure}
 
 
 
 %%%%% DISCUSSION %%%%%
 \section{Discussion}
+
+\subsection{Effect of Network File System}
+
+\subsection{Effect of data transfer}
+
+\subsection{Effect of the Global Interpreter Lock}
+
+\subsection{Effect of the number of partitions}
+
+
 
 \TG{Talk about engine overhead: (1) where is it coming from? (2) 
 explain the impact on data transfers with a graph.}
@@ -954,35 +927,6 @@ explain the impact on data transfers with a graph.}
 \TG{In the dicussion, get back to it and mention that (1) we don't
 always observe that, (2) for data-intensive applications, overheads don't really matter
 as reducing them increases data trasnfers.}
-
-% partitioning issue
-
-
-% \subsection{IO Time}
-% 
-% 
-% \subsection{Serialization}
-% We think that serialization could have an important effect on the makespan of the
-% application. This could potentially slow down the application when a lot of tasks are
-% scheduled.
-% 
-% \subsection{NFS}
-% The NFS seems to be a source of the bottleneck. We think that exploring another file
-% system, like Lustre, could give us insight into the actual effect of the NFS on the
-% application makespan. We also think that the NFS caching could play an effect on the
-% task of different lengths.
-% 
-% \subsection{Scheduler}
-% The Dask scheduler seems to have some bizarre behavior. It seems like it waits to
-% schedule tasks. It could also be due to tasks being scheduled on other workers
-% thus requiring data to be sent over the network; which would explain the stall on the
-% worker. More work would be needed to investigate that issue.
-% 
-% 
-% \subsection{Caching}
-% We think that caching plays an effect on the results. As seen in the Gantt chart
-% previously, some of the read tasks are significantly shorter than others while all
-% blocks are of equal size.
 
 \section*{Acknowledgment}
 
