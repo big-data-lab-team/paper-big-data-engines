@@ -17,6 +17,8 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
+%\setlength{\textfloatsep}{7pt}
+
 \newcommand{\TG}[1]{\color{cyan}From Tristan: #1 \color{black}}
 \newcommand{\MD}[1]{\color{magenta}From Mathieu: #1 \color{black}}
 \newcommand{\VHS}[1]{\color{green}From Valerie: #1 \color{black}}
@@ -39,31 +41,33 @@ Concordia University, Montr\'eal, Qu\'ebec, Canada
 
 \begin{abstract}
 % Topic
-As the amount of data increases and is easier to access, Big Data processing becomes
-critical in neuroimaging.
+Recent increases in data volume and improved accessibility have 
+led neuroimaging into the Big Data era. 
 % Problem
-This is an issue as the currently used frameworks are specialized for neuroimaging
-and not Big Data concerns. This can lead to performance decrease or limit the
-research we can perform.
+While existing neuroimaging pipeline frameworks typically do not attempt to
+limit data transfers, Big Data frameworks remain seldom used.
 % Relevance
-The usage of Big Data framework is beneficial to this problem. The state-of-the-art
-general purpose Big Data framework Spark has its code base written in Scala, while
-our laboratory mostly uses Python. This can be problematic since it is harder to port
-our pipelines to the framework. Also, theoretically, it leads to performance decrease.
-
+In this paper, we compare two popular Big Data frameworks with Python APIs,
+Apache Spark and Dask, for their runtime performance in processing neuroimaging
+pipelines.
 % Approach
-We propose to use Dask since it provides native Python parallelism to pipelines while
-providing support to familiar API from the Python's scientific ecosystem.
-Unfortunately, there are few comparisons between Spark and Dask; especially in
-neuroimaging. Moreover, these studies were done when Dask was still an immature
-framework which makes those studies unfair nowadays. This is our motivation to
-compare the latest version of Dask with Spark.
+To evaluate performance differences we used two synthetic, Incrementation
+(map-only) and Histogram (map-reduce), pipelines and real neuroimaging map-reduce pipeline (BIDS App Example). For both our 
+synthetic pipelines we varied the number of workers and block size using the 
+76~GB BigBrain image. We additionally varied the number of iterations and task
+duration for our Incrementation pipeline. 39~GB of anatomical images from the
+CoRR were used for the BIDS App Example pipeline.
 % Methods (one sentence)
-To evaluate the frameworks, we focus on their performance and their scheduler.
-
+All experiments were executed on 8 instances of Compute Canada's Arbutus cloud
+with 8~vCPUs and 30 GB of RAM all connected to a 2~TB shared NFS. We evaluated
+PySpark's RDD against Dask's Bag, Delayed and Futures.
 % Key Impact
-Our study demonstrates the potential of using Dask as the framework to build
-neuroimaging pipelines.
+Our result show that despite the differences between the two frameworks, both
+frameworks perform the comparably. However, Dask pipelines risk being limited by
+Python's GIL depending on task type and cluster configuration. In all cases, 
+the major limiting factor was data transfer. While either framework is suitable
+for neuroimaging pipelines, more effort needs to be placed in reducing data 
+transfer time.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -92,7 +96,7 @@ Spark and Dask both offer in-memory computing, data locality, and lazy evaluatio
 which is common for Big Data frameworks. Both their schedulers operate dynamically,
 which is good when task runtimes are not known ahead of time~\cite{Dask:15}. They
 also provide rich, high-level programming APIs, and support a variety of
-infrastructure schedulers, such as Mesos, YARN, or HPC clusters (Dask only). Over
+infrastructure schedulers, such as Mesos~\cite{hindman2011mesos}, YARN~\cite{vavilapalli2013apache}, or HPC clusters (Dask only). Over
 these similarities, the frameworks have differences.
 
 % Differences
@@ -142,35 +146,36 @@ our results, discussion and conclusions.
 
 \subsection{Engines}
 
-\subsubsection{Apache Spark} Apache Spark is a general-purpose Big Data engine.
-While its core is written in Scala, Spark provides additional APIs in Java, R
-and Python (PySpark). Its main abstraction, the Resilient Distributed Dataset
+\subsubsection{Apache Spark} Apache Spark is a widely-used 
+general-purpose Big Data engine.
+Its main abstraction, the Resilient Distributed Dataset
 (RDD)~\cite{RDD}, is a fault-tolerant, parallel collection of data elements. It 
-achieves fault tolerance through recording the data lineage, the sequence of 
-operations required to produce the data. The RDD is the basis of Spark's other
-data structures, namely, DataFrames
-and Datasets. Datasets are similar to RDDs but additionally use Spark SQL's
+achieves fault tolerance through the recording of data lineage, the
+sequence of operations used to modify the original data. The RDD is the basis
+of Spark's other data structures, namely, Datasets
+and DataFrames. Datasets are similar to RDDs but additionally use Spark SQL's
 optimized execution to further improve performance. DataFrames, used to process
-tabular data, Datasets where the data is organized into named-columns. While 
-the DataFrame API exists in all the available language APIs, Datasets are
+tabular data, are Datasets where the data is organized into named-columns.
+While the DataFrame API exists in all the available language APIs, Datasets are
 limited to Scala and Java.
 
-As data transfers in BigData workflows are an important source of performance
-bottlenecks, Spark incorporated
-data locality, and additionally, introduced in-memory computing to the Big Data 
-frameworks. Data locality, introduced by MapReduce~\cite{mapreduce}, schedules
-tasks as close as possible to where the data is storage. In-memory computing ensures
-data is maintained in memory whenever possible, as writting large amounts data to
-slower storage devices may be costly. To reduce any unecessary communication
-and computation, Spark also included lazy evaluation, which builds the entire
-task graph prior to execution to determine what needs to be computed.
+As data transfers in Big Data workflows are an important source of performance
+bottlenecks, Spark incorporates the concepts of data locality and in-memory 
+computing. Data locality, introduced by MapReduce~\cite{dean2008mapreduce},
+schedules
+tasks as close as possible to where the data is storage. In-memory computing
+ensures data is maintained in memory whenever possible, as writing large 
+amounts data to slower storage devices may be costly. To reduce any unnecessary
+communication and computation, Spark also included lazy evaluation, which
+builds the entire task graph prior to execution to determine what needs to be
+computed.
 
-
+% Didn't mention Kubernetes as it's still experimental
 Spark is compatible with three different schedulers: Spark
-standalone, YARN~\cite{vavilapalli2013apache} and Mesos~\cite{hindman2011mesos}. 
-The Spark standalone is a simple default scheduler built into Spark. YARN is a
-more complex scheduler primarily designed to schedule Hadoop-based workflows. 
-Mesos, on the other hand, is not limited to Hadoop and can be used to schedule
+standalone, YARN and Mesos.
+The Spark standalone scheduler is a simple default scheduler built into Spark.
+In contrast, the YARN scheduler is primarily designed to schedule Hadoop-based 
+workflows, whereas Mesos can be used to schedule
 a variety of different workflows. As scientific researchers would likely be
 executing their workflows in HPC environments with neither YARN or Mesos
 installed, we limit our focus to Spark's Standalone scheduler.
@@ -181,27 +186,32 @@ The Spark Standalone scheduler is composed of three main processes: the
 \emph{driver}. The \emph{master} coordinates resources provisioned by
 \emph{worker} processes on the cluster. The application is submitted to the
 \emph{driver} that in turn requests workers to the master and dispatches tasks
-to them. A job is divided into stages to be excuted in a different process onto
-the workers. Each stage's operation is represented as a high-level task in the computation
-graph. The Spark standalone scheduler uses a FIFO (First-In-First-Out) job
-scheduling policy. The Spark standalone scheduler has two
-execution modes: client mode, where the driver runs in a dedicated process outside
-of the Spark cluster, and cluster mode, where the driver runs in a worker. We used
-client mode as cluster mode is not available in PySpark. We used Apache Spark v2.4.0.
+to them. A job is divided into stages to be executed in a different process onto
+the workers. Each stage's operation is represented as a high-level task in the
+computation graph. The Spark standalone scheduler uses a FIFO 
+(First-In-First-Out) job scheduling policy. The Spark standalone scheduler has
+two execution modes: client mode, where the driver runs in a dedicated process
+outside of the Spark cluster, and cluster mode, where the driver runs within
+a worker process. Our experiments use client mode as cluster mode is not
+available in PySpark. 
 
 
 Python is commonly selected as the programming language of choice in scientific
-communities, especially for our use case of neuroscience, where numerous specialized
-Python libraries exist to study the data. While serialization of 
-Python to Java may lead to significant overheads, we chose to focus on Spark 
-Python API due to its suitability for neuroimaging research. 
+communities, and in particular, for our use case of neuroscience, where
+numerous specialized Python libraries exist to study the data.
+While serialization of Python to Java may lead to significant overheads, we
+chose to focus on Spark Python API due to its suitability for neuroimaging
+research. 
 
+We used Apache Spark v2.4.0.
 
-\subsubsection{Dask} Dask is a Big Data engine that is becoming increasingly popular
-in the scientific Python ecosystem. Like Spark, Dask provides
-in-memory computing, data locality, lazy evaluation, and fault tolerance by
-means of data lineage. In contrast, Dask's core is purely in Python, eliminating
-the cost of serialization to Java. Furthermore, it is lightweight and modular,
+\subsubsection{Dask} Dask is a Python-based Big Data engine that is becoming
+increasingly popular in the scientific Python ecosystem. Like Spark, Dask avoids data transfers and needless computation and communication through
+in-memory computing, data locality, lazy evaluation. Dask worklflows can 
+further reduce data transfer costs by leveraging multithreading whenever 
+communication is not bounded by Python's GIL. Dask relies on data 
+lineage to achieve fault tolerance, however, unlike Spark, does not require
+operations to be coarse grained. Furthermore, Dask is lightweight and modular,
 allowing users to only install the components they require.
 
 Dask has five main data structure APIs:
@@ -214,25 +224,21 @@ collection of Python objects. It offers a programming abstraction similar to the
 \href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}. A
 \href{https://docs.dask.org/en/latest/dataframe.html}{Dataframe} is a parallel
 composition of
-\href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas
-Dataframes} used to process a large amount of tabular data.
-\href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports arbitrary tasks
+\href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas Dataframes} used to process a large amount of tabular data.
+\href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports
+arbitrary tasks
 that do not fit in the Array, DataFrame or Bag APIs. Finally,
-\href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to Delayed
-as they support arbitrary tasks, but they operate in real-time rather than lazily.
-All Dask data structure APIs, with the exception of Dask Arrays and Dask
-DataFrames, were used in our experiments.
+\href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to
+Delayed in that they support arbitrary tasks, but they operate in real-time
+rather than lazily. With the exception of Dask Bag, all APIs, by default, use
+the local multithreaded scheduler. Dask Bag, instead, relies on the local
+multiprocessing scheduler.  All Dask data structure APIs, with the exception of
+Dask Array and Dask DataFrame, were used in our experiments.
 
-While Python multithreading is limited by the
-\href{https://docs.python.org/3/glossary.html#term-gil}{Global Interpreter Lock (GIL)}
-as a result of CPython's non thread-safe memory management, Dask attempts to
-bypass the GIL whenever possible and use multithreading to provide parallelism.
-With the exception of Dask Bag, all APIs, by default, use the local multithreaded
-scheduler. Dask Bag instead relies on the local multiprocessing scheduler. 
 
-The Dask graph is the internal representation of Dask application to be executed 
-by the scheduler. API Operations generate multiple
-small tasks in the computation graph allowing an easier representation of complex
+The Dask graph is the internal representation of Dask application to be
+executed  by the scheduler. API Operations generate multiple small tasks in
+the computation graph allowing an easier representation of complex
 algorithms.
 
 The Dask framework is compatible with numerous distributed schedulers, including 
@@ -243,11 +249,11 @@ scheduler. Although Dask is compatible with schedulers commonly found in HPC
 clusters, we chose to use Dask's Distributed scheduler, to keep the environment
 balanced between both frameworks.
 
- In the Dask Distributed scheduler, a process called \textit{dask-scheduler}
+In the Dask Distributed scheduler, a process called \textit{dask-scheduler}
 administrates the resources provided by \textit{workers} in the cluster. The
-scheduler receives jobs from clients and assigns tasks to available workers. Similarly
-to Spark's scheduler, Dask Distributed completes the processing of a graph branch
-before moving along to the next one. 
+scheduler receives jobs from clients and assigns tasks to available workers.
+Similarly to Spark's scheduler, Dask Distributed completes the processing of a
+graph branch before moving along to the next one. 
 
 In our experiments, we used Dask v1.1.4.
 
@@ -270,13 +276,13 @@ In our experiments, we used Dask v1.1.4.
  70\%, pause the worker at 80\%, and terminate the worker at 95\%. We configured
  Spark to use 1 executor per worker and \SI{25}{\giga\byte} of memory per executor, to leave 5~GB
  for off-heap. We configured the Spark driver to use 25~GB of memory, and used the
- default configuration for the master. We used the default confirguration for worker
- memory management: at 60\% it spill data to disk, and 50\% of that amount is
- reserved for storage and is immune to eviction.
+ default configuration for the master. We used the default configuration for worker
+ memory management: at 60\% it spills data to disk, and 50\% of that amount is
+ reserved for storage that is immune to eviction.
  
  One cloud instance did not host any worker and had a \SI{2}{\tera\byte} disk volume
  shared with the other instances using the Network File System (NFS) v4.
- This instance was also used for the Spark driver and master, and for the
+ This instance was also used for the Spark driver and master, for the
  Dask scheduler, and for job monitoring with the Spark and Dask user
  interfaces. For both Spark and Dask, spilled data is evicted to the NFS.
 
@@ -299,7 +305,7 @@ Reproducibility (\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR
 available on \href{http://datasets.datalad.org/?dir=/corr/RawDataBIDS}{DataLad}. The
 entire dataset is \SI{408.4}{\giga\byte}, containing anatomical, diffusion and
 functional images of 1,397 subjects acquired in 29 sites. We used all 3491 anatomical
-images, representing \SI{39}{\giga\byte} overall (\SI{11.17}{\mega\byte} by image on
+images, representing \SI{39}{\giga\byte} overall (\SI{11.17}{\mega\byte} per image on
 average).
 
 
@@ -323,9 +329,9 @@ effects, sleeps for a configurable amount of time to emulate more
 compute-intensive processing, repeats this process for a specified number of
 iterations, and
 finally writes the result as a NifTI image back to the shared file system.
-This application allows us to study the behavior of the engines when all
+This application allows us to study the behaviour of the engines when all
 inputs are processed independently, in a map-only scenario (see
-Figure~\ref{fig:tg-inc}). This mimics the behavior of analyzing multiple
+Figure~\ref{fig:tg-inc}). This mimics the behaviour of analyzing multiple
 independent subjects in parallel.
 
 \begin{algorithm}[!b]
@@ -360,8 +366,8 @@ independent subjects in parallel.
  Algorithm~\ref{alg:histogram}). It reads the image blocks from the shared file
  system, calculates intensity frequencies, aggregates the frequencies across the
  blocks, and finally writes the resulting histogram to the shared file system as a
- single \SI{766}{\kilo\byte} file. This application implements a typical map-reduce
- program, where the final result is obtained from all the input blocks (see
+ single \SI{766}{\kilo\byte} file. It follows the map-reduce
+ paradigm, in which the final result is obtained from all the input blocks (see
  Fig.~\ref{fig:tg-histo}). This application requires data shuffling, incurring 
  additional performance costs compared to Algorithm~\ref{alg:incrementation}.
  The total amount of shuffled data is, however, limited to
@@ -395,33 +401,33 @@ Two implementation are studied: pure Python and NumPy.
 
 \subsubsection{BIDS app example}
 
-We used the \href{https://github.com/BIDS-Apps/example}{BIDS app example} application
-available on GitHub. This application can also be broken down into a map and
-reduce phase. The map phase,
-also called participant analysis, extracts the brain tissues of a subject's 3D MRI
-using the popular FMRIB Software Library
-(\href{https://fsl.fmrib.ox.ac.uk/fsl/fslwiki}{FSL}), and writes the resulting image
-(\SI{2.47}{\mega\byte} on average) to the shared file system. The reduce phase, also
-called group analysis, computes the volume of each brain and returns the average
+For this experiment, we used the
+\href{https://github.com/BIDS-Apps/example}{BIDS app example} map-reduce style 
+application. The map phase, also called participant analysis, extracts the brain
+tissues of a subject's 3D MRI using the FMRIB Software Library
+(\href{https://fsl.fmrib.ox.ac.uk/fsl/fslwiki}{FSL}), and writes the resulting
+image (\SI{2.47}{\mega\byte} on average) to the NFS. The reduce phase, or group
+analysis, computes the volume of each brain and returns the average
 volume, shuffling a total of \SI{8.6}{\giga\byte} image data.
 
-While Incrementation and Histogram were implemented directly in Python, BIDS App
-example requires an external library and is distributed as a Docker container image
+While Incrementation and Histogram were implemented directly in Python, the 
+BIDS App example requires an external library and is distributed as a Docker container image
 (bids/base\_fsl on DockerHub). We converted the Docker image to a Singularity image,
 given its popularity for HPC and reproducibility, using
 \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}.
-The image was preloaded on the nfs and singularity version 3.2.1\-1.el7 was installed
+The image was preloaded on the NFS and singularity version 3.2.1\-1.el7 was installed
 on all instances. Due to a bug in the conversion from Docker to Singularity, we had to
-export the path for fsl.
+export the path for FSL.
 
 \subsection{Experiments}
 
-We varied four parameters in our experiments, as shown in
+The four parameters were varied in our experiments, as shown in
 Table~\ref{tab:param}. We varied (1) the number of workers to assess the
 scalability of the engines, (2) the number of BigBrain blocks in
 Incrementation and Histogram to measure the effect of different IO patterns
 and parallelization degrees, and (3) the number of iterations and sleep
-delay in Incrementation to evaluate the effect of job length.
+delay in Incrementation to evaluate the effect of job length and number of
+tasks.
 It should be noted that increasing the number of blocks or iterations also
 increases the total compute time of the application for a given sleep
 delay. To avoid any potential external bias such as background load on the
@@ -429,10 +435,11 @@ network, we ran the experiments in a randomized order and cleared the page
 cache of each worker before each execution.
 
 For each run, we measured the application makespan as well as the cumulative 
-data read, compute, data write, and engine overhead across all application tasks. 
+data read, compute, data write, and engine overhead across all application
+tasks. 
 The overhead calculation for each CPU is the end time of its last processed task
-minus the start time of the application; the summation of those results is the total
-overhead.
+minus the start time of the application. The summation of those results is the
+total overhead.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
@@ -470,7 +477,7 @@ slight advantage over Spark, \SI{83.61}{\second} on average,
 with Delayed and Futures being slightly better than Bag.
 
 For all engines, the makespan is far from decreasing linearly with the
-number of workers. Note that each worker has 8 CPUs. The makespan
+number of workers. The makespan
 even increases between 4 and 8 workers. This is due to the high impact of
 data transfers and engine overhead on the application. 
 
@@ -490,7 +497,7 @@ workers with regression lines:
 \hspace{1cm}\(\hat{y}=3570.39758\cdot{x} + 1062.23031\) (Futures)
 
 On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
-slightly lower than Dask's in particular as the number of workers increase.
+slightly lower than Dask's, particularly when the number of workers increase.
 Within Dask, Delayed and Futures have a higher overhead than Bag. However,
 overhead differences are compensated by an increase in data transfer time,
 as a reduced overhead increases the concurrency between data transfers. 
@@ -522,7 +529,7 @@ engines scale very well in general.
 
 
 In Figure~\ref{fig:inc_tt_block}, the total execution time of each function is shown.
-For 30 blocks, Delayed and Futres have much higher overhead. This is because they are
+For 30 blocks, Delayed and Futures have much higher overhead. This is because they are
 thread-based and use multiple threads to compute a block which affect the calculation
 of the overhead. Once again, the data transfer time reduces with more blocks however
 the overhead time increases by a similar amount. This is not observed for 30 blocks
@@ -548,7 +555,7 @@ the makespan variability mentioned previously.
 %% Iterations
 \subsection{Incrementation: Number of iterations}
 Figure~\ref{fig:inc_ms_itr} shows the makespan of the application while
-varying the number of iterations. Overall,  Spark and Dask APIs are once
+varying the number of iterations. Overall, Spark and Dask APIs are once
 again equivalent, although Delayed and Futures are slightly faster
 than Bag and, Spark for 1 and 10 iterations, and Futures are faster than
 Delayed, Bag and Spark for 100 iterations. Differences remain minor
@@ -578,8 +585,8 @@ iterations.
 Figure~\ref{fig:inc_ms_sleep} shows the makespan of the Incrementation application
 for different sleep delays. Overall, all engines again perform the same and scale
 well with task duration. Spark is initially slower than the Dask APIs, however, it is
-faster when increasing the sleep delay. Also, within the Dask APIs, Dask Bag is
-slower than the other two but it is not considerable.
+faster with an increased sleep delay. Also, within the Dask APIs, Dask Bag is
+slower than the other two, but it is not considerable.
 
 Figure~\ref{fig:inc_tt_sleep} shows the total execution time breakdown. Spark has the
 smallest overhead. As previously observed, variations in overhead time are almost
@@ -642,19 +649,21 @@ computing tasks that run concurrently with data transfers.
 %%% HISTOGRAM %%%
 \subsection{Histogram: Number of workers}
 Figure~\ref{fig:histo_ms_worker} shows the makespan of the application for various
-amounts of workers. Spark is tremendously faster than Dask APIs. The difference
+amounts of workers. Spark is significantly faster than Dask APIs. The difference
 narrows as the number of workers increases but stays significant. Between Dask APIs
 there is no substantial difference, however, Bag is slightly faster on average.
 
 From Figure~\ref{fig:histo_tt_worker}, the total time spent in each function is
-shown. The computation time is significantly larger for Dask than for Spark. This is
-potentially due to Python's GIL preventing Dask to parallelize the computation on
+shown. The compute time is significantly larger for Dask than for Spark. This is
+potentially due to Python's GIL preventing Dask to parallelize the computation
+over
 multiple threads. Overall, the IO and overhead are comparable for all engines.
 
 On Figure~\ref{fig:histo_tt_worker}, Dask engines have similar total execution time
 when their number of workers varies, except for 8 workers where it increases slightly.
 On the other hand, Spark total execution time keeps increasing; especially at 8
-workers. This is because Dask engines benefit more from additional workers.
+workers. This is because Dask engines benefit more from additional workers, in
+this GIL-bounded scenario.
 
 \begin{figure}[!b]
     \centering
@@ -671,21 +680,19 @@ workers. This is because Dask engines benefit more from additional workers.
 \end{figure}
 
 \subsection{Histogram: Number of blocks}
-Figure~\ref{fig:histo_ms_block} shows the makespan for different block size. Again,
-Spark is not compared at 30 blocks due to its \SI{2}{\giga\byte} task limitation.
-Once more, Spark is significantly faster than Dask engines and Bag is slightly faster
-than Delayed. Overall, the engines do not react to change in block size.
+Figure~\ref{fig:histo_ms_block} shows the makespan for different block sizes. 
+Once more, Spark is significantly faster than Dask engines and Bag is slightly
+faster than Delayed. Overall, the engines do not react to changes in block size.
 
 In figure~\ref{fig:histo_tt_block} the total time for each function is shown.
-Note that at 30 blocks the worker's resources are not fully used since the workers
-can process up to 64 tasks in parallel. Moreover, the overhead for 30 blocks is
-erroneous due to a lower amount of block than available threads. This leads to thread
-based engines to have higher overhead. Given that, 
-
-Spark has a much lower compute time which makes it significantly faster than Dask
-engines. Overall, for all engines, lower block size results in lower IO time but
-increases the overhead time. Again, this is due to large overhead desynchronizing task
-thus reducing the NFS bottleneck.
+Note that at 30 blocks the workers' resources are not fully used since the
+workers can process up to 64 tasks in parallel. Moreover, the overhead for
+30 blocks is erroneous due to a lower amount of block than available threads.
+This leads to thread based engines to have higher overhead. Given that, 
+Spark has a much lower compute time which makes it significantly faster
+than Dask engines. Overall, for all engines, lower block size results in lower
+IO time but increases the overhead time. Again, this is due to large overhead
+desynchronizing task thus reducing the NFS bottleneck.
 
 
 \begin{figure}[!t]
@@ -707,13 +714,14 @@ thus reducing the NFS bottleneck.
 \subsection{Histogram: Gantt chart}
 Figure~\ref{fig:histo_gantt} shows the Gantt chart of the baseline Histogram
 experiment. Spark overhead is distributed through all the execution while Bag
-overhead happens mostly when a thread read subsequent blocks and Delayed overhead is
-concentrated after reading all the blocks.
+overhead happens mostly when a thread reads subsequent blocks and
+Delayed overhead is concentrated after reading all the blocks.
 
-The reduce is done differently for the engines. Spark and Delayed compute all the
-reduce tasks on one process (thread), however, Spark only computes it on the driver
-process. On the other hand, Bag computes the reduce tasks on different workers and
-sends the information to the driver process afterward.
+% remove? - vhs
+The reduce is done differently for the engines. Spark and Delayed compute
+all the reduce tasks on one process (thread), however, Spark only computes it
+on the driver process. On the other hand, Bag computes the reduce tasks on 
+different workers and sends the information to the driver process afterward.
 
 \begin{figure}[!t]
     \centering
@@ -742,14 +750,15 @@ sends the information to the driver process afterward.
 \subsection{Histogram (NumPy): Number of workers}
 Figure~\ref{fig:histo_np_ms_worker} shows the makespan for various amount of workers.
 Overall, the makespan for all engines does not change considerably with an increase
-in the number of workers. This is because the engines do not scale well. There is no
+in the number of workers. This is likely a result of using a non-distributed
+shared file system. There is no
 substantial difference between all engines, although, Delayed is slightly faster.
 
 From Figure~\ref{fig:histo_np_tt_worker}, the total execution time breakdown is
-shown. The overhead and read time increase proportionally to the number of workers
-thus increasing the total time. This is because (1) most workers read at the same
-time due to a low computation-IO ratio and (2) there is more intra-worker and
-inter-worker communication.
+shown. The overhead and read time increase proportionally to the number of
+workers thus increasing the total time. This is because (1) most workers read
+at the same time due to a low computation-IO ratio and (2) there is more
+intra-worker and inter-worker communication.
 
 \begin{figure}[!b]
     \centering
@@ -767,16 +776,15 @@ inter-worker communication.
 
 \subsection{Histogram (NumPy): Number of blocks}
 Figure~\ref{fig:histo_np_ms_block} shows the makespan of the application for
-different block size. Again, Spark is not compared at 30 blocks due to its
-\SI{2}{\giga\byte} task limitation. Overall, there is no substantial difference for
+different block sizes. Overall, there is no substantial difference for
 all engines and block sizes.
 
-In figure~\ref{fig:histo_np_tt_block}, shows the total time spent in each function.
+Figure~\ref{fig:histo_np_tt_block} shows the total time spent in each function.
 Once more, since Delayed is thread-based its overhead at 30 blocks is seems much
-higher that it really is. Considering the overhead error and that at 30 blocks the
-workers only use half their core, the total time is substantially the same for all
-block size. This is due to lower block sizes having a lower IO time, however, it
-balances out by the resulting increase in overhead.
+higher that it really is. Considering the overhead error and that at 30 blocks
+the workers only use half their core, the total time is substantially the same
+for all block size. This is due to lower block sizes having a lower IO time,
+however, it balances out by the resulting increase in overhead.
 
 \begin{figure}[!t]
     \centering
@@ -795,13 +803,14 @@ balances out by the resulting increase in overhead.
 \subsection{Histogram (NumPy): Gantt chart}
 Figure~\ref{fig:histo_np_gantt} shows the Gantt chart of the baseline for the
 Histogram (NumPy) experiment. The overhead for Spark and Bag is mostly located
-between a read and compute task or compute and read task. On the other hand, Delayed
-overhead is dispersed between all types of tasks. This causes Delayed to overlap more
-compute and read tasks simultaneously among the different workers.
+between read and compute tasks. On the other hand, Delayed
+overhead is dispersed between all types of tasks. This causes Delayed to
+overlap more compute and read tasks simultaneously amongst different workers.
 
-In figure~\ref{fig:histo_np_gantt}, read tasks are initially similar for all engines.
-However, when computation starts the subsequent read tasks are much shorter for
-Delayed. This is due the desynchronization of the task reducing the IO bottleneck.
+In figure~\ref{fig:histo_np_gantt}, read tasks are initially similar for all
+engines. However, when computation starts the subsequent read tasks are much
+shorter for Delayed. This is due the desynchronization of the task reducing the
+IO bottleneck.
 
 
 
@@ -830,12 +839,12 @@ Delayed. This is due the desynchronization of the task reducing the IO bottlenec
 
 %%% BIDS EXAMPLE %%%
 \subsection{BidsApp example: Number of workers}
-Figure~\ref{fig:bids_ms_worker} shows the makespan of the application when varying
-the amount of workers. Overall, there is no substantial difference between the
-engines. The makespan scales well with the increase in workers, however, the scaling
-reduces considerably when reaching 8 workers. This is due to an increase in overhead
-and of the IO requirement increasing with the number of workers --- more tasks are
-read concurrently and the application becomes more data-intensive.
+Figure~\ref{fig:bids_ms_worker} shows the makespan of the application when
+varying the amount of workers. Overall, there is no substantial difference
+between the engines. The makespan scales well with the increase in workers,
+however, the scaling reduces considerably when reaching 8 workers. This is due
+to an increase in overhead and an IO bottleneck caused parallel accesses to 
+a non-distributed file system.
 
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
 shown. Each engine has a similar total time independently of its number of workers.
@@ -918,9 +927,8 @@ causes data-intensive applications to take a significant amount of time for IO. 
 expect, this effect is amplified when too many tasks simultaneously try to operate
 with the NFS at the same time as
 Fig.~\ref{fig:inc_gantt},\ref{fig:histo_gantt},\ref{fig:histo_np_gantt},\ref{fig:bids_gantt}
-shows. We could use a parallel shared file system, like Lustre \MD{cite lustre if not
-done already}, to reduce the impact of operations with the disk, however, we would
-quickly be limited by the network's bandwidth.
+shows. A parallel file system, such as Lustre~\cite{lustre}, would likely improve
+IO times of parallel applications simultaneously writing to shared storage.
 
 \subsection{Effect of data-intensive applications}
 In our experiments, Incrementation, Histogram (NumPy) and Histogram for Spark have
