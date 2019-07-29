@@ -473,15 +473,9 @@ Incrementation application, broken down into data transfer (read and
 write), compute (sleep), and overhead time. As expected, the computing time
 stays similar when the number of workers increases. However, the data
 transfer time and overhead increase proportionally to the number of
-workers with regression lines:
-
-\hspace{1cm}\(\hat{y}=2336.9499\cdot{x} + 325.00574\) (Spark)
-
-\hspace{1cm}\(\hat{y}=2650.13505\cdot{x} + 1585.37218\) (Bag)
-
-\hspace{1cm}\(\hat{y}=3250.53406\cdot{x} + 1769.50351\) (Delayed)
-
-\hspace{1cm}\(\hat{y}=3570.39758\cdot{x} + 1062.23031\) (Futures)
+workers with regression slopes: Spark (\SI{2337}{\second/task}), Bag
+(\SI{2650}{\second/task}), Delayed (\SI{3251}{\second/task}), Futures
+(\SI{3570}{\second/task}).
 
 On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
 slightly lower than Dask's, particularly when the number of workers increase.
@@ -846,18 +840,11 @@ a non-distributed file system.
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
 shown. Each engine has a similar total time independently of its number of workers.
 This is due to the, almost, linear scaling of the engines. The overhead increases
-proportionally with the number of workers (see regression lines below). This is due
-to more communication between the scheduler and workers as well as intra-worker and
+proportionally to the number of workers with regression slopes: Spark
+(\SI{224}{\second/task}), Bag (\SI{183}{\second/task}), Delayed
+(\SI{173}{\second/task}), Futures (\SI{132}{\second/task}). This is due to more
+communication between the scheduler and workers as well as intra-worker and
 inter-worker communication.
-
-
-\hspace{1cm}\(\hat{y}=223.53586\cdot{x} + 91.616964\) (Spark)
-
-\hspace{1cm}\(\hat{y}=182.82659\cdot{x} - 11.43834\) (Bag)
-
-\hspace{1cm}\(\hat{y}=172.54183\cdot + 400.69433\) (Delayed)
-
-\hspace{1cm}\(\hat{y}=132.41481\cdot{x} + 90.32813\) (Futures)
 
 \begin{figure}[!t]
     \centering
