@@ -3,7 +3,9 @@ from random import shuffle
 import json
 
 
-with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
+with open(
+    "/nfs/paper-big-data-engines/experiments-script/histogram_experiment.json"
+) as f_in:
     experiments = json.load(f_in)
     shuffle(experiments)
     for exp in experiments:
@@ -11,7 +13,7 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
         filename = exp["file"]
         # iterations = str(exp["iterations"])
         # delay = str(exp["delay"])
-        # chunks = str(exp["chunks"])
+        chunks = str(exp["chunks"])
 
         subprocess.run(
             ["sh", "/nfs/paper-big-data-engines/experiments-script/clear-cache.sh"]
@@ -25,11 +27,8 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
                     "spark://192.168.73.10:7077",
                     "--executor-memory",
                     "25G",
-                    "--driver-memory",
-                    "25G",
-                    "/nfs/paper-big-data-engines/bidsApp-examples/" + filename,
-                    "/nfs/bids-data/RawDataBIDS",
-                    "/nfs/bids/outputs",
+                    "/nfs/paper-big-data-engines/incrementation/" + filename,
+                    "/nfs/bb-" + chunks + "chunks",
                     "/nfs/results",
                     experiment,
                     "--benchmark",
@@ -39,10 +38,9 @@ with open("/nfs/paper-big-data-engines/experiments-script/bids.json") as f_in:
             subprocess.run(
                 [
                     "python",
-                    "/nfs/paper-big-data-engines/bidsApp-examples/" + filename,
+                    "/nfs/paper-big-data-engines/incrementation/" + filename,
                     "192.168.73.10:8786",
-                    "/nfs/bids-data/RawDataBIDS",
-                    "/nfs/bids/outputs",
+                    "/nfs/bb-" + chunks + "chunks",
                     "/nfs/results",
                     experiment,
                     "--benchmark",
