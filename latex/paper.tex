@@ -267,8 +267,8 @@ In our experiments, we used Dask v1.1.4.
  used Dask's default configuration that uses all the available memory on the
  instance. Its default heuristic is to: target a 60\% memory load, spill to disk at
  70\%, pause the worker at 80\%, and terminate the worker at 95\%. We configured
- Spark to use 1 executor per worker and \SI{25}{\giga\byte} of memory per executor, to leave 5~GB
- for off-heap. We configured the Spark driver to use 25~GB of memory, and used the
+ Spark to use 1 executor per worker and \SI{25}{\giga\byte} of memory per executor, to leave \SI{5}{\giga\byte}
+ for off-heap. We configured the Spark driver to use \SI{25}{\giga\byte} of memory, and used the
  default configuration for the master. We used the default configuration for worker
  memory management: at 60\% it spills data to disk, and 50\% of that amount is
  reserved for storage that is immune to eviction.
@@ -286,8 +286,8 @@ brain with voxel intensities ranging from 0 to 65,535. The original data is
 stored in 125 blocks in the MINC~\cite{minc} HDF5-based format, available
 at \url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D\_Blocks/40um} at a
 resolution of \SI{40}{\micro\metre}. We converted the blocks into the
-\href{https://nifti.nimh.nih.gov/nifti-1}{NifTI} format, a popular format
-in neuroimaging. We left the NifTI blocks uncompressed, resulting in 
+\href{https://nifti.nimh.nih.gov/nifti-1}{NIfTI} format, a popular format
+in neuroimaging. We left the NIfTI blocks uncompressed, resulting in 
 a total data size of \SI{81}{\giga\byte}. 
 To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of 
 \SI{2.7}{\giga\byte}, \SI{0.648}{\giga\byte}, and
@@ -321,7 +321,7 @@ system, increments the intensity value of each voxel by 1 to avoid caching
 effects, sleeps for a configurable amount of time to emulate more
 compute-intensive processing, repeats this process for a specified number of
 iterations, and
-finally writes the result as a NifTI image back to the shared file system.
+finally writes the result as a NIfTI image back to the shared file system.
 This application allows us to study the behaviour of the engines when all
 inputs are processed independently, in a map-only scenario (see
 Figure~\ref{fig:tg-inc}). This mimics the behaviour of analyzing multiple
