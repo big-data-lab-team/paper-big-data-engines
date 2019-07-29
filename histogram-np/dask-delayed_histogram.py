@@ -1,9 +1,10 @@
 import argparse
+from functools import reduce
 import os
 import sys
 from time import time
 
-import dask.bag as db
+import dask
 from dask.distributed import Client
 
 sys.path.append("/nfs/paper-big-data-engines/histogram")
@@ -41,37 +42,35 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from Histogram import calculate_histogram, combine_histogram, flatten
+    from Histogram import (
+        calculate_histogram,
+        combine_histogram,
+        flatten,
+        save_histogram,
+    )
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
-    paths = db.from_sequence(paths, npartitions=len(paths))
-    img = paths.map(lambda p: read_img(p, start=start, args=args))
 
-    img = img.map(lambda x: flatten(x[1], start=start, args=args, filename=x[0]))
+    partial_histogram = []
+    for path in paths:
+        img = dask.delayed(read_img)(path, start=start, args=args)
 
-    partial_histogram = img.map(
-        lambda x: calculate_histogram(x[1], args=args, start=start, filename=x[0])
+        img = dask.delayed(flatten)(img[1], start=start, args=args, filename=img[0])
+
+        partial_histogram.append(
+            dask.delayed(calculate_histogram)(
+                img[1], args=args, start=start, filename=img[0]
+            )
+        )
+
+    histogram = dask.delayed(reduce)(
+        lambda x, y: combine_histogram(x, y, args=args, start=start), partial_histogram
     )
 
-    histogram = partial_histogram.fold(
-        lambda x, y: combine_histogram(x, y, args=args, start=start)
-    ).compute()
+    future = client.compute(histogram)
+    histogram = client.gather(future)
 
-    start_time = time() - start
+    save_histogram(histogram, args=args, start=start)
 
-    with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
-        for k, v in histogram.items():
-            f_out.write(f"{k};{v}\n")
-
-    end_time = time() - start
-
-    if args.benchmark:
-        benchmark(
-            start_time,
-            end_time,
-            "all_file",
-            args.output_dir,
-            args.experiment,
-            "save_histogram",
-        )
+    client.close()
