@@ -41,7 +41,12 @@ if __name__ == "__main__":
     client.upload_file("/nfs/paper-big-data-engines/utils.py")
     client.upload_file("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from Histogram import calculate_histogram, combine_histogram, flatten
+    from Histogram import (
+        calculate_histogram,
+        combine_histogram,
+        flatten,
+        save_histogram,
+    )
 
     # Read images
     paths = crawl_dir(os.path.abspath(args.bb_dir))
@@ -58,20 +63,4 @@ if __name__ == "__main__":
         lambda x, y: combine_histogram(x, y, args=args, start=start)
     ).compute()
 
-    start_time = time() - start
-
-    with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
-        for k, v in histogram.items():
-            f_out.write(f"{k};{v}\n")
-
-    end_time = time() - start
-
-    if args.benchmark:
-        benchmark(
-            start_time,
-            end_time,
-            "all_file",
-            args.output_dir,
-            args.experiment,
-            "save_histogram",
-        )
+    save_histogram(histogram, args=args, start=start)

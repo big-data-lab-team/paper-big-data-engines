@@ -3,6 +3,7 @@ import os
 import sys
 from time import time
 
+import numpy as np
 from pyspark import SparkConf, SparkContext
 
 sys.path.append("/nfs/paper-big-data-engines/histogram")
@@ -37,7 +38,12 @@ if __name__ == "__main__":
     sc.addFile("/nfs/paper-big-data-engines/utils.py")
     sc.addFile("/nfs/paper-big-data-engines/histogram/Histogram.py")
     from utils import benchmark, crawl_dir, read_img
-    from Histogram import calculate_histogram, combine_histogram, flatten
+    from Histogram import (
+        calculate_histogram,
+        combine_histogram,
+        flatten,
+        save_histogram,
+    )
 
     print("Connected")
 
@@ -55,23 +61,8 @@ if __name__ == "__main__":
     )
 
     histogram = partial_histogram.fold(
-        {}, lambda x, y: combine_histogram(x, y, args=args, start=start)
+        np.array([0] * (2**16 - 1)),
+        lambda x, y: combine_histogram(x, y, args=args, start=start),
     )
 
-    start_time = time() - start
-
-    with open(f"{args.output_dir}/histogram.csv", "w") as f_out:
-        for k, v in histogram.items():
-            f_out.write(f"{k};{v}\n")
-
-    end_time = time() - start
-
-    if args.benchmark:
-        benchmark(
-            start_time,
-            end_time,
-            "all_file",
-            args.output_dir,
-            args.experiment,
-            "save_histogram",
-        )
+    save_histogram(histogram, args=args, start=start)

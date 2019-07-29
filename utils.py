@@ -6,6 +6,7 @@ from time import time
 import threading
 
 import nibabel as nib
+import numpy as np
 
 
 def benchmark(start, end, filename, output_dir, experiment, func_name):
@@ -92,8 +93,7 @@ def read_img(filename, start, args):
     with open(filename, "rb") as f_in:
         fh = nib.FileHolder(fileobj=BytesIO(f_in.read()))
         img = nib.Nifti1Image.from_file_map({"header": fh, "image": fh})
-    data = img.get_fdata(caching="unchanged")
-    data = nib.casting.float_to_int(data, np.int16)
+    data = np.asanyarray(img.dataobj)
 
     end_time = time() - start
 
