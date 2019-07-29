@@ -53,9 +53,9 @@ We benchmark these pipelines using various combinations of task durations, data
 sizes, and numbers of workers, deployed on a 8-node (8 cores ea.) compute cluster in
 Compute Canada's Arbutus cloud. We evaluate PySpark's RDD API against Dask's Bag,
 Delayed and Futures. Results show that despite slight differences between Spark and
-Dask, both frameworks perform comparably. However, Dask pipelines risk being limited
+Dask, both engines perform comparably. However, Dask pipelines risk being limited
 by Python's GIL depending on task type and cluster configuration. In all cases, the
-major limiting factor was data transfer. While either framework is suitable for
+major limiting factor was data transfer. While either engine is suitable for
 neuroimaging pipelines, more effort needs to be placed in reducing data transfer time.
 \end{abstract}
 
@@ -75,18 +75,18 @@ improve performance of the increasingly prevalent data-intensive pipelines.
 As was noted in ~\cite{hayot2019performance}, in-memory computing, coupled
 with data locality, can bring significant performance improvements to data
 intensive neuroimaging pipelines. We extend this work by studying the
-differences between two Big Data frameworks, Dask~\cite{Dask:15} and Apache
+differences between two Big Data engines, Dask~\cite{Dask:15} and Apache
 Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
 pipelines. Our goal is to test whether Spark or Dask has a clear
 performance advantage to process Big neuroimaging Data. 
 
 %Similarities
 Spark and Dask both offer in-memory computing, data locality, and lazy evaluation,
-which is common for Big Data frameworks. Both their schedulers operate dynamically,
+which is common for Big Data engines. Both their schedulers operate dynamically,
 which is good when task runtimes are not known ahead of time~\cite{Dask:15}. They
 also provide rich, high-level programming APIs, and support a variety of
 infrastructure schedulers, such as Mesos~\cite{hindman2011mesos}, YARN~\cite{vavilapalli2013apache}, or HPC clusters (Dask only). Over
-these similarities, the frameworks have differences.
+these similarities, the engines have differences.
 
 First and foremost, Spark is written in Scala while Dask is in Python.
 Given the popularity of Python in scientific communities, this arguably
@@ -99,7 +99,7 @@ manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
 Java, R and Python APIs allow to easily parallelize analyses that combine
 these languages, with reduced performance loss. Our study focuses on
 performance, although we recognize that other factors will also impact the
-choice of a framework in practice.
+choice of an engine in practice.
 
 Spark and Dask were both included in the evaluation reported
 in~\cite{Mehta:17}, where a neuroimaging application
@@ -143,7 +143,7 @@ achieves fault tolerance through the recording of data lineage, the
 sequence of operations used to modify the original data. The RDD is the basis
 of Spark's other data structures, namely, Datasets
 and DataFrames. Datasets are similar to RDDs but additionally use Spark SQL's
-optimized execution to further improve performance. DataFrames, used to process
+optimized execution engine to further improve performance. DataFrames, used to process
 tabular data, are Datasets where the data is organized into named-columns.
 While the DataFrame API exists in all the available language APIs, Datasets are
 limited to Scala and Java.
@@ -234,13 +234,13 @@ executed  by the scheduler. API operations generate multiple small tasks in
 the computation graph, allowing an easier representation of complex
 algorithms.
 
-The Dask framework is compatible with numerous distributed schedulers, including 
+The Dask engine is compatible with numerous distributed schedulers, including 
 \href{https://github.com/dask/dask-yarn}{YARN} and
 \href{https://github.com/mrocklin/dask-mesos}{Mesos}, similarly to Spark. Dask 
 also provides its own distributed scheduler, known as the Dask Distributed
 scheduler. Although Dask is compatible with schedulers commonly found in HPC
 clusters, we chose to use Dask's Distributed scheduler, to keep the environment
-balanced between both frameworks.
+balanced between both engines.
 
 In the Dask Distributed scheduler, a process called \textit{dask-scheduler}
 administrates the resources provided by \textit{workers} in the cluster. The
