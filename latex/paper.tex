@@ -34,7 +34,8 @@
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
-Concordia University, Montr\'eal, Qu\'ebec, Canada
+Concordia University, Montr\'eal, Qu\'ebec, Canada 
+\vspace*{0.8cm}
 }
 
 \maketitle
@@ -68,7 +69,7 @@ Dask, Apache Spark, performance, neuroimaging
 % Context
 The recent rise in data sharing and improved data collection strategies
 have brought neuroimaging to the Big Data era ~\cite{ALFAROALMAGRO:18,
-UKBioBank:18}. Existing neuroimaging workflow engines, such as
+van2014human}. Existing neuroimaging workflow engines, such as
 Nipype~\cite{Nipype:11}, are well suited for processing the standard
 compute-intensive neuroimaging pipelines, but lack incorporated Big Data
 strategies (i.e. in-memory computing, data locality and lazy-evaluation) to
@@ -81,7 +82,8 @@ Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
 pipelines. Our goal is to test whether Spark or Dask has a clear
 performance advantage to process Big neuroimaging Data. 
 
-Spark and Dask both offer in-memory computing, data locality, and lazy evaluation;
+%Similarities
+Spark and Dask both offer in-memory computing, data locality, and lazy evaluation,
 which is common for Big Data frameworks. Both their schedulers operate dynamically,
 which is good when task runtimes are not known ahead of time~\cite{Dask:15}. They
 also provide rich, high-level programming APIs, and support a variety of
@@ -97,11 +99,13 @@ has qualitative implications. As part of the \href{http://scipy.org}{SciPy}
 ecosystem, Dask provides almost transparent parallelization of applications
 manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
 Java, R and Python APIs allow to easily parallelize analyses that combine
-these languages, with reduced performance loss.
+these languages, with reduced performance loss. Our study focuses on
+performance, although we recognize that other factors will also impact the
+choice of a framework in practice.
 
 Spark and Dask were both included in the evaluation reported
-in~\cite{Mehta:17} that used a neuroimaging and an astronomy application
-processing approximately \SI{100}{\giga\byte} of data each. In this work, Dask was
+in~\cite{Mehta:17}, where a neuroimaging application
+processed approximately \SI{100}{\giga\byte} of data. In this work, Dask was
 reported to have a slight performance advantage over Spark. Overall, Dask's
 end-to-end time (makespan) was measured to be up to 14\% faster than Spark,
 due to ``more efficient pipelining'' %(Fig 10) 
@@ -109,12 +113,12 @@ and serialization time to
 Python. % (Fig. 12-a)
 Dask, however, was reported to have a larger startup
 time than Spark. % (Fig. 12-c)
-The analysis remains at a quite high level
+The analysis remained at a quite high level
 though, leaving most of the observed performance difference unexplained. In
 comparison, our study will provide a detailed analysis of performance
-differences and similarities between Spark and Dask.
+differences and similarities between Spark and Dask for neuroimaging data processing.
 
-The next section details the design of our experiments. We consider two
+The next section details the design of our benchmarking experiments. We consider two
 data-intensive neuroimaging applications: high-resolution imaging,
 represented by the Big Brain data~\cite{Amunts:13}, and large functional
 MRI studies, represented by data from the consortium for reliability and
@@ -123,7 +127,7 @@ involving different patterns (map-only, map-reduce), and different types of
 implementations (plain Python, command-line,
 containerized). We evaluate performance on a dedicated cluster
 representative of the ones used in today's data-intensive neuroimaging
-studies, using the main Dask and Spark APIs. The following sections present
+studies, using the main Dask and Spark APIs. The other sections present
 our results, discussion and conclusions.
 
 
