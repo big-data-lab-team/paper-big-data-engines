@@ -986,13 +986,22 @@ number of partitions to use for a given set of data-intensive applications.
 Spark performance should be reduced by the serialization of Python functions to Java,
 however, our results show no significant impact of it. 
 
+Previous work showed that Dask has a the largest start-up overhead~\cite{Mehta:17}
+when processing few subjects. Our Gantt charts show that Spark has a higher start-up
+overhead. We think this is due to the larger amount of subjects we process.
 
-\TG{Talk about engine overhead: (1) where is it coming from? (2) 
-explain the impact on data transfers with a graph.}
+The same study showed that Dask has a lower end-to-end runtime than Spark in a
+neuroimaging analysis application. In our results, there is no significant difference
+between the engines. We think this is because the applications we chose are highly
+data-intensive while the one used in their study is compute intensive.
 
-\TG{In the dicussion, get back to it and mention that (1) we don't
-always observe that, (2) for data-intensive applications, overheads don't really matter
-as reducing them increases data trasnfers.}
+
+% \TG{Talk about engine overhead: (1) where is it coming from? (2) 
+% explain the impact on data transfers with a graph.}
+
+% \TG{In the dicussion, get back to it and mention that (1) we don't
+% always observe that, (2) for data-intensive applications, overheads don't really matter
+% as reducing them increases data trasnfers.}
 
 \section*{Acknowledgment}
 
