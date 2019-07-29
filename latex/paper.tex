@@ -941,13 +941,11 @@ Overall, our experiments did not show any substantial performance
 difference between Spark and Dask. In contradiction with the experiments
 of~\cite{Mehta:17}, we did not observe consequential overhead differences
 due to serialization or startup costs. This apparent contradiction is most
-likely coming from differences in applications: while the applications in
-~\cite{Mehta:17} were mostly compute-intensive, ours were more data-intensive.
-Consequently, in our case, potential
-overhead differences were compensated by reverse trends in data transfer
-time. Since our focus are Big Data applications, this leads us to conclude that 
-engines are equivalent. However, this conclusion doesn't invalidate the results of~\cite{Mehta:17} that 
-would apply to more compute-intensive applications. 
+likely coming from differences in applications, engine parametrizations, or
+infrastructure characteristics. In our case, potential overhead differences were
+compensated by reverse trends in data transfer time. Since our focus are
+Big Data applications, this leads us to conclude that engines are
+equivalent.
 
 \subsection{Overhead / data transfer compensation}
 
