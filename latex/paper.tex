@@ -30,7 +30,7 @@
 
 \begin{document}
 
-\title{A performance comparison of Dask and Spark for data-intensive neuroimaging pipelines}
+\title{A performance comparison of Dask and Apache Spark for data-intensive neuroimaging pipelines}
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
@@ -40,38 +40,28 @@ Concordia University, Montr\'eal, Qu\'ebec, Canada
 \maketitle
 
 \begin{abstract}
-% Topic
-Recent increases in data volume and improved accessibility have 
-led neuroimaging into the Big Data era. 
-% Problem
-While existing neuroimaging pipeline frameworks typically do not attempt to
-limit data transfers, Big Data frameworks remain seldom used.
-% Relevance
-In this paper, we compare two popular Big Data frameworks with Python APIs,
-Apache Spark and Dask, for their runtime performance in processing neuroimaging
-pipelines.
-% Approach
-To evaluate performance differences we used two synthetic, Incrementation
-(map-only) and Histogram (map-reduce), pipelines and real neuroimaging map-reduce pipeline (BIDS App Example). For both our 
-synthetic pipelines we varied the number of workers and block size using the 
-76~GB BigBrain image. We additionally varied the number of iterations and task
-duration for our Incrementation pipeline. 39~GB of anatomical images from the
-CoRR were used for the BIDS App Example pipeline.
-% Methods (one sentence)
-All experiments were executed on 8 instances of Compute Canada's Arbutus cloud
-with 8~vCPUs and 30 GB of RAM all connected to a 2~TB shared NFS. We evaluated
-PySpark's RDD against Dask's Bag, Delayed and Futures.
-% Key Impact
-Our result show that despite the differences between the two frameworks, both
-frameworks perform the comparably. However, Dask pipelines risk being limited by
-Python's GIL depending on task type and cluster configuration. In all cases, 
-the major limiting factor was data transfer. While either framework is suitable
-for neuroimaging pipelines, more effort needs to be placed in reducing data 
-transfer time.
+
+In the past few years, neuroimaging has entered the Big Data era due to the
+joint increase in image resolution, data sharing, and study sizes. However,
+no particular Big Data framework has emerged in this field, and several
+alternatives remain available. We compare two popular Big Data frameworks
+with Python APIs, Apache Spark and Dask, for their runtime performance in
+processing neuroimaging pipelines. Our evaluation uses two synthetic
+pipelines processing the 76~GB Big Brain image, and a real pipeline
+processing anatomical data from more than 1,000 subjects. We benchmark these pipelines using
+ various combinations of task durations, data sizes, and numbers of workers,
+deployed on a 64-node compute cluster in Compute Canada's Arbutus
+cloud. We evaluate PySpark's RDD API against Dask's Bag, Delayed and Futures.
+Results show that despite slight differences between Spark and Dask, both
+frameworks perform comparably. However, Dask pipelines risk being limited
+by Python's GIL depending on task type and cluster configuration. In all
+cases, the major limiting factor was data transfer. While either framework
+is suitable for neuroimaging pipelines, more effort needs to be placed in
+reducing data transfer time.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Big Data, Dask, Spark, performance, neuroimaging
+Dask, Apache Spark, performance, neuroimaging
 \end{IEEEkeywords}
 
 \section{Introduction}
