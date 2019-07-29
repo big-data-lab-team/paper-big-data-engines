@@ -35,7 +35,7 @@
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
 Concordia University, Montr\'eal, Qu\'ebec, Canada 
-\vspace*{0.8cm}
+\vspace*{0.8cm} % to avoid weird spacing of 1st page by Latex.
 }
 
 \maketitle
@@ -150,9 +150,9 @@ limited to Scala and Java.
 
 As data transfers in Big Data workflows are an important source of performance
 bottlenecks, Spark incorporates the concepts of data locality and in-memory 
-computing. Data locality, introduced by MapReduce~\cite{dean2008mapreduce},
+computing. Data locality, popularized by MapReduce~\cite{dean2008mapreduce},
 schedules
-tasks as close as possible to where the data is storage. In-memory computing
+tasks as close as possible to where the data is stored. In-memory computing
 ensures data is maintained in memory whenever possible, as writing large 
 amounts data to slower storage devices may be costly. To reduce any unnecessary
 communication and computation, Spark also included lazy evaluation, which
@@ -165,7 +165,7 @@ standalone, YARN and Mesos.
 The Spark standalone scheduler is a simple default scheduler built into Spark.
 In contrast, the YARN scheduler is primarily designed to schedule Hadoop-based 
 workflows, whereas Mesos can be used to schedule
-a variety of different workflows. As scientific researchers would likely be
+a variety of different workflows. As researchers would likely be
 executing their workflows in HPC environments with neither YARN or Mesos
 installed, we limit our focus to Spark's Standalone scheduler.
 
@@ -178,7 +178,7 @@ The Spark Standalone scheduler is composed of three main processes: the
 to them. A job is divided into stages to be executed in a different process onto
 the workers. Each stage's operation is represented as a high-level task in the
 computation graph. The Spark standalone scheduler uses a FIFO 
-(First-In-First-Out) job scheduling policy. The Spark standalone scheduler has
+(First-In-First-Out) job scheduling policy, and it has
 two execution modes: client mode, where the driver runs in a dedicated process
 outside of the Spark cluster, and cluster mode, where the driver runs within
 a worker process. Our experiments use client mode as cluster mode is not
@@ -196,38 +196,42 @@ We used Apache Spark v2.4.0.
 
 \subsubsection{Dask} Dask is a Python-based Big Data engine that is becoming
 increasingly popular in the scientific Python ecosystem. Like Spark, Dask avoids data transfers and needless computation and communication through
-in-memory computing, data locality, lazy evaluation. Dask worklflows can 
+in-memory computing, data locality, and lazy evaluation. Dask worklflows can 
 further reduce data transfer costs by leveraging multithreading whenever 
 communication is not bounded by Python's GIL. Dask relies on data 
 lineage to achieve fault tolerance, however, unlike Spark, does not require
 operations to be coarse grained. Furthermore, Dask is lightweight and modular,
 allowing users to only install the components they require.
 
-Dask has five main data structure APIs:
-Array, Bag, DataFrame, Delayed, and Futures. A Dask
-\href{https://docs.dask.org/en/latest/array.html}{Array} is used for the
+Dask has five main data structures:
+\href{https://docs.dask.org/en/latest/array.html}{Array}, \href{https://docs.dask.org/en/latest/bag.html}{Bag},
+\href{https://docs.dask.org/en/latest/dataframe.html}{DataFrame},
+ \href{https://docs.dask.org/en/latest/delayed.html}{Delayed}, 
+ and \href{https://docs.dask.org/en/latest/futures.html}{Futures}. A Dask
+Array is used for the
 processing of large arrays. It provides a distributed clone of the popular NumPy
 library. Similar to Spark's RDD, a Dask
-\href{https://docs.dask.org/en/latest/bag.html}{Bag} is a parallel
+Bag is a parallel
 collection of Python objects. It offers a programming abstraction similar to the
-\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}. A
-\href{https://docs.dask.org/en/latest/dataframe.html}{Dataframe} is a parallel
+\href{https://toolz.readthedocs.io/en/latest/}{PyToolz library}. A Dask
+Dataframe is a parallel
 composition of
-\href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas Dataframes} used to process a large amount of tabular data.
-\href{https://docs.dask.org/en/latest/delayed.html}{Delayed} supports
+\href{http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{Pandas Dataframes},
+ used to process a large amount of tabular data.
+Dask Delayed supports
 arbitrary tasks
 that do not fit in the Array, DataFrame or Bag APIs. Finally,
-\href{https://docs.dask.org/en/latest/futures.html}{Futures} are similar to
+Dask Futures are similar to
 Delayed in that they support arbitrary tasks, but they operate in real-time
 rather than lazily. With the exception of Dask Bag, all APIs, by default, use
 the local multithreaded scheduler. Dask Bag, instead, relies on the local
-multiprocessing scheduler.  All Dask data structure APIs, with the exception of
+multiprocessing scheduler.  All Dask data structures, with the exception of
 Dask Array and Dask DataFrame, were used in our experiments.
 
 
-The Dask graph is the internal representation of Dask application to be
-executed  by the scheduler. API Operations generate multiple small tasks in
-the computation graph allowing an easier representation of complex
+The Dask graph is the internal representation of a Dask application to be
+executed  by the scheduler. API operations generate multiple small tasks in
+the computation graph, allowing an easier representation of complex
 algorithms.
 
 The Dask framework is compatible with numerous distributed schedulers, including 
@@ -256,7 +260,7 @@ In our experiments, we used Dask v1.1.4.
  instances with 8 VCPUs, an Intel Xeon Gold 6130 processor, \SI{30}{\giga\byte} of
  RAM at \SI{2666}{\mega\hertz}, \SI{20}{\giga\byte} of mounted storage, and a base
  image running CentOS 7.5.1804 with Linux kernel version
- 3.10.0\-862.11.6.el7.x86\_64. Instances are connected by a
+ 3.10.0\-862.11.6.el7.x86\_64. Instances were connected by a
  \SI{10}{\giga\bit/\second} Ethernet network.
  
  Cloud instances hosted a single Dask or Spark worker, configured to use 8 CPUs. We
@@ -273,7 +277,7 @@ In our experiments, we used Dask v1.1.4.
  shared with the other instances using the Network File System (NFS) v4.
  This instance was also used for the Spark driver and master, for the
  Dask scheduler, and for job monitoring with the Spark and Dask user
- interfaces. For both Spark and Dask, spilled data is evicted to the NFS.
+ interfaces. For both Spark and Dask, spilled data was evicted to the NFS.
 
 \subsection{Dataset}
 
@@ -287,13 +291,13 @@ in neuroimaging. We left the NifTI blocks uncompressed, resulting in
 a total data size of \SI{81}{\giga\byte}. 
 To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of 
 \SI{2.7}{\giga\byte}, \SI{0.648}{\giga\byte}, and
-\SI{0.108}{\giga\byte}, using the sam~\cite{sam} library.
+\SI{0.108}{\giga\byte}, using the \href{https://github.com/big-data-lab-team/sam}{sam} library.
 
 We also used the dataset provided by the Consortium for Reliability and
-Reproducibility (\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR}) as
+Reproducibility (\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR}~\cite{zuo2014open}) as
 available on \href{http://datasets.datalad.org/?dir=/corr/RawDataBIDS}{DataLad}. The
 entire dataset is \SI{408.4}{\giga\byte}, containing anatomical, diffusion and
-functional images of 1,397 subjects acquired in 29 sites. We used all 3491 anatomical
+functional images of 1,397 subjects acquired in 29 sites. We used all 3,491 anatomical
 images, representing \SI{39}{\giga\byte} overall (\SI{11.17}{\mega\byte} per image on
 average).
 
@@ -327,8 +331,8 @@ independent subjects in parallel.
     \caption{Incrementation (adapted from~\cite{hayot2019performance})}\label{alg:incrementation}
     \begin{algorithmic}
     \Require{\(x\), a sleep delay in float}
-    \Require{\(file\), a file containing a block}
-    \Require{\(fs\), NFS to write image to.}
+    \Require{\(file\), a file containing a BigBrain block}
+    \Require{\(fs\), NFS mount to write image to}
     \State{Read \(block\) from \(file\)}
     \ForEach{\(i \in iterations\)}
         \ForEach{\(block \in image\)}
@@ -342,38 +346,40 @@ independent subjects in parallel.
 
 \begin{figure}[!b]
     \centering
-    \includegraphics[width=2cm, height=\columnwidth,
+    \includegraphics[height=\columnwidth,
     angle=-90]{images/incrementation-task-graph.png}
     \caption{Task graph for Incrementation with 5 iterations and 3 BigBrain blocks.
     Circles represent the incrementation and sleep function while rectangles
-    represent stages of the blocks.}\label{fig:tg-inc}
+    represent data elements.}\label{fig:tg-inc}
 \end{figure}
 
 \subsubsection{Histogram}
 
  Our second application calculates the histogram of the BigBrain image (see
- Algorithm~\ref{alg:histogram}). It reads the image blocks from the shared file
- system, calculates intensity frequencies, aggregates the frequencies across the
- blocks, and finally writes the resulting histogram to the shared file system as a
- single \SI{766}{\kilo\byte} file. It follows the map-reduce
- paradigm, in which the final result is obtained from all the input blocks (see
- Fig.~\ref{fig:tg-histo}). This application requires data shuffling, incurring 
- additional performance costs compared to Algorithm~\ref{alg:incrementation}.
- The total amount of shuffled data is, however, limited to
- \SI{2.62}{\mega\byte} per blocks as it only consists of image histograms.
-Two implementation are studied: pure Python and NumPy.
+ Algorithm~\ref{alg:histogram}). It reads the image blocks from the shared
+ file system, calculates intensity frequencies, aggregates the frequencies
+ across the blocks, and finally writes the resulting histogram to the
+ shared file system as a single \SI{766}{\kilo\byte} file. It follows the
+ map-reduce paradigm, in which the final result is obtained from all the
+ input blocks (see Fig.~\ref{fig:tg-histo}). This application requires data
+ shuffling, incurring additional performance costs compared to
+ Algorithm~\ref{alg:incrementation}. The total amount of shuffled data is,
+ however, limited to \SI{2.62}{\mega\byte} per blocks as it only consists
+ of image histograms. Two implementation are studied: a pure Python one,
+ where frequencies are computed through Python dictionary manipulations, and one based
+ on the \href{https://github.com/numpy}{NumPy} library, that implements array computations in C.
 
 \begin{algorithm}[!t]
     \caption{Histogram}\label{alg:histogram}
     \begin{algorithmic}
-    \Require{\(files\), files containing BigBrain}
-    \Require{\(fs\), NFS to save image to.}
+    \Require{\(files\), files containing BigBrain blocks}
+    \Require{\(fs\), NFS mount to save image to}
     \ForEach{\(file \in files\)}
         \State{Read \(block\) from \(file\)}
-        \State{{Calculate \(frequency\) of \(blocks\)}}
+        \State{{Calculate \(frequencies\) in \(block\)}}
     \EndFor
     
-    \State{\(histogram\gets\)Aggregate \(frequency\) of each \(file\)}
+    \State{\(histogram\gets\)Aggregate \(frequencies\) of each \(file\)}
 
     \State{Write \(histogram\) to \(fs\)}
     \end{algorithmic}
@@ -381,41 +387,40 @@ Two implementation are studied: pure Python and NumPy.
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=2cm, height=\columnwidth,
+    \includegraphics[height=\columnwidth,
     angle=-90]{images/histogram-task-graph.png}
     \caption{Task graph for Histogram with 3 BigBrain blocks. Circles represent the
-    functions while rectangles represent stages of the blocks.
+    functions while rectangles represent data elements.
     }\label{fig:tg-histo}
 \end{figure}
 
 \subsubsection{BIDS app example}
 
-For this experiment, we used the
+We used the
 \href{https://github.com/BIDS-Apps/example}{BIDS app example} map-reduce style 
 application. The map phase, also called participant analysis, extracts the brain
-tissues of a subject's 3D MRI using the FMRIB Software Library
+tissues of a subject's 3D MRI from the CoRR dataset using the FMRIB Software Library
 (\href{https://fsl.fmrib.ox.ac.uk/fsl/fslwiki}{FSL}), and writes the resulting
 image (\SI{2.47}{\mega\byte} on average) to the NFS. The reduce phase, or group
 analysis, computes the volume of each brain and returns the average
 volume, shuffling a total of \SI{8.6}{\giga\byte} image data.
 
 While Incrementation and Histogram were implemented directly in Python, the 
-BIDS App example requires an external library and is distributed as a Docker container image
-(bids/base\_fsl on DockerHub). We converted the Docker image to a Singularity image,
-given its popularity for HPC and reproducibility, using
+BIDS App example requires an external set of command-line tools distributed as a Docker container image
+(bids/base\_fsl on DockerHub). We converted the Docker image to a Singularity image for use in 
+an HPC environment, using
 \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}.
-The image was preloaded on the NFS and singularity version 3.2.1\-1.el7 was installed
-on all instances. Due to a bug in the conversion from Docker to Singularity, we had to
-export the path for FSL.
+The image was preloaded on the NFS and Singularity version 3.2.1\-1.el7 was installed
+on all instances.
 
 \subsection{Experiments}
 
-The four parameters were varied in our experiments, as shown in
-Table~\ref{tab:param}. We varied (1) the number of workers to assess the
+Four parameters were varied in our experiments, as shown in
+Table~\ref{tab:param}. We varied (1) the number of workers, to assess the
 scalability of the engines, (2) the number of BigBrain blocks in
-Incrementation and Histogram to measure the effect of different IO patterns
+Incrementation and Histogram, to measure the effect of different I/O patterns
 and parallelization degrees, and (3) the number of iterations and sleep
-delay in Incrementation to evaluate the effect of job length and number of
+delay in Incrementation, to evaluate the effect of job length and number of
 tasks.
 It should be noted that increasing the number of blocks or iterations also
 increases the total compute time of the application for a given sleep
@@ -424,11 +429,11 @@ network, we ran the experiments in a randomized order and cleared the page
 cache of each worker before each execution.
 
 For each run, we measured the application makespan as well as the cumulative 
-data read, compute, data write, and engine overhead across all application
+data read, compute, data write, and engine overhead times across all application
 tasks. 
 The overhead calculation for each CPU is the end time of its last processed task
 minus the start time of the application. The summation of those results is the
-total overhead.
+total overhead. \TG{This last sentence looks wrong to me.}
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
@@ -460,7 +465,7 @@ total overhead.
 \subsection{Incrementation: Number of workers}
 Figure~\ref{fig:inc_ms_worker} shows the makespan of the Incrementation application
 for different numbers of workers and engines. The bars show the average
-makespan over 3 repetitions while the error bars are the standard deviation. Overall,
+makespan over 3 repetitions while the error bars are the standard deviations. Overall,
 there is no substantial makespan difference between the engines. Dask seems to have a
 slight advantage over Spark, \SI{83.61}{\second} on average,
 with Delayed and Futures being slightly better than Bag.
