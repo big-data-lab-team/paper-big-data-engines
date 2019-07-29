@@ -91,7 +91,6 @@ Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
 pipelines. Our goal is to test whether Spark or Dask has a clear
 performance advantage to process Big neuroimaging Data. 
 
-%Similarities
 Spark and Dask both offer in-memory computing, data locality, and lazy evaluation;
 which is common for Big Data frameworks. Both their schedulers operate dynamically,
 which is good when task runtimes are not known ahead of time~\cite{Dask:15}. They
@@ -99,7 +98,6 @@ also provide rich, high-level programming APIs, and support a variety of
 infrastructure schedulers, such as Mesos~\cite{hindman2011mesos}, YARN~\cite{vavilapalli2013apache}, or HPC clusters (Dask only). Over
 these similarities, the frameworks have differences.
 
-% Differences
 First and foremost, Spark is written in Scala while Dask is in Python.
 Given the popularity of Python in scientific communities, this arguably
 gives an edge to Dask due to data serialization costs from Python to Scala.
@@ -111,7 +109,6 @@ manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
 Java, R and Python APIs allow to easily parallelize analyses that combine
 these languages, with reduced performance loss.
 
-% Related work
 Spark and Dask were both included in the evaluation reported
 in~\cite{Mehta:17} that used a neuroimaging and an astronomy application
 processing approximately \SI{100}{\giga\byte} of data each. In this work, Dask was
@@ -976,8 +973,7 @@ of functions executed in an application.
 \subsection{Effect of tasks' size}
 We measured the effect of various block sizes for constant BigBrain image for
 Incrementation, Histogram, and Histogram (NumPy). We observe that larger block size
-results in more IO compensated by lower overhead time. On the other hand, smaller
-block size results in higher overhead time compensated by reduced IO time.
+results in more IO compensated by lower overhead time and vice-versa.
 
 The number of partitions also has an impact on the size of the tasks. We set a
 partition for each block or subject. There is a trade-off for the number of
@@ -986,11 +982,11 @@ in lower scheduling overhead. On the other hand, a higher number of partition
 results in smaller tasks hence more tasks fit in the workers' memory insuring that
 they always have something to work on.
 
-Varying the block size is equivalent to varying the size of the partitions. We
-observed no difference when varying the task size while using an NFS. However, if
-one uses a parallel shared file system, we suppose it would be preferable to use a
-larger block size as the IO time should be reduced substantially. It is worth noting
-that the Dask developers suggest, in
+Varying the block size or the size of the partitions is equivalent. No difference is
+observed when varying the task size while using an NFS. However, if one uses a
+parallel shared file system, we suppose it would be preferable to use a larger block
+size as the IO time should be reduced substantially. It is worth noting that the Dask
+developers suggest, in
 \href{https://docs.dask.org/en/latest/best-practices.html}{Dask's best practices}, to
 use a partition size such that workers have 2-3 times as many chunks available to
 work on. More experiments would have to be performed to gain insight on an optimal
