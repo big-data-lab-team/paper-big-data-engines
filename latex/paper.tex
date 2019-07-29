@@ -42,23 +42,21 @@ Concordia University, Montr\'eal, Qu\'ebec, Canada
 
 \begin{abstract}
 
-In the past few years, neuroimaging has entered the Big Data era due to the
-joint increase in image resolution, data sharing, and study sizes. However,
-no particular Big Data framework has emerged in this field, and several
-alternatives remain available. We compare two popular Big Data frameworks
-with Python APIs, Apache Spark and Dask, for their runtime performance in
-processing neuroimaging pipelines. Our evaluation uses two synthetic
-pipelines processing the 76~GB Big Brain image, and a real pipeline
-processing anatomical data from more than 1,000 subjects. We benchmark these pipelines using
- various combinations of task durations, data sizes, and numbers of workers,
-deployed on a 64-node compute cluster in Compute Canada's Arbutus
-cloud. We evaluate PySpark's RDD API against Dask's Bag, Delayed and Futures.
-Results show that despite slight differences between Spark and Dask, both
-frameworks perform comparably. However, Dask pipelines risk being limited
-by Python's GIL depending on task type and cluster configuration. In all
-cases, the major limiting factor was data transfer. While either framework
-is suitable for neuroimaging pipelines, more effort needs to be placed in
-reducing data transfer time.
+In the past few years, neuroimaging has entered the Big Data era due to the joint
+increase in image resolution, data sharing, and study sizes. However, no particular
+Big Data engines has emerged in this field, and several alternatives remain
+available. We compare two popular Big Data engines with Python APIs, Apache Spark and
+Dask, for their runtime performance in processing neuroimaging pipelines. Our
+evaluation uses two synthetic pipelines processing the \SI{81}{\giga\byte} Big Brain
+image, and a real pipeline processing anatomical data from more than 1,000 subjects.
+We benchmark these pipelines using various combinations of task durations, data
+sizes, and numbers of workers, deployed on a 8-node (8 cores ea.) compute cluster in
+Compute Canada's Arbutus cloud. We evaluate PySpark's RDD API against Dask's Bag,
+Delayed and Futures. Results show that despite slight differences between Spark and
+Dask, both frameworks perform comparably. However, Dask pipelines risk being limited
+by Python's GIL depending on task type and cluster configuration. In all cases, the
+major limiting factor was data transfer. While either framework is suitable for
+neuroimaging pipelines, more effort needs to be placed in reducing data transfer time.
 \end{abstract}
 
 \begin{IEEEkeywords}
