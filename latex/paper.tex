@@ -933,9 +933,9 @@ IO times of parallel applications simultaneously writing to shared storage.
 \subsection{Effect of data-intensive applications}
 In our experiments, Incrementation, Histogram (NumPy) and Histogram for Spark have
 low compute time while BIDS App example and Histogram for Dask have significantly
-longer compute time. When adding additional workers, we observe that data-intensive
-applications scale poorly while compute-intensive applications scale almost linearly
-This is due to the limitation from the NFS, as mentioned above.
+longer compute time. When adding additional workers, we observe that the highly
+data-intensive applications scale poorly while compute-intensive applications scale
+almost linearly This is due to the limitation from the NFS, as mentioned above.
 
 Data transfer accounts for the majority of the execution time for data-intensive
 applications (see
@@ -995,6 +995,15 @@ neuroimaging analysis application. In our results, there is no significant diffe
 between the engines. We think this is because the applications we chose are highly
 data-intensive while the one used in their study is compute intensive.
 
+\section{Conclusion}
+We presented a comparison of two Big Data engines: Spark and Dask. We studied the
+engines on three data-intensive neuroimaging applications. Our results show no
+substantial difference between the engines. Moreover, the majority of the execution
+time was spent on data transfer and overhead. We also observed a possible correlation
+between IO and overhead time: an higher overhead is compensated by a lower IO time and
+a low overhead is compensated by an high IO time. This would be due to concurrent IO
+tasks saturating the bandwidth. We suggest that current schedulers policies would benefit
+from knowing the task types, either IO or compute, it is processing concurrently.
 
 % \TG{Talk about engine overhead: (1) where is it coming from? (2) 
 % explain the impact on data transfers with a graph.}
