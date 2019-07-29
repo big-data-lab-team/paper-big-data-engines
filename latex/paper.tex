@@ -708,11 +708,11 @@ experiment. Spark overhead is distributed through all the execution while Bag
 overhead happens mostly when a thread reads subsequent blocks and
 Delayed overhead is concentrated after reading all the blocks.
 
-% remove? - vhs
-The reduce is done differently for the engines. Spark and Delayed compute
-all the reduce tasks on one process (thread), however, Spark only computes it
-on the driver process. On the other hand, Bag computes the reduce tasks on 
-different workers and sends the information to the driver process afterward.
+% % remove? - vhs
+% The reduce is done differently for the engines. Spark and Delayed compute
+% all the reduce tasks on one process (thread), however, Spark only computes it
+% on the driver process. On the other hand, Bag computes the reduce tasks on 
+% different workers and sends the information to the driver process afterward.
 
 \begin{figure}[!t]
     \centering
@@ -974,7 +974,7 @@ they always have something to work on.
 
 Varying the block size or the size of the partitions is equivalent. No difference is
 observed when varying the task size while using an NFS. However, if one uses a
-parallel shared file system, we suppose it would be preferable to use a larger block
+parallel shared file system, it would be preferable to use a larger block
 size as the IO time should be reduced substantially. It is worth noting that the Dask
 developers suggest, in
 \href{https://docs.dask.org/en/latest/best-practices.html}{Dask's best practices}, to
