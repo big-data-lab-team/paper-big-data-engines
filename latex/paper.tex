@@ -428,7 +428,7 @@ For each run, we measured the application makespan as well as the cumulative
 data read, compute, data write, and engine overhead times across all application
 tasks. 
 The overhead calculation for each CPU is the end time of its last processed task
-minus its runtime. The summation of those results is the
+minus the total runtime of the tasks it executed. The summation of those results is the
 total overhead.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
@@ -630,8 +630,8 @@ computing tasks that run concurrently with data transfers.
         height=0.15\textheight]{images/futures_inc_gantt.png}}
         \caption{Dask Futures}\label{fig:inc_dask_futures_gantt}
     \end{subfigure}
-    \caption{Incrementation: 125 blocks, 10 iterations, \SI{4}{\second} delay, 8 workers,
-8 CPUs/worker}\label{fig:inc_gantt}
+    \caption{Incrementation Gantt chart: 125 blocks, 10 iterations, \SI{4}{\second} delay, 8 workers,
+8 CPUs/worker. All Gantt charts are clickable and link to interactive figures with additional information.}\label{fig:inc_gantt}
 \end{figure}
 
 %%% HISTOGRAM %%%
@@ -735,7 +735,7 @@ all the blocks.
         height=0.15\textheight]{images/delayed_histo_gantt.png}}
         \caption{Dask Delayed}\label{fig:histo_dask_delayed_gantt}
     \end{subfigure}
-    \caption{Histogram (Python): 125 blocks, 8 workers, 8
+    \caption{Histogram (Python) Gantt chart: 125 blocks, 8 workers, 8
     CPUs/worker}\label{fig:histo_gantt}
 \end{figure}
 
@@ -826,7 +826,7 @@ data transfer bottleneck.
         height=0.15\textheight]{images/delayed_histo_np_gantt.png}}
         \caption{Dask Delayed}\label{fig:histo_np_dask_delayed_gantt}
     \end{subfigure}
-    \caption{Histogram (NumPy): 125 blocks, 8 workers, 8
+    \caption{Histogram (NumPy) Gantt chart: 125 blocks, 8 workers, 8
     CPUs/worker}\label{fig:histo_np_gantt}
 \end{figure}
 
@@ -902,7 +902,7 @@ analysis requires the results of the participant analysis to start.
         height=0.15\textheight]{images/futures_bids_gantt.png}}
         \caption{Dask Futures}\label{fig:bids_dask_futures_gantt}
     \end{subfigure}
-    \caption{BIDS App example: 8 workers}\label{fig:bids_gantt}
+    \caption{BIDS App example Gantt chart: 8 workers}\label{fig:bids_gantt}
 \end{figure}
 
 
@@ -914,11 +914,11 @@ analysis requires the results of the participant analysis to start.
 \subsection{Comparison with previous studies}
 
 Overall, our experiments did not show any substantial performance
-difference between Spark and Dask. In contradiction to the experiments
+difference between Spark and Dask. In contradiction with the experiments
 of~\cite{Mehta:17}, we did not observe consequential overhead differences
 due to serialization or startup costs. This apparent contradiction is most
-likely coming from differences in applications, engine parametrizations, or
-infrastructure characteristics. In our case, potential overhead differences were
+likely coming from differences in applications, engine parametrization, or
+infrastructure characteristics between the two studies. In our case, potential overhead differences were
 compensated by reverse trends in data transfer time. Since our focus is
 Big Data applications, this leads us to conclude that engines are
 equivalent.
