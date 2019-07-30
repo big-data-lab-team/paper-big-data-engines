@@ -47,7 +47,7 @@ increase in image resolution, data sharing, and study sizes. However, no particu
 Big Data engines has emerged in this field, and several alternatives remain
 available. We compare two popular Big Data engines with Python APIs, Apache Spark and
 Dask, for their runtime performance in processing neuroimaging pipelines. Our
-evaluation uses two synthetic pipelines processing the \SI{81}{\giga\byte} Big Brain
+evaluation uses two synthetic pipelines processing the \SI{81}{\giga\byte} BigBrain
 image, and a real pipeline processing anatomical data from more than 1,000 subjects.
 We benchmark these pipelines using various combinations of task durations, data
 sizes, and numbers of workers, deployed on a 8-node (8 cores ea.) compute cluster in
@@ -118,7 +118,7 @@ differences and similarities between Spark and Dask for neuroimaging data proces
 
 The next section details the design of our benchmarking experiments. We consider two
 data-intensive neuroimaging applications: high-resolution imaging,
-represented by the Big Brain data~\cite{Amunts:13}, and large functional
+represented by the BigBrain data~\cite{Amunts:13}, and large functional
 MRI studies, represented by data from the consortium for reliability and
 reproducibility (CoRR~\cite{zuo2014open}). We test application pipelines
 involving different patterns (map-only, map-reduce), and different types of
@@ -142,7 +142,7 @@ Its main abstraction, the Resilient Distributed Dataset
 achieves fault tolerance through the recording of data lineage, the
 sequence of operations used to modify the original data. The RDD is the basis
 of Spark's other data structures, namely, Datasets
-and DataFrames. Datasets are similar to RDDs but additionally use Spark SQL's
+and DataFrames. Datasets are similar to RDDs, but additionally use Spark SQL's
 optimized execution engine to further improve performance. DataFrames, used to process
 tabular data, are Datasets where the data is organized into named-columns.
 While the DataFrame API exists in all the available language APIs, Datasets are
@@ -161,8 +161,8 @@ computed.
 
 % Didn't mention Kubernetes as it's still experimental
 Spark is compatible with three different schedulers: Spark
-standalone, YARN and Mesos.
-The Spark standalone scheduler is a simple default scheduler built into Spark.
+Standalone, YARN and Mesos.
+The Spark Standalone scheduler is a simple default scheduler built into Spark.
 In contrast, the YARN scheduler is primarily designed to schedule Hadoop-based 
 workflows, whereas Mesos can be used to schedule
 a variety of different workflows. As researchers would likely be
@@ -196,7 +196,7 @@ We used Apache Spark v2.4.0.
 
 \subsubsection{Dask} Dask is a Python-based Big Data engine that is becoming
 increasingly popular in the scientific Python ecosystem. Like Spark, Dask avoids data transfers and needless computation and communication through
-in-memory computing, data locality, and lazy evaluation. Dask worklflows can 
+in-memory computing, data locality, and lazy evaluation. Dask workflows can 
 further reduce data transfer costs by leveraging multithreading whenever 
 communication is not bounded by Python's GIL. Dask relies on data 
 lineage to achieve fault tolerance, however, unlike Spark, does not require
@@ -304,10 +304,10 @@ average).
 
 \subsection{Applications}
 
-Three neuroimaging applications to evaluate the engines in different
-conditions were used. The first two, incrementation and histogram, are simple 
+We used three neuroimaging applications to evaluate the engines in different
+conditions. The first two, incrementation and histogram, are simple 
 synthetic applications representing map-only and map-reduce applications,
-respectively. The third one is a real neuroimaging application representative
+respectively. The third, is a real neuroimaging application representative
 of popular BIDS applications~\cite{gorgolewski2017bids}. All scripts used for our
 experiments are available at
 \url{https://github.com/big-data-lab-team/paper-big-data-engines}
@@ -980,7 +980,7 @@ the type of functions executed in an application.
 
 The number of data partitions also has an impact on application
 performance. In our experiments, we set a partition for each block or
-subject, resulting in a maximum of 750 partitions for the Big Brain
+subject, resulting in a maximum of 750 partitions for the BigBrain
 applications, and 1,397 partitions for the BIDS app. The number of
 partitions obeys a classical trade-off: small numbers of partitions reduce 
 overhead, while large numbers of
