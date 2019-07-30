@@ -42,23 +42,21 @@ Concordia University, Montr\'eal, Qu\'ebec, Canada
 
 \begin{abstract}
 
-In the past few years, neuroimaging has entered the Big Data era due to the
-joint increase in image resolution, data sharing, and study sizes. However,
-no particular Big Data framework has emerged in this field, and several
-alternatives remain available. We compare two popular Big Data frameworks
-with Python APIs, Apache Spark and Dask, for their runtime performance in
-processing neuroimaging pipelines. Our evaluation uses two synthetic
-pipelines processing the 81~GB Big Brain image, and a real pipeline
-processing anatomical data from more than 1,000 subjects. We benchmark these pipelines using
- various combinations of task durations, data sizes, and numbers of workers,
-deployed on a 64-node compute cluster in Compute Canada's Arbutus
-cloud. We evaluate PySpark's RDD API against Dask's Bag, Delayed and Futures.
-Results show that despite slight differences between Spark and Dask, both
-frameworks perform comparably. However, Dask pipelines risk being limited
-by Python's GIL depending on task type and cluster configuration. In all
-cases, the major limiting factor was data transfer. While either framework
-is suitable for neuroimaging pipelines, more effort needs to be placed in
-reducing data transfer time.
+In the past few years, neuroimaging has entered the Big Data era due to the joint
+increase in image resolution, data sharing, and study sizes. However, no particular
+Big Data engines has emerged in this field, and several alternatives remain
+available. We compare two popular Big Data engines with Python APIs, Apache Spark and
+Dask, for their runtime performance in processing neuroimaging pipelines. Our
+evaluation uses two synthetic pipelines processing the \SI{81}{\giga\byte} Big Brain
+image, and a real pipeline processing anatomical data from more than 1,000 subjects.
+We benchmark these pipelines using various combinations of task durations, data
+sizes, and numbers of workers, deployed on a 8-node (8 cores ea.) compute cluster in
+Compute Canada's Arbutus cloud. We evaluate PySpark's RDD API against Dask's Bag,
+Delayed and Futures. Results show that despite slight differences between Spark and
+Dask, both engines perform comparably. However, Dask pipelines risk being limited
+by Python's GIL depending on task type and cluster configuration. In all cases, the
+major limiting factor was data transfer. While either engine is suitable for
+neuroimaging pipelines, more effort needs to be placed in reducing data transfer time.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -77,20 +75,19 @@ improve performance of the increasingly prevalent data-intensive pipelines.
 As was noted in ~\cite{hayot2019performance}, in-memory computing, coupled
 with data locality, can bring significant performance improvements to data
 intensive neuroimaging pipelines. We extend this work by studying the
-differences between two Big Data frameworks, Dask~\cite{Dask:15} and Apache
+differences between two Big Data engines, Dask~\cite{Dask:15} and Apache
 Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
 pipelines. Our goal is to test whether Spark or Dask has a clear
 performance advantage to process Big neuroimaging Data. 
 
 %Similarities
 Spark and Dask both offer in-memory computing, data locality, and lazy evaluation,
-which is common for Big Data frameworks. Both their schedulers operate dynamically,
+which is common for Big Data engines. Both their schedulers operate dynamically,
 which is good when task runtimes are not known ahead of time~\cite{Dask:15}. They
 also provide rich, high-level programming APIs, and support a variety of
 infrastructure schedulers, such as Mesos~\cite{hindman2011mesos}, YARN~\cite{vavilapalli2013apache}, or HPC clusters (Dask only). Over
-these similarities, the frameworks have differences.
+these similarities, the engines have differences.
 
-% Differences
 First and foremost, Spark is written in Scala while Dask is in Python.
 Given the popularity of Python in scientific communities, this arguably
 gives an edge to Dask due to data serialization costs from Python to Scala.
@@ -102,9 +99,8 @@ manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
 Java, R and Python APIs allow to easily parallelize analyses that combine
 these languages, with reduced performance loss. Our study focuses on
 performance, although we recognize that other factors will also impact the
-choice of a framework in practice.
+choice of an engine in practice.
 
-% Related work
 Spark and Dask were both included in the evaluation reported
 in~\cite{Mehta:17}, where a neuroimaging application
 processed approximately \SI{100}{\giga\byte} of data. In this work, Dask was
@@ -147,7 +143,7 @@ achieves fault tolerance through the recording of data lineage, the
 sequence of operations used to modify the original data. The RDD is the basis
 of Spark's other data structures, namely, Datasets
 and DataFrames. Datasets are similar to RDDs but additionally use Spark SQL's
-optimized execution to further improve performance. DataFrames, used to process
+optimized execution engine to further improve performance. DataFrames, used to process
 tabular data, are Datasets where the data is organized into named-columns.
 While the DataFrame API exists in all the available language APIs, Datasets are
 limited to Scala and Java.
@@ -193,7 +189,7 @@ Python is commonly selected as the programming language of choice in scientific
 communities, and in particular, for our use case of neuroscience, where
 numerous specialized Python libraries exist to study the data.
 While serialization of Python to Java may lead to significant overheads, we
-chose to focus on Spark Python API due to its suitability for neuroimaging
+chose to focus on PySpark API due to its suitability for neuroimaging
 research. 
 
 We used Apache Spark v2.4.0.
@@ -238,13 +234,13 @@ executed  by the scheduler. API operations generate multiple small tasks in
 the computation graph, allowing an easier representation of complex
 algorithms.
 
-The Dask framework is compatible with numerous distributed schedulers, including 
+The Dask engine is compatible with numerous distributed schedulers, including 
 \href{https://github.com/dask/dask-yarn}{YARN} and
 \href{https://github.com/mrocklin/dask-mesos}{Mesos}, similarly to Spark. Dask 
 also provides its own distributed scheduler, known as the Dask Distributed
 scheduler. Although Dask is compatible with schedulers commonly found in HPC
 clusters, we chose to use Dask's Distributed scheduler, to keep the environment
-balanced between both frameworks.
+balanced between both engines.
 
 In the Dask Distributed scheduler, a process called \textit{dask-scheduler}
 administrates the resources provided by \textit{workers} in the cluster. The
@@ -271,8 +267,8 @@ In our experiments, we used Dask v1.1.4.
  used Dask's default configuration that uses all the available memory on the
  instance. Its default heuristic is to: target a 60\% memory load, spill to disk at
  70\%, pause the worker at 80\%, and terminate the worker at 95\%. We configured
- Spark to use 1 executor per worker and \SI{25}{\giga\byte} of memory per executor, to leave 5~GB
- for off-heap. We configured the Spark driver to use 25~GB of memory, and used the
+ Spark to use 1 executor per worker and \SI{25}{\giga\byte} of memory per executor, to leave \SI{5}{\giga\byte}
+ for off-heap. We configured the Spark driver to use \SI{25}{\giga\byte} of memory, and used the
  default configuration for the master. We used the default configuration for worker
  memory management: at 60\% it spills data to disk, and 50\% of that amount is
  reserved for storage that is immune to eviction.
@@ -290,8 +286,8 @@ brain with voxel intensities ranging from 0 to 65,535. The original data is
 stored in 125 blocks in the MINC~\cite{minc} HDF5-based format, available
 at \url{ftp://bigbrain.loris.ca/BigBrainRelease.2015/3D\_Blocks/40um} at a
 resolution of \SI{40}{\micro\metre}. We converted the blocks into the
-\href{https://nifti.nimh.nih.gov/nifti-1}{NifTI} format, a popular format
-in neuroimaging. We left the NifTI blocks uncompressed, resulting in 
+\href{https://nifti.nimh.nih.gov/nifti-1}{NIfTI} format, a popular format
+in neuroimaging. We left the NIfTI blocks uncompressed, resulting in 
 a total data size of \SI{81}{\giga\byte}. 
 To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of 
 \SI{2.7}{\giga\byte}, \SI{0.648}{\giga\byte}, and
@@ -325,7 +321,7 @@ system, increments the intensity value of each voxel by 1 to avoid caching
 effects, sleeps for a configurable amount of time to emulate more
 compute-intensive processing, repeats this process for a specified number of
 iterations, and
-finally writes the result as a NifTI image back to the shared file system.
+finally writes the result as a NIfTI image back to the shared file system.
 This application allows us to study the behaviour of the engines when all
 inputs are processed independently, in a map-only scenario (see
 Figure~\ref{fig:tg-inc}). This mimics the behaviour of analyzing multiple
@@ -436,8 +432,8 @@ For each run, we measured the application makespan as well as the cumulative
 data read, compute, data write, and engine overhead times across all application
 tasks. 
 The overhead calculation for each CPU is the end time of its last processed task
-minus the start time of the application. The summation of those results is the
-total overhead. \TG{This last sentence looks wrong to me.}
+minus its runtime. The summation of those results is the
+total overhead.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
@@ -483,16 +479,10 @@ Figure~\ref{fig:inc_tt_worker} shows the total execution time of the
 Incrementation application, broken down into data transfer (read and
 write), compute (sleep), and overhead time. As expected, the computing time
 stays similar when the number of workers increases. However, the data
-transfer time and overhead increase substantially with the number of
-workers.
-
-% \hspace{1cm}\(\hat{y}=2336.9499\cdot{x} + 325.00574\) (Spark)
-
-% \hspace{1cm}\(\hat{y}=2650.13505\cdot{x} + 1585.37218\) (Bag)
-
-% \hspace{1cm}\(\hat{y}=3250.53406\cdot{x} + 1769.50351\) (Delayed)
-
-% \hspace{1cm}\(\hat{y}=3570.39758\cdot{x} + 1062.23031\) (Futures)
+transfer time and overhead increase proportionally to the number of
+workers with regression slopes: Spark (\SI{2337}{\second/task}), Bag
+(\SI{2650}{\second/task}), Delayed (\SI{3251}{\second/task}), Futures
+(\SI{3570}{\second/task}).
 
 On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
 slightly lower than Dask's, particularly when the number of workers
@@ -694,7 +684,7 @@ workers can process up to 64 tasks in parallel. Moreover, the overhead for
 This leads to thread based engines to have higher overhead. Given that, 
 Spark has a much lower compute time which makes it significantly faster
 than Dask engines. Overall, for all engines, lower block size results in lower
-IO time but increases the overhead time. Again, this is due to large overhead
+data transfer time but increases the overhead time. Again, this is due to large overhead
 desynchronizing task thus reducing the NFS bottleneck.
 
 
@@ -787,7 +777,7 @@ Figure~\ref{fig:histo_np_tt_block} shows the total time spent in each function.
 Once more, since Delayed is thread-based its overhead at 30 blocks is seems much
 higher that it really is. Considering the overhead error and that at 30 blocks
 the workers only use half their core, the total time is substantially the same
-for all block size. This is due to lower block sizes having a lower IO time,
+for all block size. This is due to lower block sizes having a lower data transfer time,
 however, it balances out by the resulting increase in overhead.
 
 \begin{figure}[!t]
@@ -814,7 +804,7 @@ overlap more compute and read tasks simultaneously amongst different workers.
 In Figure~\ref{fig:histo_np_gantt}, read tasks are initially similar for all
 engines. However, when computation starts the subsequent read tasks are much
 shorter for Delayed. This is due the desynchronization of the task reducing the
-IO bottleneck.
+data transfer bottleneck.
 
 
 
@@ -855,22 +845,12 @@ the shared file system.
 
 In Figure~\ref{fig:bids_tt_worker}, the total execution time of each function is
 shown. Each engine has a similar total time independently of its number of workers.
-Consistently with previous observations, the overhead increases substantially with the 
-number of workers.
-
-% The overhead increases
-% proportionally with the number of workers (see regression lines below). This is due
-% to more communication between the scheduler and workers as well as intra-worker and
-% inter-worker communication.
-
-
-% \hspace{1cm}\(\hat{y}=223.53586\cdot{x} + 91.616964\) (Spark)
-
-% \hspace{1cm}\(\hat{y}=182.82659\cdot{x} - 11.43834\) (Bag)
-
-% \hspace{1cm}\(\hat{y}=172.54183\cdot + 400.69433\) (Delayed)
-
-% \hspace{1cm}\(\hat{y}=132.41481\cdot{x} + 90.32813\) (Futures)
+This is due to the, almost, linear scaling of the engines. The overhead increases
+proportionally to the number of workers with regression slopes: Spark
+(\SI{224}{\second/task}), Bag (\SI{183}{\second/task}), Delayed
+(\SI{173}{\second/task}), Futures (\SI{132}{\second/task}). This is due to more
+communication between the scheduler and workers as well as intra-worker and
+inter-worker communication.
 
 \begin{figure}[!t]
     \centering
