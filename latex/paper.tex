@@ -934,88 +934,95 @@ analysis requires the results of the participant analysis to start.
 %%%%% DISCUSSION %%%%%
 \section{Discussion}
 
-\subsection{Effect of Network File System}
-We used an NFS as it is a common approach to store a large amount of data. However,
-it limits the available bandwidth since all workers interact with one disk. This
-causes data-intensive applications to take a significant amount of time for IO. As we
-expect, this effect is amplified when too many tasks simultaneously try to operate
-with the NFS at the same time as
-Fig.~\ref{fig:inc_gantt},\ref{fig:histo_gantt},\ref{fig:histo_np_gantt},\ref{fig:bids_gantt}
-shows. A parallel file system, such as Lustre~\cite{lustre}, would likely improve
-IO times of parallel applications simultaneously writing to shared storage.
 
-\subsection{Effect of data-intensive applications}
-In our experiments, Incrementation, Histogram (NumPy) and Histogram for Spark have
-low compute time while BIDS App example and Histogram for Dask have significantly
-longer compute time. When adding additional workers, we observe that the highly
-data-intensive applications scale poorly while compute-intensive applications scale
-almost linearly This is due to the limitation from the NFS, as mentioned above.
+\subsection{Comparison with previous studies}
 
-Data transfer accounts for the majority of the execution time for data-intensive
-applications (see
-Fig.~\ref{fig:inc_gantt},\ref{fig:histo_spark_gantt},\ref{fig:histo_np_gantt}). We
-see that when a low number of IO tasks are overlapping, this diminishes the bandwidth
-limitation from the NFS. We want to explore solutions to desynchronize IO tasks in
-the aim to reduce the makespan of data-intensive applications.
+Overall, our experiments did not show any substantial performance
+difference between Spark and Dask. In contradiction with the experiments
+of~\cite{Mehta:17}, we did not observe consequential overhead differences
+due to serialization or startup costs. This apparent contradiction is most
+likely coming from differences in applications, engine parametrizations, or
+infrastructure characteristics. In our case, potential overhead differences were
+compensated by reverse trends in data transfer time. Since our focus are
+Big Data applications, this leads us to conclude that engines are
+equivalent.
 
-\subsection{Effect of the Global Interpreter Lock}
-Python's GIL prevents multi-threading in Python. Dask tries to minimize the
-consequences of the GIL by using external Python extensions. We found that Dask has
-issues to parallelize Python functions while Spark did not (see
-Fig.~\ref{fig:histo_tt_worker}). However, Dask was easily able to parallelize
-application with functions in Numpy (see
-Fig.~\ref{fig:inc_tt_worker},\ref{fig:histo_np_tt_worker}) and command-line
-applications (see Fig.~\ref{fig:bids_tt_worker}). This is because, for Dask, the
-instances are configured to have 1 worker process with 8 threads. Since the Histogram
-implementation does not release the GIL it can only use one of the thread at a given
-time thus it slows down the computation significantly.
+\subsection{Overhead / data transfer compensation}
 
-One should be careful to configure the workers properly depending on the type
-of functions executed in an application.
+The observed almost exact compensation between differences in engine
+overheads and in data transfer times (see for instance
+Figure~\ref{fig:inc_tt_worker}) is not surprising. Indeed, when the transfer
+bandwidth is saturated, and in absence of service thrashing,
+desynchronizing file transfers usually does not reduce the makespan of data
+transfers. To take an extreme example, the makespan of $n$ concurrent file
+transfers of size $F$ on a system of bandwidth $B$ would be $nF/B$, as $n$
+transfers would share the bandwidth, which equals to the time required
+to transfer the $n$ files sequentially. In other words, saturated bandwidths
+give room for extra engine overhead as long as it desynchronizes data
+transfers. This could be an interesting idea to explore in data transfer optimization.
 
-\subsection{Effect of tasks' size}
-We measured the effect of various block sizes for constant BigBrain image for
-Incrementation, Histogram, and Histogram (NumPy). We observe that larger block size
-results in more IO compensated by lower overhead time. On the other hand, smaller
-block size results in higher overhead time compensated by reduced IO time.
+\subsection{Effect of the shared file system}
 
-The number of partitions also has an impact on the size of the tasks. We set a
-partition for each block or subject. There is a trade-off for the number of
-partitions. On the one hand, a low amount of partition results in larger tasks thus
-in lower scheduling overhead. On the other hand, a higher number of partition
-results in smaller tasks hence more tasks fit in the workers' memory insuring that
-they always have something to work on.
+We used NFS as our shared file system as it is a common and
+easy-to-configure solution to share data between compute nodes. The
+performance of NFS, however, degrades substantially when accessed by
+concurrent tasks, as shown in the Gantt charts in
+Figures~\ref{fig:inc_gantt}, ~\ref{fig:histo_gantt}, ~\ref{fig:histo_np_gantt} 
+and~\ref{fig:bids_gantt}. This is due to the limitations imposed by network and disk
+bandwidths. While network bandwidth can hardly be overcome, disk bandwidth
+can be increased by storing data to multiple disks addressed by a parallel
+file system such a Lustre~\cite{lustre}. Such a configuration would likely
+reduce the impact of data transfers, although the main observed patterns
+should remain. 
 
-Varying the block size is equivalent to varying the size of the partitions. We
-observed no difference when varying the task size while using an NFS. However, if
-one uses a parallel shared file system, we suppose it would be preferable to use a
-larger block size as the IO time should be reduced substantially. It is worth noting
-that the Dask developers suggest, in
-\href{https://docs.dask.org/en/latest/best-practices.html}{Dask's best practices}, to
-use a partition size such that workers have 2-3 times as many chunks available to
-work on. More experiments would have to be performed to gain insight on an optimal
-number of partitions to use for a given set of data-intensive applications.
+\subsection{Effect of Python's Global Interpreter Lock}
 
-\subsection{Other comments}
-Spark performance should be reduced by the serialization of Python functions to Java,
-however, our results show no significant impact of it. 
+Although Dask reduces the impact of Python's GIL on parallelism by using external
+Python extensions, our Python histogram experiment (Figure
+~\ref{fig:histo_tt_worker}) showed that issues remain in Dask to
+parallelize Python functions. However, Dask was easily able to parallelize
+the same application when implemented with Numpy
+(Figure~\ref{fig:histo_np_tt_worker}) because in this case the computation
+happened in C, outside of the GIL. Similarly, the computation in
+command-line applications happens in a sub-process, hence outside of the
+GIL, which explains why the BIDS apps example application was not impacted
+by this issue. Although implemented in Python, Incrementation was not
+impacted either, as computation was only emulated through sleep time.
 
-Previous work showed that Dask has a the largest start-up overhead~\cite{Mehta:17}
-when processing few subjects. Our Gantt charts show that Spark has a higher start-up
-overhead. We think this is due to the larger amount of subjects we process.
+This behavior is also the consequence of our configuration of Dask that
+created 1 worker process with 8 threads. Since the Histogram Python
+implementation does not release the GIL it can only use one of the thread
+at a given time thus it slows down the computation significantly. This
+behavior highlights the need to configure the workers properly depending on
+the type of functions executed in an application.
 
-The same study showed that Dask has a lower end-to-end runtime than Spark in a
-neuroimaging analysis application. In our results, there is no significant difference
-between the engines. We think this is because the applications we chose are highly
-data-intensive while the one used in their study is compute intensive.
+\subsection{Effect of data partitioning}
+
+The number of data partitions also has an impact on application
+performance. In our experiments, we set a partition for each block or
+subject, resulting in a maximum of 750 partitions for the Big Brain
+applications, and 1,397 partitions for the BIDS app. The number of
+partitions obeys a classical trade-off: small numbers of partitions reduce 
+overhead, while large numbers of
+partitions increase parallelism. Since both Spark and Dask can
+work with custom partition sizes, we do not expect substantial differences
+coming from variations of this parameter.
+
+% Varying the block size is equivalent to varying the size of the partitions. We
+% observed no difference when varying the task size while using an NFS. However, if
+% one uses a parallel shared file system, we suppose it would be preferable to use a
+% larger block size as the IO time should be reduced substantially. It is worth noting
+% that the Dask developers suggest, in
+% \href{https://docs.dask.org/en/latest/best-practices.html}{Dask's best practices}, to
+% use a partition size such that workers have 2-3 times as many chunks available to
+% work on. More experiments would have to be performed to gain insight on an optimal
+% number of partitions to use for a given set of data-intensive applications.
 
 \section{Conclusion}
 We presented a comparison of two Big Data engines, Apache Spark and Dask.
 We studied the engines on three data-intensive neuroimaging applications
-representative of common use cases. Our results show no substantial
-performance difference between the engines, except for compute-intensive
-Python applications where Dask is slower than Spark due to parallelism loss
-coming from Python's Global Interpreter Lock. Interestingly, differences in
+representative of common use cases. Overall, our results show no substantial
+performance difference between the engines. Interestingly, differences in
 engine overheads do not impact performance due to their impact on data
 transfer times: higher overheads are almost exactly compensated by a lower
 transfer times when data transfers saturate the bandwidth. These results
