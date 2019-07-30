@@ -44,13 +44,13 @@ Concordia University, Montr\'eal, Qu\'ebec, Canada
 
 In the past few years, neuroimaging has entered the Big Data era due to the joint
 increase in image resolution, data sharing, and study sizes. However, no particular
-Big Data engines has emerged in this field, and several alternatives remain
+Big Data engines have emerged in this field, and several alternatives remain
 available. We compare two popular Big Data engines with Python APIs, Apache Spark and
 Dask, for their runtime performance in processing neuroimaging pipelines. Our
 evaluation uses two synthetic pipelines processing the \SI{81}{\giga\byte} BigBrain
 image, and a real pipeline processing anatomical data from more than 1,000 subjects.
 We benchmark these pipelines using various combinations of task durations, data
-sizes, and numbers of workers, deployed on a 8-node (8 cores ea.) compute cluster in
+sizes, and numbers of workers, deployed on an 8-node (8 cores ea.) compute cluster in
 Compute Canada's Arbutus cloud. We evaluate PySpark's RDD API against Dask's Bag,
 Delayed and Futures. Results show that despite slight differences between Spark and
 Dask, both engines perform comparably. However, Dask pipelines risk being limited
@@ -66,13 +66,13 @@ Dask, Apache Spark, performance, neuroimaging
 \section{Introduction}
 % Context
 The recent rise in data sharing and improved data collection strategies
-have brought neuroimaging to the Big Data era ~\cite{ALFAROALMAGRO:18,
+have brought neuroimaging to the Big Data era~\cite{ALFAROALMAGRO:18,
 van2014human}. Existing neuroimaging workflow engines, such as
 Nipype~\cite{Nipype:11}, are well suited for processing the standard
 compute-intensive neuroimaging pipelines, but lack incorporated Big Data
-strategies (i.e. in-memory computing, data locality and lazy-evaluation) to
+strategies (i.e. in-memory computing, data locality, and lazy-evaluation) to
 improve performance of the increasingly prevalent data-intensive pipelines.
-As was noted in ~\cite{hayot2019performance}, in-memory computing, coupled
+As was noted in~\cite{hayot2019performance}, in-memory computing, coupled
 with data locality, can bring significant performance improvements to data
 intensive neuroimaging pipelines. We extend this work by studying the
 differences between two Big Data engines, Dask~\cite{Dask:15} and Apache
@@ -126,7 +126,7 @@ implementations (plain Python, command-line,
 containerized). We evaluate performance on a dedicated cluster
 representative of the ones used in today's data-intensive neuroimaging
 studies, using the main Dask and Spark APIs. The other sections present
-our results, discussion and conclusions.
+our results, discussion, and conclusions.
 
 
 
@@ -136,28 +136,24 @@ our results, discussion and conclusions.
 \subsection{Engines}
 
 \subsubsection{Apache Spark} Apache Spark is a widely-used 
-general-purpose Big Data engine.
-Its main abstraction, the Resilient Distributed Dataset
-(RDD)~\cite{RDD}, is a fault-tolerant, parallel collection of data elements. It 
-achieves fault tolerance through the recording of data lineage, the
-sequence of operations used to modify the original data. The RDD is the basis
-of Spark's other data structures, namely, Datasets
-and DataFrames. Datasets are similar to RDDs, but additionally use Spark SQL's
-optimized execution engine to further improve performance. DataFrames, used to process
-tabular data, are Datasets where the data is organized into named-columns.
-While the DataFrame API exists in all the available language APIs, Datasets are
-limited to Scala and Java.
+general-purpose Big Data engine. Its main abstraction, the Resilient Distributed
+Dataset (RDD)~\cite{RDD}, is a fault-tolerant, parallel collection of data elements.
+It achieves fault tolerance through the recording of data lineage, the sequence of
+operations used to modify the original data. The RDD is the basis of Spark's other
+data structures, namely, Datasets and DataFrames. Datasets are similar to RDDs, but
+additionally use Spark SQL's optimized execution engine to further improve
+performance. DataFrames, used to process tabular data, are Datasets where the data is
+organized into named-columns. While the DataFrame API exists in all the available
+language APIs, Datasets are limited to Scala and Java.
 
 As data transfers in Big Data workflows are an important source of performance
-bottlenecks, Spark incorporates the concepts of data locality and in-memory 
+bottlenecks, Spark incorporates the concepts of data locality and in-memory
 computing. Data locality, popularized by MapReduce~\cite{dean2008mapreduce},
-schedules
-tasks as close as possible to where the data is stored. In-memory computing
-ensures data is maintained in memory whenever possible, as writing large 
-amounts data to slower storage devices may be costly. To reduce any unnecessary
-communication and computation, Spark also included lazy evaluation, which
-builds the entire task graph prior to execution to determine what needs to be
-computed.
+schedules tasks as close as possible to where the data is stored. In-memory computing
+ensures data is maintained in memory whenever possible, as writing large amounts of
+data to slower storage devices may be costly. To reduce any unnecessary communication
+and computation, Spark also included lazy evaluation, which builds the entire task
+graph prior to execution to determine what needs to be computed.
 
 % Didn't mention Kubernetes as it's still experimental
 Spark is compatible with three different schedulers: Spark
@@ -199,8 +195,8 @@ increasingly popular in the scientific Python ecosystem. Like Spark, Dask avoids
 in-memory computing, data locality, and lazy evaluation. Dask workflows can 
 further reduce data transfer costs by leveraging multithreading whenever 
 communication is not bounded by Python's GIL. Dask relies on data 
-lineage to achieve fault tolerance, however, unlike Spark, does not require
-operations to be coarse grained. Furthermore, Dask is lightweight and modular,
+lineage to achieve fault tolerance, however, unlike Spark, it does not require
+operations to be coarse-grained. Furthermore, Dask is lightweight and modular,
 allowing users to only install the components they require.
 
 Dask has five main data structures:
@@ -223,9 +219,9 @@ arbitrary tasks
 that do not fit in the Array, DataFrame or Bag APIs. Finally,
 Dask Futures are similar to
 Delayed in that they support arbitrary tasks, but they operate in real-time
-rather than lazily. With the exception of Dask Bag, all APIs, by default, use
+rather than lazily. Except for Dask Bag, all APIs, by default, use
 the local multithreaded scheduler. Dask Bag, instead, relies on the local
-multiprocessing scheduler.  All Dask data structures, with the exception of
+multiprocessing scheduler.  All Dask data structures, except for
 Dask Array and Dask DataFrame, were used in our experiments.
 
 
@@ -322,9 +318,9 @@ effects, sleeps for a configurable amount of time to emulate more
 compute-intensive processing, repeats this process for a specified number of
 iterations, and
 finally writes the result as a NIfTI image back to the shared file system.
-This application allows us to study the behaviour of the engines when all
+This application allows us to study the behavior of the engines when all
 inputs are processed independently, in a map-only scenario (see
-Figure~\ref{fig:tg-inc}). This mimics the behaviour of analyzing multiple
+Figure~\ref{fig:tg-inc}). This mimics the behavior of analyzing multiple
 independent subjects in parallel.
 
 \begin{algorithm}[!b]
@@ -364,8 +360,8 @@ independent subjects in parallel.
  input blocks (see Fig.~\ref{fig:tg-histo}). This application requires data
  shuffling, incurring additional performance costs compared to
  Algorithm~\ref{alg:incrementation}. The total amount of shuffled data is,
- however, limited to \SI{2.62}{\mega\byte} per blocks as it only consists
- of image histograms. Two implementation are studied: a pure Python one,
+ however, limited to \SI{2.62}{\mega\byte} per block as it only consists
+ of image histograms. Two implementations are studied: a pure Python one,
  where frequencies are computed through Python dictionary manipulations, and one based
  on the \href{https://github.com/numpy}{NumPy} library, that implements array computations in C.
 
@@ -411,7 +407,7 @@ BIDS App example requires an external set of command-line tools distributed as a
 an HPC environment, using
 \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}.
 The image was preloaded on the NFS and Singularity version 3.2.1\-1.el7 was installed
-on all instances.
+for all instances.
 
 \subsection{Experiments}
 
@@ -486,7 +482,7 @@ workers with regression slopes: Spark (\SI{2337}{\second/task}), Bag
 
 On Figure~\ref{fig:inc_tt_worker}, we also note that Spark's overhead is
 slightly lower than Dask's, particularly when the number of workers
-increase. Moreover, Delayed and Futures have a higher overhead than Bag.
+increases. Moreover, Delayed and Futures have a higher overhead than Bag.
 However, overhead differences are compensated by an increase in data
 transfer time, as a reduced overhead increases the concurrency between data
 transfers and the application saturates the 10Gbits/s network bandwidth. 
@@ -646,7 +642,7 @@ narrows as the number of workers increases but it remains significant. Between D
 there is no substantial difference, however, Bag is slightly faster on average.
 
 From Figure~\ref{fig:histo_tt_worker}, the total time spent in each function is
-shown. The compute time is significantly larger for Dask than for Spark. This is
+shown. The computing time is significantly larger for Dask than for Spark. This is
 presumably due to Python's GIL preventing Dask to parallelize the computation
 over
 multiple threads. Overall, the I/O and overhead times are comparable for all engines.
@@ -774,8 +770,8 @@ different block sizes. Overall, there is no substantial difference for
 all engines and block sizes.
 
 Figure~\ref{fig:histo_np_tt_block} shows the total time spent in each function.
-Once more, since Delayed is thread-based its overhead at 30 blocks is seems much
-higher that it really is. Considering the overhead error and that at 30 blocks
+Once more, since Delayed is thread-based its overhead at 30 blocks is much
+higher. Considering the overhead error and that at 30 blocks
 the workers only use half their core, the total time is substantially the same
 for all block size. This is due to lower block sizes having a lower data transfer time,
 however, it balances out by the resulting increase in overhead.
@@ -803,7 +799,7 @@ overlap more compute and read tasks simultaneously amongst different workers.
 
 In Figure~\ref{fig:histo_np_gantt}, read tasks are initially similar for all
 engines. However, when computation starts the subsequent read tasks are much
-shorter for Delayed. This is due the desynchronization of the task reducing the
+shorter for Delayed. This is due to the desynchronization of the task reducing the
 data transfer bottleneck.
 
 
@@ -837,7 +833,7 @@ data transfer bottleneck.
 %%% BIDS EXAMPLE %%%
 \subsection{BidsApp example: Number of workers}
 Figure~\ref{fig:bids_ms_worker} shows the makespan of the application when
-varying the amount of workers. Overall, there is no substantial difference
+varying the number of workers. Overall, there is no substantial difference
 between the engines. The makespan scales well with the increase in workers,
 however, the scaling reduces slightly when reaching 8 workers. This is due
 to an increase in I/O time caused by parallel accesses to 
@@ -918,12 +914,12 @@ analysis requires the results of the participant analysis to start.
 \subsection{Comparison with previous studies}
 
 Overall, our experiments did not show any substantial performance
-difference between Spark and Dask. In contradiction with the experiments
+difference between Spark and Dask. In contradiction to the experiments
 of~\cite{Mehta:17}, we did not observe consequential overhead differences
 due to serialization or startup costs. This apparent contradiction is most
 likely coming from differences in applications, engine parametrizations, or
 infrastructure characteristics. In our case, potential overhead differences were
-compensated by reverse trends in data transfer time. Since our focus are
+compensated by reverse trends in data transfer time. Since our focus is
 Big Data applications, this leads us to conclude that engines are
 equivalent.
 
@@ -932,7 +928,7 @@ equivalent.
 The observed almost exact compensation between differences in engine
 overheads and in data transfer times (see for instance
 Figure~\ref{fig:inc_tt_worker}) is not surprising. Indeed, when the transfer
-bandwidth is saturated, and in absence of service thrashing,
+bandwidth is saturated, and in the absence of service thrashing,
 desynchronizing file transfers usually does not reduce the makespan of data
 transfers. To take an extreme example, the makespan of $n$ concurrent file
 transfers of size $F$ on a system of bandwidth $B$ would be $nF/B$, as $n$
@@ -1004,8 +1000,8 @@ We studied the engines on three data-intensive neuroimaging applications
 representative of common use cases. Overall, our results show no substantial
 performance difference between the engines. Interestingly, differences in
 engine overheads do not impact performance due to their impact on data
-transfer times: higher overheads are almost exactly compensated by a lower
-transfer times when data transfers saturate the bandwidth. These results
+transfer time: higher overheads are almost exactly compensated by a lower
+transfer time when data transfers saturate the bandwidth. These results
 suggest that future research should focus on strategies to reduce the
 impact of data transfers on applications.
 
