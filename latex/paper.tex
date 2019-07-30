@@ -432,8 +432,8 @@ For each run, we measured the application makespan as well as the cumulative
 data read, compute, data write, and engine overhead times across all application
 tasks. 
 The overhead calculation for each CPU is the end time of its last processed task
-minus the start time of the application. The summation of those results is the
-total overhead. \TG{This last sentence looks wrong to me.}
+minus its runtime. The summation of those results is the
+total overhead.
 
 % The baseline for our experiments is: 8 workers, 125 blocks, 10 iterations and 4
 % seconds sleep delay.
