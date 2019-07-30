@@ -684,7 +684,7 @@ data transfer time but increases the overhead time. Again, this is due to large 
 desynchronizing task thus reducing the NFS bottleneck.
 
 
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/histo_block.png}%
@@ -713,7 +713,7 @@ all the blocks.
 % on the driver process. On the other hand, Bag computes the reduce tasks on 
 % different workers and sends the information to the driver process afterward.
 
-\begin{figure}[!t]
+\begin{figure}[!b]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \href{https://mathdugre.github.io/paper-big-data-engines/spark-histo-baseline.html}{
@@ -750,7 +750,7 @@ Figure~\ref{fig:histo_np_tt_worker} shows the total execution time
 breakdown. The overhead and read time increase proportionally to the number
 of workers thus increasing the total time. 
 
-\begin{figure}[!b]
+\begin{figure}[!t]
     \centering
     \begin{subfigure}[b]{\columnwidth}
         \includegraphics[clip,width=\columnwidth]{images/histo_np_worker.png}%
