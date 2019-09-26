@@ -65,20 +65,20 @@ Dask, Apache Spark, performance, neuroimaging
 
 \section{Introduction}
 % Context
-The recent rise in data sharing and improved data collection strategies
-have brought neuroimaging to the Big Data era~\cite{ALFAROALMAGRO:18,
-van2014human}. Existing neuroimaging workflow engines, such as
-Nipype~\cite{Nipype:11}, are well suited for processing the standard
-compute-intensive neuroimaging pipelines, but lack incorporated Big Data
-strategies (i.e. in-memory computing, data locality, and lazy-evaluation) to
-improve performance of the increasingly prevalent data-intensive pipelines.
-As was noted in~\cite{hayot2019performance}, in-memory computing, coupled
-with data locality, can bring significant performance improvements to data
-intensive neuroimaging pipelines. We extend this work by studying the
+The recent rise in data sharing and improved data collection strategies have brought
+neuroimaging to the Big Data era~\cite{ALFAROALMAGRO:18, van2014human}. Existing
+neuroimaging workflow engines, such as Nipype~\cite{Nipype:11}, are well suited for
+processing the standard compute-intensive neuroimaging pipelines, but lack
+incorporated Big Data strategies (i.e. in-memory computing, data locality, and
+lazy-evaluation) to improve performance of the increasingly prevalent data-intensive
+pipelines. As was noted in~\cite{hayot2019performance}, in-memory computing, coupled
+with data locality, can bring significant performance improvements to data intensive
+neuroimaging pipelines. We are interested in the impact on performance when
+implementing these Big Data strategies in different engines. Our work studies the
 differences between two Big Data engines, Dask~\cite{Dask:15} and Apache
 Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
-pipelines. Our goal is to test whether Spark or Dask has a clear
-performance advantage to process Big neuroimaging Data. 
+pipelines. Our goal is to test whether Spark or Dask has a clear performance
+advantage to process Big neuroimaging Data. 
 
 %Similarities
 Spark and Dask both offer in-memory computing, data locality, and lazy evaluation,
@@ -485,7 +485,7 @@ slightly lower than Dask's, particularly when the number of workers
 increases. Moreover, Delayed and Futures have a higher overhead than Bag.
 However, overhead differences are compensated by an increase in data
 transfer time, as a reduced overhead increases the concurrency between data
-transfers and the application saturates the 10Gbits/s network bandwidth. 
+transfers and the application saturates the disk bandwidth of the shared file system.
 
 \begin{figure}[!b]
     \centering
