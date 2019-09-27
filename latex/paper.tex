@@ -34,7 +34,8 @@
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
-Concordia University, Montr\'eal, Qu\'ebec, Canada 
+Concordia University, Montr\'eal, Qu\'ebec, Canada\\
+\{mathieu.dugre, valerie.hayot-sasson, tristan.glatard\}@concordia.ca
 \vspace*{0.8cm} % to avoid weird spacing of 1st page by Latex.
 }
 
@@ -95,7 +96,7 @@ On the other hand, Python's Global Interpreter Lock (GIL) might reduce
 parallelism in some cases. This difference in programming languages also
 has qualitative implications. As part of the \href{http://scipy.org}{SciPy}
 ecosystem, Dask provides almost transparent parallelization of applications
-manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
+manipulating NumPy arrays or Pandas data frames. On the other hand, Spark's
 Java, R and Python APIs allow to easily parallelize analyses that combine
 these languages, with reduced performance loss. Our study focuses on
 performance, although we recognize that other factors will also impact the
@@ -949,7 +950,16 @@ bandwidths. While network bandwidth can hardly be overcome, disk bandwidth
 can be increased by storing data to multiple disks addressed by a parallel
 file system such a Lustre~\cite{lustre}. Such a configuration would likely
 reduce the impact of data transfers, although the main observed patterns
-should remain. 
+should remain.
+
+Throughout the applications, the use of large data blocks amplified the consequences
+of using an NFS. Moreover, the bandwidth saturation almost neglects the scaling, from
+additional workers, for data-intensive applications: Incrementation and Histogram
+(NumPy). On the other hand, an almost linear scaling shows that it has no substantial
+effect on compute-intensive applications: Histogram (Python) and BIDS app example.
+
+We suppose that using a parallel file system would allow applications to have almost
+linear scaling as long as they do not saturate the bandwidth of the system.
 
 \subsection{Effect of Python's Global Interpreter Lock}
 
@@ -957,7 +967,7 @@ Although Dask reduces the impact of Python's GIL on parallelism by using externa
 Python extensions, our Python histogram experiment (Figure
 ~\ref{fig:histo_worker} and \ref{fig:histo_block}) showed that issues remain in Dask to
 parallelize Python functions. However, Dask was easily able to parallelize
-the same application when implemented with Numpy
+the same application when implemented with NumPy
 (Figure~\ref{fig:histo_np_worker} and \ref{fig:histo_np_block}) because in this case the computation
 happened in C, outside of the GIL. Similarly, the computation in
 command-line applications happens in a sub-process, hence outside of the
