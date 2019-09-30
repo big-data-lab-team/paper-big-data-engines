@@ -74,12 +74,11 @@ incorporated Big Data strategies (i.e. in-memory computing, data locality, and
 lazy-evaluation) to improve performance of the increasingly prevalent data-intensive
 pipelines. As was noted in~\cite{hayot2019performance}, in-memory computing, coupled
 with data locality, can bring significant performance improvements to data intensive
-neuroimaging pipelines. We are interested in the impact on performance when
-implementing these Big Data strategies in different engines. Our work studies the
-differences between two Big Data engines, Dask~\cite{Dask:15} and Apache
-Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
-pipelines. Our goal is to test whether Spark or Dask has a clear performance
-advantage to process Big neuroimaging Data. 
+neuroimaging pipelines. In this work, we investigate how performance benchmarks
+generalize across Big Data engines. In particular, we study the differences between
+Dask~\cite{Dask:15} and Apache Spark~\cite{Spark:16}, for their suitability in the
+processing of neuroimaging pipelines. Our goal is to test whether Spark or Dask has a
+clear performance advantage to process Big neuroimaging Data. 
 
 %Similarities
 Spark and Dask both offer in-memory computing, data locality, and lazy evaluation,
