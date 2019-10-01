@@ -977,9 +977,12 @@ impacted either, as computation was only emulated through sleep time.
 This behavior is also the consequence of our configuration of Dask that
 created 1 worker process with 8 threads. Since the Histogram Python
 implementation does not release the GIL it can only use one of the thread
-at a given time thus it slows down the computation significantly. This
-behavior highlights the need to configure the workers properly depending on
-the type of functions executed in an application.
+at a given time thus it slows down the computation significantly. 
+% This behavior highlights the need to configure the workers properly depending on
+% the type of functions executed in an application. 
+Our results suggest configuring Dask with multi-threaded workers for application
+releasing the GIL and multi-process workers while the default configuration of Spark
+workers brings stable results across different types of applications.
 
 \subsection{Effect of data partitioning}
 
