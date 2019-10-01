@@ -951,11 +951,12 @@ file system such a Lustre~\cite{lustre}. Such a configuration would likely
 reduce the impact of data transfers, although the main observed patterns
 should remain.
 
-Throughout the applications, the use of large data blocks amplified the consequences
-of using an NFS. Moreover, the bandwidth saturation almost neglects the scaling, from
-additional workers, for data-intensive applications: Incrementation and Histogram
-(NumPy). On the other hand, an almost linear scaling shows that it has no substantial
-effect on compute-intensive applications: Histogram (Python) and BIDS app example.
+Throughout the applications and engines, the use of large data blocks amplified the
+consequences of using an NFS. Moreover, the bandwidth saturation almost neglects the
+scaling, from additional workers, for data-intensive applications: Incrementation and
+Histogram (NumPy). On the other hand, an almost linear scaling shows that it has no
+substantial effect on compute-intensive applications: Histogram (Python) and BIDS app
+example.
 
 We suppose that using a parallel file system would allow applications to have almost
 linear scaling as long as they do not saturate the bandwidth of the system.
