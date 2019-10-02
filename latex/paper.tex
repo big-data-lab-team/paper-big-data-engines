@@ -34,7 +34,8 @@
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 Department of Computer Science and Software Engineering\\
-Concordia University, Montr\'eal, Qu\'ebec, Canada 
+Concordia University, Montr\'eal, Qu\'ebec, Canada\\
+\{mathieu.dugre, valerie.hayot-sasson, tristan.glatard\}@concordia.ca
 \vspace*{0.8cm} % to avoid weird spacing of 1st page by Latex.
 }
 
@@ -65,20 +66,19 @@ Dask, Apache Spark, performance, neuroimaging
 
 \section{Introduction}
 % Context
-The recent rise in data sharing and improved data collection strategies
-have brought neuroimaging to the Big Data era~\cite{ALFAROALMAGRO:18,
-van2014human}. Existing neuroimaging workflow engines, such as
-Nipype~\cite{Nipype:11}, are well suited for processing the standard
-compute-intensive neuroimaging pipelines, but lack incorporated Big Data
-strategies (i.e. in-memory computing, data locality, and lazy-evaluation) to
-improve performance of the increasingly prevalent data-intensive pipelines.
-As was noted in~\cite{hayot2019performance}, in-memory computing, coupled
-with data locality, can bring significant performance improvements to data
-intensive neuroimaging pipelines. We extend this work by studying the
-differences between two Big Data engines, Dask~\cite{Dask:15} and Apache
-Spark~\cite{Spark:16}, for their suitability in the processing of neuroimaging
-pipelines. Our goal is to test whether Spark or Dask has a clear
-performance advantage to process Big neuroimaging Data. 
+The recent rise in data sharing and improved data collection strategies have brought
+neuroimaging to the Big Data era~\cite{ALFAROALMAGRO:18, van2014human}. Existing
+neuroimaging workflow engines, such as Nipype~\cite{Nipype:11}, are well suited for
+processing the standard compute-intensive neuroimaging pipelines, but lack
+incorporated Big Data strategies (i.e. in-memory computing, data locality, and
+lazy-evaluation) to improve performance of the increasingly prevalent data-intensive
+pipelines. As was noted in~\cite{hayot2019performance}, in-memory computing, coupled
+with data locality, can bring significant performance improvements to data intensive
+neuroimaging pipelines. In this work, we investigate how performance benchmarks
+generalize across Big Data engines. In particular, we study the differences between
+Dask~\cite{Dask:15} and Apache Spark~\cite{Spark:16}, for their suitability in the
+processing of neuroimaging pipelines. Our goal is to test whether Spark or Dask has a
+clear performance advantage to process Big neuroimaging Data. 
 
 %Similarities
 Spark and Dask both offer in-memory computing, data locality, and lazy evaluation,
@@ -95,7 +95,7 @@ On the other hand, Python's Global Interpreter Lock (GIL) might reduce
 parallelism in some cases. This difference in programming languages also
 has qualitative implications. As part of the \href{http://scipy.org}{SciPy}
 ecosystem, Dask provides almost transparent parallelization of applications
-manipulating Numpy arrays or Pandas data frames. On the other hand, Spark's
+manipulating NumPy arrays or Pandas data frames. On the other hand, Spark's
 Java, R and Python APIs allow to easily parallelize analyses that combine
 these languages, with reduced performance loss. Our study focuses on
 performance, although we recognize that other factors will also impact the
@@ -485,7 +485,7 @@ slightly lower than Dask's, particularly when the number of workers
 increases. Moreover, Delayed and Futures have a higher overhead than Bag.
 However, overhead differences are compensated by an increase in data
 transfer time, as a reduced overhead increases the concurrency between data
-transfers and the application saturates the 10Gbits/s network bandwidth. 
+transfers and the application saturates the disk bandwidth of the shared file system.
 
 \begin{figure}[!b]
     \centering
@@ -665,7 +665,7 @@ this GIL-bounded scenario.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_worker.png}%
         \caption{Histogram (Python) total time}\label{fig:histo_tt_worker}
     \end{subfigure}
-    \caption{125 blocks, 8 CPUs/worker}
+    \caption{125 blocks, 8 CPUs/worker}\label{fig:histo_worker}
 \end{figure}
 
 \subsection{Histogram (Python): Number of blocks}
@@ -695,7 +695,7 @@ desynchronizing task thus reducing the NFS bottleneck.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_block.png}%
         \caption{Histogram (Python) total time}\label{fig:histo_tt_block}
     \end{subfigure}
-    \caption{8 workers, 8 CPUs/worker}
+    \caption{8 workers, 8 CPUs/worker}\label{fig:histo_block}
 \end{figure}
 % \TG{We decided to omit Dask Futures as it does not have any value over Dask
 % Delayed in this application.}
@@ -761,7 +761,7 @@ of workers thus increasing the total time.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_np_worker.png}%
         \caption{Histogram (NumPy) total time}\label{fig:histo_np_tt_worker}
     \end{subfigure}
-    \caption{125 blocks, 8 CPUs/worker}
+    \caption{125 blocks, 8 CPUs/worker}\label{fig:histo_np_worker}
 \end{figure}
 
 \subsection{Histogram (NumPy): Number of blocks}
@@ -787,7 +787,7 @@ however, it balances out by the resulting increase in overhead.
         \includegraphics[clip,width=\columnwidth]{images/histo_idle_np_block.png}%
         \caption{Histogram (NumPy) total time}\label{fig:histo_np_tt_block}
     \end{subfigure}
-    \caption{8 workers, 8 CPUs/worker}
+    \caption{8 workers, 8 CPUs/worker}\label{fig:histo_np_block}
 \end{figure}
 
 \subsection{Histogram (NumPy): Gantt chart}
@@ -949,16 +949,26 @@ bandwidths. While network bandwidth can hardly be overcome, disk bandwidth
 can be increased by storing data to multiple disks addressed by a parallel
 file system such a Lustre~\cite{lustre}. Such a configuration would likely
 reduce the impact of data transfers, although the main observed patterns
-should remain. 
+should remain.
+
+Throughout the applications and engines, the use of large data blocks amplified the
+consequences of using an NFS. Moreover, the bandwidth saturation almost neglects the
+scaling, from additional workers, for data-intensive applications: Incrementation and
+Histogram (NumPy). On the other hand, an almost linear scaling shows that it has no
+substantial effect on compute-intensive applications: Histogram (Python) and BIDS app
+example.
+
+We suppose that using a parallel file system would allow applications to have almost
+linear scaling as long as they do not saturate the bandwidth of the system.
 
 \subsection{Effect of Python's Global Interpreter Lock}
 
 Although Dask reduces the impact of Python's GIL on parallelism by using external
 Python extensions, our Python histogram experiment (Figure
-~\ref{fig:histo_tt_worker}) showed that issues remain in Dask to
+~\ref{fig:histo_worker} and \ref{fig:histo_block}) showed that issues remain in Dask to
 parallelize Python functions. However, Dask was easily able to parallelize
-the same application when implemented with Numpy
-(Figure~\ref{fig:histo_np_tt_worker}) because in this case the computation
+the same application when implemented with NumPy
+(Figure~\ref{fig:histo_np_worker} and \ref{fig:histo_np_block}) because in this case the computation
 happened in C, outside of the GIL. Similarly, the computation in
 command-line applications happens in a sub-process, hence outside of the
 GIL, which explains why the BIDS apps example application was not impacted
@@ -968,9 +978,12 @@ impacted either, as computation was only emulated through sleep time.
 This behavior is also the consequence of our configuration of Dask that
 created 1 worker process with 8 threads. Since the Histogram Python
 implementation does not release the GIL it can only use one of the thread
-at a given time thus it slows down the computation significantly. This
-behavior highlights the need to configure the workers properly depending on
-the type of functions executed in an application.
+at a given time thus it slows down the computation significantly. 
+% This behavior highlights the need to configure the workers properly depending on
+% the type of functions executed in an application. 
+Our results suggest configuring Dask with multi-threaded workers for application
+releasing the GIL and multi-process workers while the default configuration of Spark
+workers brings stable results across different types of applications.
 
 \subsection{Effect of data partitioning}
 
