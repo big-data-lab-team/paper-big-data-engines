@@ -1,3 +1,4 @@
+import glob
 from io import BytesIO
 import os
 import socket
@@ -7,6 +8,8 @@ import threading
 
 import nibabel as nib
 import numpy as np
+
+# TODO  write logs to /tmp to save networking bandwidth.
 
 
 def log(start, end, filename, output_folder, experiment, func_name):
@@ -27,11 +30,11 @@ def log(start, end, filename, output_folder, experiment, func_name):
     func_name : str
         Name of the function benchmarked.
     """
-    benchmark_dir = os.path.join(output_folder, "benchmarks/" + experiment)
+    benchmark_dir = os.path.join(output_folder, "benchmarks", experiment)
     os.makedirs(benchmark_dir, exist_ok=True)
 
     benchmark_file = os.path.join(
-        benchmark_dir, "benchmark-{}-{}.txt".format(experiment, uuid.uuid1())
+        benchmark_dir, "benchmark-{}.log".format(uuid.uuid1())
     )
 
     bn = os.path.basename(filename)
@@ -46,6 +49,19 @@ def log(start, end, filename, output_folder, experiment, func_name):
                 func_name, start, end, bn, node, thread, pid
             )
         )
+
+
+def merge_logs(output_folder, experiment):
+    log_folder = os.path.join(output_folder, "benchmarks", experiment)
+    filenames = glob.glob(log_folder + "/*.log")
+
+    log_summary_file = os.path.join(log_folder, f"summary-{uuid.uuid1()}.log")
+
+    with open(log_summary_file, "a") as fout:
+        for filename in filenames:
+            with open(filename) as fin:
+                fout.write(fin.read())
+            os.remove(filename)
 
 
 def crawl_dir(input_dir):

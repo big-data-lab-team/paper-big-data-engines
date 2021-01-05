@@ -12,7 +12,7 @@ from ..commons.histogram import (
     flatten,
     save_histogram,
 )
-from ..utils import load
+from ..utils import load, merge_logs
 
 
 def run(
@@ -74,3 +74,7 @@ def run(
     )
 
     client.close()
+    merge_logs(
+        output_folder=output_folder,
+        experiment=experiment,
+    )

@@ -7,7 +7,7 @@ import dask
 from dask.distributed import Client
 
 from ..commons.increment import increment, dump
-from ..utils import load
+from ..utils import load, merge_logs
 
 
 def run(
@@ -21,16 +21,19 @@ def run(
 ) -> None:
     experiment = f"dask:increment:{iterations=}:{delay=}"
     start_time = time.time()
+    common_args = {
+        "benchmark": benchmark,
+        "start": start_time,
+        "output_folder": output_folder,
+        "experiment": experiment,
+    }
 
     client = Client(scheduler)
 
     blocks = [
         dask.delayed(load)(
             filename,
-            benchmark=benchmark,
-            start=start_time,
-            output_folder=output_folder,
-            experiment=experiment,
+            **common_args,
         )
         for filename in glob.glob(input_folder + "/*.nii")
     ]
@@ -40,20 +43,13 @@ def run(
         for _ in range(iterations):
             block = dask.delayed(increment)(
                 block,
-                delay=delay,
-                benchmark=benchmark,
-                start=start_time,
-                output_folder=output_folder,
-                experiment=experiment,
+                **common_args,
             )
 
         results.append(
             dask.delayed(dump)(
                 block,
-                benchmark=benchmark,
-                start=start_time,
-                output_folder=output_folder,
-                experiment=experiment,
+                **common_args,
             )
         )
 
@@ -61,3 +57,7 @@ def run(
     client.gather(futures)
 
     client.close()
+    merge_logs(
+        output_folder=output_folder,
+        experiment=experiment,
+    )
