@@ -59,7 +59,7 @@ def increment(ctx, iterations, delay):
 @click.argument("delay", type=int)
 @click.pass_context
 def multi_increment(ctx, iterations, delay):
-    run = import_from(f"app.{ctx.obj['ENGINE']}.increment", "run")
+    run = import_from(f"app.{ctx.obj['ENGINE']}.multi_increment", "run")
 
     run(
         input_folder=ctx.obj["INPUT_FOLDER"],
@@ -73,8 +73,8 @@ def multi_increment(ctx, iterations, delay):
 
 @cli.command()
 @click.pass_context
-def histogram():
-    run = import_from(f"app.{ctx.obj['ENGINE']}.increment", "run")
+def histogram(ctx):
+    run = import_from(f"app.{ctx.obj['ENGINE']}.histogram", "run")
 
     run(
         input_folder=ctx.obj["INPUT_FOLDER"],
@@ -86,8 +86,8 @@ def histogram():
 
 @cli.command()
 @click.pass_context
-def kmeans():
-    run = import_from(f"app.{ctx.obj['ENGINE']}.increment", "run")
+def kmeans(ctx):
+    run = import_from(f"app.{ctx.obj['ENGINE']}.kmeans", "run")
 
     run(
         input_folder=ctx.obj["INPUT_FOLDER"],
@@ -99,8 +99,8 @@ def kmeans():
 
 @cli.command()
 @click.pass_context
-def bids_app():
-    run = import_from(f"app.{ctx.obj['ENGINE']}.increment", "run")
+def bids_app(ctx):
+    run = import_from(f"app.{ctx.obj['ENGINE']}.bids_app", "run")
 
     run(
         input_folder=ctx.obj["INPUT_FOLDER"],
