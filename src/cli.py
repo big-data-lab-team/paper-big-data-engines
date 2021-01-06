@@ -98,13 +98,17 @@ def kmeans(ctx):
 
 
 @cli.command()
+@click.argument(
+    "container", type=click.Path(exists=True, file_okay=True, readable=True)
+)
 @click.pass_context
-def bids_app(ctx):
-    run = import_from(f"app.{ctx.obj['ENGINE']}.bids_app", "run")
+def bids_app(ctx, container):
+    run = import_from(f"app.{ctx.obj['ENGINE']}.bids", "run")
 
     run(
         input_folder=ctx.obj["INPUT_FOLDER"],
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         benchmark=ctx.obj["BENCHMARK"],
+        container_path=container,
     )
