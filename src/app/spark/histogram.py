@@ -32,7 +32,6 @@ def run(
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
-    print(sc)
 
     filenames = glob.glob(input_folder + "/*.nii")
     paths = sc.parallelize(filenames, len(filenames))
@@ -50,7 +49,6 @@ def run(
     )
 
     save_histogram(histogram, **common_args)
-
     merge_logs(
         output_folder=output_folder,
         experiment=experiment,

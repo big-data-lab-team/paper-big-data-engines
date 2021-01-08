@@ -4,7 +4,7 @@ import time
 
 from pyspark import SparkConf, SparkContext
 
-from ..commons.increment import increment, dump
+from ..commons.bids import run_group, run_participant, site_crawler, subject_crawler
 from ..utils import load, merge_logs
 
 
@@ -13,32 +13,30 @@ def run(
     output_folder: str,
     scheduler: str,
     benchmark: bool,
-    *,
-    iterations: int,
-    delay: int,
+    container_path: str,
 ) -> None:
-    experiment = f"spark:increment:iterations={iterations}:delay={delay}"
+    experiment = f"spark:bids"
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,
         "start": start_time,
+        "input_folder": input_folder,
         "output_folder": output_folder,
         "experiment": experiment,
+        "container_path": container_path,
     }
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
 
-    filenames = glob.glob(input_folder + "/*.nii")
-    paths = sc.parallelize(filenames, len(filenames))
-    img_rdd = paths.map(lambda p: load(p, **common_args))
+    subjects_to_analyze = sc.parallelize(subject_crawler(input_folder), 512)
 
-    for _ in range(iterations):
-        img_rdd = img_rdd.map(lambda x: increment(x, delay=delay, **common_args))
+    subjects_to_analyze.map(
+        lambda x: run_participant(subject_id=x[1], site=x[0], **common_args)
+    ).collect()
 
-    img_rdd = img_rdd.map(lambda x: dump(x, **common_args))
-
-    img_rdd.collect()
+    sites = sc.parallelize(site_crawler(input_folder), 512)
+    sites.map(lambda x: run_group(site=x, **common_args)).collect()
     merge_logs(
         output_folder=output_folder,
         experiment=experiment,
