@@ -1,6 +1,5 @@
 import glob
 import os
-import pathlib
 import time
 
 import dask

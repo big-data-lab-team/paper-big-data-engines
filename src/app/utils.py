@@ -55,7 +55,7 @@ def merge_logs(output_folder, experiment):
     log_folder = os.path.join(output_folder, "benchmarks", experiment)
     filenames = glob.glob(log_folder + "/*.log")
 
-    log_summary_file = os.path.join(log_folder, f"summary-{uuid.uuid1()}.log")
+    log_summary_file = os.path.join(log_folder, f"summary-{uuid.uuid1()}.csv")
 
     with open(log_summary_file, "a") as fout:
         for filename in filenames:

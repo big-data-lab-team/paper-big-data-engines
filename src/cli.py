@@ -55,10 +55,11 @@ def increment(ctx, iterations, delay):
 
 
 @cli.command()
+@click.option("-r", "--random-seed", type=int, default=1234)
 @click.argument("iterations", type=int)
 @click.argument("delay", type=int)
 @click.pass_context
-def multi_increment(ctx, iterations, delay):
+def multi_increment(ctx, random_seed, iterations, delay):
     run = import_from(f"app.{ctx.obj['ENGINE']}.multi_increment", "run")
 
     run(
@@ -68,6 +69,7 @@ def multi_increment(ctx, iterations, delay):
         benchmark=ctx.obj["BENCHMARK"],
         iterations=iterations,
         delay=delay,
+        seed=random_seed,
     )
 
 
@@ -112,3 +114,7 @@ def bids_app(ctx, container):
         benchmark=ctx.obj["BENCHMARK"],
         container_path=container,
     )
+
+
+if __name__ == "__main__":
+    cli()

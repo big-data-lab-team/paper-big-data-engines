@@ -1,5 +1,6 @@
 import glob
 import os
+import random
 import time
 
 import dask
@@ -17,8 +18,11 @@ def run(
     *,
     iterations: int,
     delay: int,
+    seed: int = 1234,
 ) -> None:
-    experiment = f"dask:increment:iterations={iterations}:delay={delay}"
+    experiment = (
+        f"dask:multi-increment:iterations={iterations}:delay={delay}:seed{seed}"
+    )
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,
@@ -38,11 +42,13 @@ def run(
     ]
 
     results = []
+    random.seed(seed)
     for block in blocks:
         for _ in range(iterations):
             block = dask.delayed(increment)(
                 block,
                 delay=delay,
+                increment_data=random.choice(blocks)[1],
                 **common_args,
             )
 

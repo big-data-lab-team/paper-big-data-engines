@@ -25,7 +25,7 @@ def increment(
     metadata = data[2]
 
     filename_log = filename
-    if increment_data != 1:
+    if not isinstance(increment_data, int):
         filename_log = f"{filename}:{increment_data[0]}"
         increment_content = increment_data[1]
 
