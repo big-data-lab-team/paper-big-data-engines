@@ -29,9 +29,10 @@ def run(
     sc = SparkContext.getOrCreate(conf=conf)
 
     filenames = glob.glob(input_folder + "/*.nii")
-    paths = sc.parallelize(filenames, len(filenames))
+    paths = sc.parallelize(filenames)
     blocks = paths.map(lambda p: load(p, **common_args))
     voxels = blocks.flatMap(lambda block: block[1].flatten("F"))
+    # voxels = voxels.repartition(voxels.count() // 16_000_000)
 
     # Pick random initial centroids
     # TODO benchmark
@@ -43,16 +44,15 @@ def run(
         num=3,
     )
     # centroids = voxels.takeSample(False, 3)
-    print(centroids)
 
     for _ in range(0, iterations):  # Disregard convergence.
+
         start = time.time() - start_time
-
         centroid_index = voxels.mapPartitions(
-            lambda chunk: closest_centroids(np.fromiter(chunk, np.float64), centroids)
+            lambda chunk: closest_centroids(
+                np.fromiter(chunk, np.float64), centroids, **common_args
+            )
         )
-
-        print(f"calculated closest centroid in: {start - time.time()} seconds")
 
         # Reference: https://stackoverflow.com/a/29930162/11337357
         centroids = np.array(
@@ -69,7 +69,12 @@ def run(
             .values()
             .collect()
         )
-
+        # centroids = np.array(
+        #     [
+        #         centroid_index.zip(voxels).filter(lambda x: x[0] == c).mean()
+        #         for c in centroids
+        #     ]
+        # )
         print(f"{centroids=}")
 
         end_time = time.time() - start
@@ -78,13 +83,13 @@ def run(
             log(
                 start,
                 end_time,
-                "all_file",
+                "all",
                 output_folder,
                 experiment,
                 "update_centroids",
             )
 
-    blocks.map(lambda block: classify_block(block, centroids)).map(
+    blocks.map(lambda block: classify_block(block, centroids, **common_args)).map(
         lambda block: dump(
             block,
             **common_args,

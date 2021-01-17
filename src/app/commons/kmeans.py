@@ -8,25 +8,7 @@ import numexpr as ne
 from ..utils import log
 
 
-def eucledian_distance(arr: np.array, c: float):
-    """Returns the eucledian distance between x and y.
-
-    Parameters
-    ----------
-    arr : float
-        1-D array of voxel
-    c : float
-        centroid
-
-    Returns
-    -------
-        The Eucledian distance between x and y.
-    """
-    # TODO benchmark
-    return np.linalg.norm(arr[:, None] - c, axis=-1)
-
-
-def closest_centroids(x, centroids):
+def closest_centroids(x, centroids, *, benchmark, start, output_folder, experiment):
     """Returns the index of the closest centroids.
 
     Parameters
@@ -40,19 +22,46 @@ def closest_centroids(x, centroids):
     -------
     closest_centroid : T
     """
-    # TODO benchmark
+    start_time = time.time() - start
 
-    dist = np.array([eucledian_distance(x, c) for c in centroids])
-    return dist.T.argmin(1)
+    dist = np.array([np.linalg.norm(x[:, None] - c, axis=-1) for c in centroids])
+    rv = dist.T.argmin(1)
+
+    end_time = time.time() - start
+
+    if benchmark:
+        log(
+            start_time,
+            end_time,
+            "all",
+            output_folder,
+            experiment,
+            closest_centroids.__name__,
+        )
+
+    return rv
 
 
-def classify_block(block, centroids):
+def classify_block(block, centroids, *, benchmark, start, output_folder, experiment):
+    start_time = time.time() - start
+
     filename = block[0]
     img = block[1]
     metadata = block[2]
 
     img = np.array([np.absolute(img - centroid) for centroid in centroids]).argmin(0)
-    # TODO benchmark
+
+    end_time = time.time() - start
+
+    if benchmark:
+        log(
+            start_time,
+            end_time,
+            filename,
+            output_folder,
+            experiment,
+            classify_block.__name__,
+        )
 
     return filename, img, metadata
 
@@ -84,9 +93,9 @@ def dump(img_rdd, *, benchmark, start, output_folder, experiment):
     img = img_rdd[1]
     metadata = img_rdd[2]
 
-    # save classified image
     bn = os.path.basename(filename)
     f_out = os.path.join(output_folder, f"classified-{bn}")
+
     classified_img = nib.Nifti1Image(img, metadata[0], header=metadata[1])
     nib.save(classified_img, f_out)
 

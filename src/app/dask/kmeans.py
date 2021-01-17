@@ -3,9 +3,7 @@ import time
 
 import dask
 import dask.array as da
-import dask.bag as db
 from dask.distributed import Client
-import nibabel as nib
 import numpy as np
 
 from ..commons.kmeans import classify_block, closest_centroids, dump
@@ -53,18 +51,19 @@ def run(
 
     # Pick random initial centroids
     # TODO benchmark
-    centroids = da.random.choice(
-        da.unique(voxels).compute(), size=3, replace=False
-    ).compute()
+    centroids = np.linspace(
+        da.min(voxels).compute(),
+        da.max(voxels).compute(),
+        num=3,
+    )
 
     for _ in range(0, iterations):  # Disregard convergence.
         start = time.time() - start_time
 
         centroid_index = voxels.map_blocks(
-            lambda block: closest_centroids(block, centroids)
+            lambda block: closest_centroids(block, centroids, **common_args)
         )
 
-        # Find centroid (total, count) => total/count = centroid
         centroids = np.array(
             [da.mean(voxels[centroid_index == i]) for i in range(len(centroids))]
         )
@@ -76,7 +75,7 @@ def run(
             log(
                 start,
                 end_time,
-                "all_file",
+                "all",
                 output_folder,
                 experiment,
                 "update_centroids",
@@ -84,7 +83,7 @@ def run(
 
     results = []
     for block in blocks:
-        block = dask.delayed(classify_block)(block, centroids)
+        block = dask.delayed(classify_block)(block, centroids, **common_args)
         results.append(
             dask.delayed(dump)(
                 block,
