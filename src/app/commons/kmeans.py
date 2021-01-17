@@ -42,8 +42,8 @@ def closest_centroids(x, centroids):
     """
     # TODO benchmark
 
-    dist = np.matrix([eucledian_distance(x, c) for c in centroids])
-    return np.squeeze(np.asarray(dist.T.argmin(1)))
+    dist = np.array([eucledian_distance(x, c) for c in centroids])
+    return dist.T.argmin(1)
 
 
 def classify_block(block, centroids):
@@ -55,36 +55,6 @@ def classify_block(block, centroids):
     # TODO benchmark
 
     return filename, img, metadata
-
-
-def add_component_wise(total, x):
-    """Binary operator to reduce
-
-    Parameters
-    ----------
-    total : (float, int)
-        Total value of the combination and number of element combined to obtain it.
-    x : int, (float, int)
-        Total value of the combination and number of element combined to obtain it.
-    """
-    return total[0] + x[0], (total[1][0] + x[1][0], total[1][1] + x[1][1])
-
-
-def get_voxels(voxels):
-    """Return the list of voxels for the NiftiImage.
-
-    Parameters
-    ----------
-    voxels : 2D np.array
-        Voxels from the nifti image.
-
-    Returns
-    -------
-    np.array
-        The list of voxels for the NiftiImage.
-    """
-
-    return voxels.flatten("F")
 
 
 def dump(img_rdd, *, benchmark, start, output_folder, experiment):
