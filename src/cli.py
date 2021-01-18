@@ -87,8 +87,9 @@ def histogram(ctx):
 
 
 @cli.command()
+@click.argument("iterations", type=int)
 @click.pass_context
-def kmeans(ctx):
+def kmeans(ctx, iterations):
     run = import_from(f"app.{ctx.obj['ENGINE']}.kmeans", "run")
 
     run(
@@ -96,6 +97,7 @@ def kmeans(ctx):
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         benchmark=ctx.obj["BENCHMARK"],
+        iterations=iterations,
     )
 
 
