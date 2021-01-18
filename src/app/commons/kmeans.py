@@ -3,7 +3,6 @@ import time
 
 import nibabel as nib
 import numpy as np
-import numexpr as ne
 
 from ..utils import log
 
@@ -24,8 +23,7 @@ def closest_centroids(x, centroids, *, benchmark, start, output_folder, experime
     """
     start_time = time.time() - start
 
-    dist = np.array([np.linalg.norm(x[:, None] - c, axis=-1) for c in centroids])
-    rv = dist.T.argmin(1)
+    rv = np.argmin([np.absolute(x - c) for c in centroids], axis=0)
 
     end_time = time.time() - start
 
@@ -49,7 +47,7 @@ def classify_block(block, centroids, *, benchmark, start, output_folder, experim
     img = block[1]
     metadata = block[2]
 
-    img = np.array([np.absolute(img - centroid) for centroid in centroids]).argmin(0)
+    img = np.argmin([np.absolute(img - centroid) for centroid in centroids], axis=0)
 
     end_time = time.time() - start
 

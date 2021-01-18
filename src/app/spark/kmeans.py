@@ -30,33 +30,26 @@ def run(
 
     filenames = glob.glob(input_folder + "/*.nii")
     paths = sc.parallelize(filenames)
-    blocks = paths.map(lambda p: load(p, **common_args))
-    voxels = blocks.flatMap(lambda block: block[1].flatten("F"))
-    # voxels = voxels.repartition(voxels.count() // 16_000_000)
+    blocks = paths.map(lambda p: load(p, **common_args))  # Might want to cache it.
+    voxels = (
+        blocks.flatMap(lambda block: block[1])
+        .flatMap(lambda block: block[1].flatten())
+        .cache()
+    )
 
     # Pick random initial centroids
     # TODO benchmark
     centroids = np.linspace(
-        0,
-        2 ** 16,
-        # voxels.min().collect(),
-        # voxels.max().collect(),
+        voxels.min(),
+        voxels.max(),
         num=3,
     )
-    # centroids = voxels.takeSample(False, 3)
 
     for _ in range(0, iterations):  # Disregard convergence.
-
         start = time.time() - start_time
-        centroid_index = voxels.mapPartitions(
-            lambda chunk: closest_centroids(
-                np.fromiter(chunk, np.float64), centroids, **common_args
-            )
-        )
 
-        # Reference: https://stackoverflow.com/a/29930162/11337357
         centroids = np.array(
-            centroid_index.zip(voxels)
+            voxels.map(lambda x: (np.argmin([abs(x - c) for c in centroids]), x))
             .aggregateByKey(
                 (0, 0),
                 lambda x, y: (
@@ -69,15 +62,10 @@ def run(
             .values()
             .collect()
         )
-        # centroids = np.array(
-        #     [
-        #         centroid_index.zip(voxels).filter(lambda x: x[0] == c).mean()
-        #         for c in centroids
-        #     ]
-        # )
+
         print(f"{centroids=}")
 
-        end_time = time.time() - start
+        end_time = time.time() - start_time
 
         if benchmark:
             log(
