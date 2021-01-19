@@ -3,6 +3,7 @@ import time
 
 import dask
 from dask.distributed import Client
+from dask_jobqueue import SLURMCluster
 
 from ..commons.increment import increment, dump
 from ..utils import load, merge_logs
@@ -12,6 +13,7 @@ def run(
     input_folder: str,
     output_folder: str,
     scheduler: str,
+    n_workers: int,
     benchmark: bool,
     *,
     iterations: int,
@@ -26,7 +28,12 @@ def run(
         "experiment": experiment,
     }
 
-    client = Client(scheduler)
+    if scheduler.lower() == "slurm":
+        cluster = SLURMCluster()
+        client = Client(cluster)
+        cluster.scale(n_workers)
+    else:
+        client = Client(scheduler)
 
     blocks = [
         dask.delayed(load)(

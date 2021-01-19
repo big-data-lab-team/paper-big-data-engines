@@ -4,6 +4,7 @@ import time
 import dask
 import dask.array as da
 from dask.distributed import Client
+from dask_jobqueue import SLURMCluster
 
 import numpy as np
 
@@ -15,6 +16,7 @@ def run(
     input_folder: str,
     output_folder: str,
     scheduler: str,
+    n_workers: int,
     benchmark: bool,
     *,
     iterations,
@@ -28,7 +30,12 @@ def run(
         "experiment": experiment,
     }
 
-    client = Client(scheduler)
+    if scheduler.lower() == "slurm":
+        cluster = SLURMCluster()
+        client = Client(cluster)
+        cluster.scale(n_workers)
+    else:
+        client = Client(scheduler)
 
     blocks = [
         dask.delayed(load)(

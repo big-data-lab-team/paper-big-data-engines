@@ -24,14 +24,16 @@ def import_from(module, name):
     type=click.Path(exists=True, dir_okay=True, writable=True),
 )
 @click.option("-s", "--scheduler", required=True)
+@click.option("-n", "--n-worker", type=int, required=False)
 @click.option("--benchmark", is_flag=True)
 @engine_choices
 @click.pass_context
-def cli(ctx, input_folder, output_folder, scheduler, benchmark, engine):
+def cli(ctx, input_folder, output_folder, scheduler, n_worker, benchmark, engine):
     ctx.ensure_object(dict)
 
     ctx.obj["INPUT_FOLDER"] = os.path.abspath(input_folder)
     ctx.obj["OUTPUT_FOLDER"] = os.path.abspath(output_folder)
+    ctx.obj["N_WORKER"] = n_worker
     ctx.obj["BENCHMARK"] = benchmark
     ctx.obj["SCHEDULER"] = scheduler
     ctx.obj["ENGINE"] = engine
@@ -48,6 +50,7 @@ def increment(ctx, iterations, delay):
         input_folder=ctx.obj["INPUT_FOLDER"],
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
+        n_worker=ctx.obj["N_WORKER"],
         benchmark=ctx.obj["BENCHMARK"],
         iterations=iterations,
         delay=delay,
@@ -66,6 +69,7 @@ def multi_increment(ctx, random_seed, iterations, delay):
         input_folder=ctx.obj["INPUT_FOLDER"],
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
+        n_worker=ctx.obj["N_WORKER"],
         benchmark=ctx.obj["BENCHMARK"],
         iterations=iterations,
         delay=delay,
@@ -82,6 +86,7 @@ def histogram(ctx):
         input_folder=ctx.obj["INPUT_FOLDER"],
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
+        n_worker=ctx.obj["N_WORKER"],
         benchmark=ctx.obj["BENCHMARK"],
     )
 
@@ -96,6 +101,7 @@ def kmeans(ctx, iterations):
         input_folder=ctx.obj["INPUT_FOLDER"],
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
+        n_worker=ctx.obj["N_WORKER"],
         benchmark=ctx.obj["BENCHMARK"],
         iterations=iterations,
     )
@@ -113,6 +119,7 @@ def bids_app(ctx, container):
         input_folder=ctx.obj["INPUT_FOLDER"],
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
+        n_worker=ctx.obj["N_WORKER"],
         benchmark=ctx.obj["BENCHMARK"],
         container_path=container,
     )

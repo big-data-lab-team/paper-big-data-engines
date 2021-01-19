@@ -4,6 +4,7 @@ import time
 
 import dask
 from dask.distributed import Client
+from dask_jobqueue import SLURMCluster
 
 from ..commons.histogram import (
     calculate_histogram,
@@ -18,6 +19,7 @@ def run(
     input_folder: str,
     output_folder: str,
     scheduler: str,
+    n_workers: int,
     benchmark: bool,
 ) -> None:
     experiment = f"dask:histogram"
@@ -29,7 +31,12 @@ def run(
         "experiment": experiment,
     }
 
-    client = Client(scheduler)
+    if scheduler.lower() == "slurm":
+        cluster = SLURMCluster()
+        client = Client(cluster)
+        cluster.scale(n_workers)
+    else:
+        client = Client(scheduler)
 
     blocks = [
         dask.delayed(load)(

@@ -12,6 +12,7 @@ def run(
     input_folder: str,
     output_folder: str,
     scheduler: str,
+    n_workers: int,
     benchmark: bool,
     *,
     iterations: int,
