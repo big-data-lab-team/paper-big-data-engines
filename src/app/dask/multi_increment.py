@@ -1,5 +1,4 @@
 import glob
-import os
 import random
 import time
 
@@ -21,7 +20,7 @@ def run(
     seed: int = 1234,
 ) -> None:
     experiment = (
-        f"dask:multi-increment:iterations={iterations}:delay={delay}:seed{seed}"
+        f"dask:multi-increment:iterations={iterations}:delay={delay}:seed={seed}"
     )
     start_time = time.time()
     common_args = {
