@@ -1,6 +1,5 @@
 from functools import reduce
 import glob
-import os
 import time
 
 import dask

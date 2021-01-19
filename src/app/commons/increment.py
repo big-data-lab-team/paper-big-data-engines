@@ -23,6 +23,7 @@ def increment(
     filename = data[0]
     content = data[1]
     metadata = data[2]
+    del data
 
     filename_log = filename
     if not isinstance(increment_data, int):

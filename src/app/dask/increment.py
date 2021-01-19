@@ -1,5 +1,4 @@
 import glob
-import os
 import time
 
 import dask

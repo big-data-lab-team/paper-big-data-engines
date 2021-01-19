@@ -1,4 +1,3 @@
-from collections import defaultdict
 import os
 from time import time
 
@@ -10,7 +9,7 @@ from ..utils import log
 def flatten(arr, *, benchmark, start, output_folder, experiment, filename):
     start_time = time() - start
 
-    arr = arr.flatten("F")
+    arr = arr.flatten()
 
     end_time = time() - start
 
