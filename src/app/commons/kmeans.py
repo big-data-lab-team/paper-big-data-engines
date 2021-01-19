@@ -47,7 +47,7 @@ def classify_block(block, centroids, *, benchmark, start, output_folder, experim
     img = block[1]
     metadata = block[2]
 
-    img = np.argmin([np.absolute(img - centroid) for centroid in centroids], axis=0)
+    img = np.argmin(np.fabs(np.subtract.outer(img, centroids)), axis=0)
 
     end_time = time.time() - start
 

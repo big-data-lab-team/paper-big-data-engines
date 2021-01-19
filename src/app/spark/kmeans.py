@@ -4,7 +4,7 @@ import time
 from pyspark import SparkConf, SparkContext
 import numpy as np
 
-from ..commons.kmeans import classify_block, closest_centroids, dump
+from ..commons.kmeans import classify_block, dump
 from ..utils import load, log, merge_logs
 
 
@@ -28,8 +28,7 @@ def run(
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
 
-    filenames = glob.glob(input_folder + "/*.nii")
-    paths = sc.parallelize(filenames)
+    paths = sc.parallelize(glob.glob(input_folder + "/*.nii"))
     blocks = paths.map(lambda p: load(p, **common_args))  # Might want to cache it.
     voxels = (
         blocks.flatMap(lambda block: block[1])
