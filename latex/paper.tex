@@ -26,7 +26,7 @@
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+  T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \begin{document}
 
@@ -62,7 +62,7 @@ Data locality, popularized by Map-Reduce \cite{dean2008mapreduce}, schedules tas
 In-memory computing minimize the overhead of transfering data to disk by keeping data in memory when possible.
 Dask uses lazy evalutation to reduce unnecessary communication and computation.
 The engine builds a dynamic graph prior to execution allowing to determine which task to compute.
-Dask workflows can further reduce data transfer by using  leveraging mulithreading whenever the application is not bounded by Python's GIL.
+Dask workflows can further reduce data transfer by using leveraging mulithreading whenever the application is not bounded by Python's GIL.
 Fault-tolerance is achieved by recording of data lineage, the sequence of operations used on to modify the initial data.
 
 Dask offers five data structures:
@@ -115,8 +115,19 @@ We chose to focus on PySpark API to have a more balance environment between the 
 
 \section{Methods}
 \subsection{Infrastructure} % TODO
-\subsection{Dataset} % TODO
 
+
+\subsection{Dataset}
+We used BigBrain\cite{Amunts:13}, a 3-D image of the human brain with voxel intensity ranging between 0 and 65,535.
+We converted the blocks into the NIfTI format, a popular format in neuroimaging.
+We left the NIfTI blocks uncompressed, resulting in a total data size of \SI{00}{\giga\byte}\MD{Verify the size of the dataset when Lustre back on}.
+To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of \MD{size for each block segment}, using the \href{https://github.com/big-data-lab-team/sam}{sam} library.
+	
+We also used the dataset provided by the Consortium for Reliability and Reproducibility (\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR}) \cite{zuo2014open}.
+This dataset is freely available on \href{https://datasets.datalad.org/?dir=/corr/RawDataBIDS}{datalad}.
+The entire dataset is \SI{408.4}{\giga\byte}, containing anatomical, diffusion and functional images of 1,397 subjects acquiredin 29 sites.
+We used all 3,491 anatomical images, representing \SI{39}{\giga\byte} overall (\SI{11.17}{\mega\byte} per image on average).
+	
 \subsection{Applications}
 \subsubsection{Increment}
 We adapted the increment pipeline used in \cite{hayot2019performance}.
@@ -127,13 +138,13 @@ Finally, we write the resulting NIfTI image back to Lustre.
 This application allows us to study the engines when their inputs are processed independently.
 The map-only scenario of this application mimics the processing of multiple independent subjects in parallel.
 \MD{TODO: Add the Figure for the application graph.}
-
+	
 \subsubsection{Multi-Increment}
 Our second application is a revision of the increment pipeline.
 A significant difference is that, at each iteration, it uses a random BigBrain block as the increment value. 
 This change allows the multi-increment application to have inter-worker communication while remaining simplistic.
 \MD{TODO: Add the Figure for the application graph.}
-
+	
 \subsubsection{Histogram}
 As our third application, we calculate the histogram of the BigBrain image. 
 It reads the BigBrain blocks from Lustre, calculates each intensity's frequency, and then writes the aggregated result back on Lustre.
@@ -141,7 +152,7 @@ This map-reduce application has a very high read overwrite ratio.
 Moreover, this application requires data shuffling, although little. 
 The amount of inter-worker communication is in-between the increment and multi-increment pipelines.
 \MD{TODO: Add the Figure for the application graph.}
-
+	
 \subsubsection{Kmeans} % TODO
 For our fourth application, we use Kmeans to cluster the BigBrain image by voxel intensity.
 We set the number of clusters to 3 to segment the white and grey matter and the noise.
@@ -150,12 +161,12 @@ It assigns each voxel to the centroids it is the closest and updates each centro
 It repeats the assignment and update steps for a configurable amount of time. 
 Finally, the voxels of the image blocks are classified and write back on the file system.
 Updating the centroids involves a lot of data communication between the worker.
-
+	
 Spark and Dask's implementation differs slightly for this application to take advantage of the" most suited" API from both engines.
 Spark implementation uses the Map-Reduce paradigm, while Dask implementation uses array programming.
 \MD{TODO: Add the Figure for the application graph.}
-
-
+	
+	
 \subsubsection{BIDS app example}
 Our last application is BIDS App example: a neuroimaging pipeline to extract brain volume.
 For this application, we use the CoRR dataset.
@@ -165,19 +176,19 @@ We converted the Docker image to a Singularity image for use in HPC environments
 using \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
 \MD{Need to discuss if we preload the image on the worker nodes.}
 \MD{TODO: Add the Figure for the application graph.}
-
+	
 \subsection{Experiments} % TODO
-
+	
 \section{Results} % TODO
-
+	
 \section{Discussion} % TODO
-
+	
 \section{Conclusion} % TODO
-
+	
 \section*{Acknowledgment} % TODO
-
-
+	
+	
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,reference}
-
+	
 \end{document}
