@@ -65,9 +65,14 @@ The engine builds a dynamic graph prior to execution allowing to determine which
 Dask workflows can further reduce data transfer by using  leveraging mulithreading whenever the application is not bounded by Python's GIL.
 Fault-tolerance is achieved by recording of data lineage, the sequence of operations used on to modify the initial data.
 
-Dask offers five data structures: Array, Bag, DataFrame, Delayed, and Futures. \MD{Insert link to the API.}
+Dask offers five data structures:
+\href{https://docs.dask.org/en/latest/array.html}{Array},
+\href{https://docs.dask.org/en/latest/bag.html}{Bag},
+\href{https://docs.dask.org/en/latest/dataframe.html}{DataFrame},
+\href{https://docs.dask.org/en/latest/delayed.html}{Delayed},
+and \href{https://docs.dask.org/en/latest/futures.html}{Futures}.
 The Dask Array offers a clone of NumPy API for distributed processing of large arrays.
-A Dask Bag is a distributed collection of Python object that offers a programming abstraction similar to PyToolz. \MD{Link to PyToolz.}
+A Dask Bag is a distributed collection of Python object that offers a programming abstraction similar to \href{https://toolz.readthedocs.io/en/latest/}{PyToolz}.
 Dask Dataframe is a parallel composition of Pandas Dataframes used to process large amount of tabular data.
 Dask Delayed offers an API for distributing abrirtary function that do not fit in the above frameworks.
 Lastly, Dask Futures can also execute abrirtary functions, however, it launch computation immediately rather than lazily.
@@ -105,7 +110,7 @@ While the DataFrame API is available in all supported language, DAtasets are lim
 
 Python is a common programming language in the scientific community.
 This is particulary true in the neuroimaging field with numerous specialized Python libraries to operate on data.
-While serialization from Python to Java create overhead, we found it to be minimal. \MD{cite SC19 paper.}
+While serialization from Python to Java create overhead, we found it to be minimal \cite{8943502}.
 We chose to focus on PySpark API to have a more balance environment between the different engines and due to its suitability to neuroimaging.
 
 \section{Methods}
