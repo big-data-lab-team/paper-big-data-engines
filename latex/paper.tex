@@ -57,13 +57,13 @@
 
 \subsection{Dask}
 Dask is a Python-based Big Data engine with growing popularity in the scientific Python ecosystem.
-To mitigate the data transfer bottleneck in Big Data workflows, Dask was designed with data locality and in-memory in mind.
+Dask was designed with data locality and in-memory in mind to mitigate the data transfer bottleneck in Big Data workflows.
 Data locality, popularized by Map-Reduce \cite{dean2008mapreduce}, schedules tasks where the data reside.
-In-memory computing minimize the overhead of transfering data to disk by keeping data in memory when possible.
-Dask uses lazy evalutation to reduce unnecessary communication and computation.
-The engine builds a dynamic graph prior to execution allowing to determine which task to compute.
-Dask workflows can further reduce data transfer by using leveraging mulithreading whenever the application is not bounded by Python's GIL.
-Fault-tolerance is achieved by recording of data lineage, the sequence of operations used on to modify the initial data.
+In-memory computing minimizes the overhead of transferring data to disk by keeping data in memory when possible.
+Dask uses lazy evaluation to reduce unnecessary communication and computation.
+The engine builds a dynamic graph before execution, allowing it to determine which task to compute.
+Dask workflows can further reduce data transfer by leveraging multithreading whenever Python's GIL does not restrict it.
+Fault-tolerance is achieved by recording data lineage: the sequence of operations used to modify the initial data.
 
 Dask offers five data structures:
 \href{https://docs.dask.org/en/latest/array.html}{Array},
@@ -71,47 +71,58 @@ Dask offers five data structures:
 \href{https://docs.dask.org/en/latest/dataframe.html}{DataFrame},
 \href{https://docs.dask.org/en/latest/delayed.html}{Delayed},
 and \href{https://docs.dask.org/en/latest/futures.html}{Futures}.
-The Dask Array offers a clone of NumPy API for distributed processing of large arrays.
-A Dask Bag is a distributed collection of Python object that offers a programming abstraction similar to \href{https://toolz.readthedocs.io/en/latest/}{PyToolz}.
-Dask Dataframe is a parallel composition of Pandas Dataframes used to process large amount of tabular data.
-Dask Delayed offers an API for distributing abrirtary function that do not fit in the above frameworks.
-Lastly, Dask Futures can also execute abrirtary functions, however, it launch computation immediately rather than lazily.
-Dask modularity allow users to install only required components making it lightweigth.
+Arrays offer a clone of NumPy API for distributed processing of large arrays.
+Bags are a distributed collection of Python object that offers a programming abstraction similar to \href{https://toolz.readthedocs.io/en/latest/}{PyToolz}.
+Dataframes are a parallel composition of \href{https://pandas.pydata.org/}{Pandas} Dataframes used to process a large amount of tabular data.
+Dask Delayed offers an API for distributing arbitrary functions that do not fit in the above frameworks.
+Lastly, Dask Futures can also execute arbitrary functions; however, it launches computation immediately rather than lazily.
+Dask modularity allows users to install only required components making it lightweight.
 
-In Dask a scheduler decides where and when to execute tasks using the Dask graph.
-API operations generate multiple fine-coarsed tasks in the computation graph allwing an easier representatin of complex algorithms.
+In Dask, a scheduler decides where and when to execute tasks using the Dask graph.
+API operations generate multiple fine-coarse tasks in the computation graph, allowing a more straightforward representation of complex algorithms.
 
-The Dask engine is compatible to numerous distributed schedulers, including YARN and Mesos.
-Dask also provide its own \textit{Dask Distributed scheduler}.
-Althought Dask is compatible with schedulers available in HPC clusters,
-We chose to use Dask Distributed scheduler, to keep the environment balanced between the engines.
+The Dask engine is compatible with multiple distributed schedulers, including YARN and Mesos.
+Dask also provides its own \textit{Dask Distributed scheduler}.
+We chose to use Dask Distributed scheduler to keep the environment balanced between the engines.
 
-In Dask Distributed scheduler, a \textit{dask-scheduler} process admistrates the resource provided by \textit{dask-worker} in the cluster.
+In the Dask Distributed scheduler, a \textit{dask-scheduler} process administrates the resource provided by  \textit{dask-worker}s in the cluster.
 The scheduler receives jobs from clients and assigns tasks to available workers.
-Dask scheduler use a FIFO (First-In-First-Out) job scheduling policy.
-That is, completely process a branch of the Dask graph before proceding with the next one.
+Task scheduler uses a FIFO (First-In-First-Out) job scheduling policy.
+That is an utter process branch of the Dask graph before proceeding with the next one.
 
-Dask offers multiple ways to deploy a cluster including: with SSH configs, Kubernetes, SLURM, PBS, and others.
+Dask offers multiple ways to deploy a cluster, including, but not limited to, SSH configs, Kubernetes, SLURM, PBS.
 For our experiments, we used the \href{https://jobqueue.dask.org/en/latest/generated/dask_jobqueue.SLURMCluster.html}{Dask SLURM cluster} API.
 
 Dask \MD{Add version when after locking it for experiments.} was used.
 
 \subsection{Apache Spark}
-Apache Spark is a widely-used general pupose Big Data engine.
-Like Dask, it aims at reducing data transfer cost by incorporating data locality and in-memory computing, and lazy evaluation.
+Apache Spark is a widely-used general-purpose Big Data engine.
+Like Dask, it aims at reducing data transfer costs by incorporating data locality, in-memory computing, and lazy evaluation.
 
+Spark offers three options to schedule jobs: Spark Standalone, Mesos, and YARN.
+The Spark standalone is a simple built-in scheduler.
+YARN is mainly used to schedule Hadoop-based workflows, while Mesos can be used for various workflows.
+We limit our focus to Spark Standalone scheduler, as researchers are likely to execute their workflows in an HPC environment where, usually, neither YARN nor Mesos is available.
 
+In the Spark Standalone scheduler, a \textit{leader} coordinates the resource provisioned by \textit{workers} in the cluster.
+A \textit{driver}  process receives jobs from clients and requests workers from the leader.
+Jobs are divided into stages to be executed onto workers.
+Each operation in a stage is represented by a high-level task in the computation graph.
+Like Dask, Spark Standalone scheduler uses a FIFO policy to schedule tasks.
+Spark Standalone has two execution modes: (1) the client mode, where the driver process runs in a dedicated process,
+and (2) the cluster mode, where the driver runs within a worker process.
+Our experiments use the client mode since cluster mode is not available in PySpark.
 
-Spark primary data structure is Resilient Distributed Dataset (RDD)\cite{RDD}, a fault-tolerant, parallel collection of data elements.
-RDDs is the basis of the other Spark data structure: Datasets and DataFrames.
-Datasets are similar to RDD but benefits from additional performance by leveraging the Spark SQL's optimized execution engine.
-The DataFrame API are Datasets organized into named-columns and used to process tabular data.
-While the DataFrame API is available in all supported language, DAtasets are limited to Sacla and Java.
+Spark's primary data structure is Resilient Distributed Dataset (RDD)\cite{RDD}, a fault-tolerant, parallel collection of data elements.
+RDDs are the basis of the other Spark data structure: Datasets and DataFrames.
+Datasets are similar to RDD but benefit additional performance by leveraging the Spark SQL's optimized execution engine. 
+The DataFrames are Datasets organized into named-columns and are used to process tabular data. 
+While the DataFrame API is available in all supported languages, Datasets are limited to Scala and Java. 
 
-Python is a common programming language in the scientific community.
-This is particulary true in the neuroimaging field with numerous specialized Python libraries to operate on data.
-While serialization from Python to Java create overhead, we found it to be minimal \cite{8943502}.
-We chose to focus on PySpark API to have a more balance environment between the different engines and due to its suitability to neuroimaging.
+Python is a standard programming language in the scientific community.
+This is particularly true in the neuroimaging field, with numerous specialized Python libraries to operate on data.
+While serialization from Python to Java creates overhead, we found it to be minimal \cite{8943502}.
+We focus on PySpark API to have a more balanced environment between the different engines and for its suitability to neuroimaging.
 
 \section{Methods}
 \subsection{Infrastructure}
