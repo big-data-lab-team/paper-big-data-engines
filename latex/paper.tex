@@ -114,7 +114,15 @@ While serialization from Python to Java create overhead, we found it to be minim
 We chose to focus on PySpark API to have a more balance environment between the different engines and due to its suitability to neuroimaging.
 
 \section{Methods}
-\subsection{Infrastructure} % TODO
+\subsection{Infrastructure}
+For our experiments we used the SlashBin cluster at Concordia University.
+Each compute node has 2 16-cores CPUs,
+\SI{256}{\giga\byte} memory, \MD{find out what's the memory speed and \#-channel supported.}
+\SI{2.88}{\tera\byte} SSDs of mounted storage.
+The nodes are interconnected with a dedicated \SI{10}{\giga\bit/\second} Ethernet connection.
+Centos \MD{Verify version} and Linux kernel \MD{Verify kernel version} is installed on the nodes.
+
+\MD{Write about the worker/leader setup once the dataset size is determined. Need to tune so that 2-3 blocks can fit in the excutors memmory}
 
 
 \subsection{Dataset}
