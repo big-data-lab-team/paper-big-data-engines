@@ -46,7 +46,7 @@
 \end{abstract}
 
 \begin{IEEEkeywords}
-	Performance, Scheduler, Big Data, Dask, Spark, Ray, Neuroimaging
+	Performance, Scheduler, Big Data, Dask, Spark, Neuroimaging
 \end{IEEEkeywords}
 \MD{Discuss which keyword to use for the paper.}
 
@@ -91,8 +91,6 @@ For our experiments, we used the \href{https://jobqueue.dask.org/en/latest/gener
 
 Dask \MD{Add version when after locking it for experiments.} was used.
 
-\subsection{Ray}
-
 \subsection{Apache Spark}
 Apache Spark is a widely-used general pupose Big Data engine.
 Like Dask, it aims at reducing data transfer cost by incorporating data locality and in-memory computing, and lazy evaluation.
@@ -117,37 +115,48 @@ We chose to focus on PySpark API to have a more balance environment between the 
 \subsection{Applications}
 \subsubsection{Increment}
 We adapted the increment pipeline used in \cite{hayot2019performance}.
-This synthetic application read blocks of the BigBrain from Lustre and sleeps for specified period.
+This synthetic application reads blocks of the BigBrain from Lustre and simulates computation by sleeping for a specified period.
 To simulate intermediate results, we repeat the sleep process for a configurable amount of time.
-We prevent data caching of the blocks by incrementing their voxels value by 1 after each sleep operation.
+We prevent data caching of the blocks by incrementing their voxels value by one after each sleep operation.
 Finally, we write the resulting NIfTI image back to Lustre.
-This application allow us the study engines when the inputs are processed independently.
-The map-only scenario of this application mimics the processing of multiple independt subjects in parralel.
+This application allows us to study the engines when their inputs are processed independently.
+The map-only scenario of this application mimics the processing of multiple independent subjects in parallel.
 \MD{TODO: Add the Figure for the application graph.}
 
 \subsubsection{Multi-Increment}
 Our second application is a revision of the increment pipeline.
-A major difference is that, at each iteration, a random BigBrain blocks is used to as the increment value.
+A significant difference is that, at each iteration, it uses a random BigBrain block as the increment value. 
 This change allows the multi-increment application to have inter-worker communication while remaining simplistic.
 \MD{TODO: Add the Figure for the application graph.}
 
 \subsubsection{Histogram}
-Our third application calculatest the histogram of the BigBrain image.
-It reads the BigBrain blocks from Lustre, calculate frequency of each intensity, then write the aggregated result back on Lustre.
-This map-reduce application has a very high read over write ratio.
-Moreover, this application requires data shuffling; although little.
-This place it in between the increment and multi-increment pipeline in terms of inter-worker communication.
+As our third application, we calculate the histogram of the BigBrain image. 
+It reads the BigBrain blocks from Lustre, calculates each intensity's frequency, and then writes the aggregated result back on Lustre.
+This map-reduce application has a very high read overwrite ratio.
+Moreover, this application requires data shuffling, although little. 
+The amount of inter-worker communication is in-between the increment and multi-increment pipelines.
 \MD{TODO: Add the Figure for the application graph.}
 
 \subsubsection{Kmeans} % TODO
-\MD{TODO: Write about it once implemented.}
+For our fourth application, we use Kmeans to cluster the BigBrain image by voxel intensity.
+We set the number of clusters to 3 to segment the white and grey matter and the noise.
+The application starts by reading the image blocks, combining all voxels in a 1-D array, and choosing initial centroids using the min, max, and intermediate values.
+It assigns each voxel to the centroids it is the closest and updates each centroid by computing the average of the voxels associated with it. 
+It repeats the assignment and update steps for a configurable amount of time. 
+Finally, the voxels of the image blocks are classified and write back on the file system.
+Updating the centroids involves a lot of data communication between the worker.
+
+Spark and Dask's implementation differs slightly for this application to take advantage of the" most suited" API from both engines.
+Spark implementation uses the Map-Reduce paradigm, while Dask implementation uses array programming.
+\MD{TODO: Add the Figure for the application graph.}
+
 
 \subsubsection{BIDS app example}
 Our last application is BIDS App example: a neuroimaging pipeline to extract brain volume.
-For this application, the CoRR dataset was used.
+For this application, we use the CoRR dataset.
 It extracts the brain volume of each participant, then computes the average for each group of participants.
-Unlike the other application, BIDS App example is a set of command-line distributed in a Docker image (bids/example on DockerHub).
-We converted the Docker image to a Singularity image for use in HPC environment, \MD{Cite paper on reason why this is done.}
+Unlike the other application, BIDS App example is a command-line set in a Docker image (bids/example on DockerHub).
+We converted the Docker image to a Singularity image for use in HPC environments, \MD{Cite paper on reason why this is done.}
 using \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
 \MD{Need to discuss if we preload the image on the worker nodes.}
 \MD{TODO: Add the Figure for the application graph.}
