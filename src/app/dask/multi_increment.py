@@ -39,6 +39,8 @@ def run(
     else:
         client = Client(scheduler)
 
+    print(client)
+
     blocks = [
         dask.delayed(load)(
             filename,
