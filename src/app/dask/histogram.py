@@ -19,7 +19,7 @@ def run(
     input_folder: str,
     output_folder: str,
     scheduler: str,
-    n_workers: int,
+    n_worker: int,
     benchmark: bool,
 ) -> None:
     experiment = f"dask:histogram"
@@ -34,7 +34,7 @@ def run(
     if scheduler.lower() == "slurm":
         cluster = SLURMCluster()
         client = Client(cluster)
-        cluster.scale(n_workers)
+        cluster.scale(n_worker)
     else:
         client = Client(scheduler)
 

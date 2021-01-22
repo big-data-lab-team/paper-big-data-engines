@@ -24,7 +24,7 @@ def import_from(module, name):
     type=click.Path(exists=True, dir_okay=True, writable=True),
 )
 @click.option("-s", "--scheduler", required=True)
-@click.option("-n", "--n-worker", type=int, required=False)
+@click.option("-n", "--n-worker", type=int, default=1, required=False)
 @click.option("--benchmark", is_flag=True)
 @engine_choices
 @click.pass_context

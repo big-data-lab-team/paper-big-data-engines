@@ -10,7 +10,7 @@ def run(
     input_folder: str,
     output_folder: str,
     scheduler: str,
-    n_workers: int,
+    n_worker: int,
     benchmark: bool,
     container_path: str,
 ) -> None:
