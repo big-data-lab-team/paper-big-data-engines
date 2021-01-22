@@ -36,8 +36,6 @@ def run(
     else:
         client = Client(scheduler)
 
-    print(client)
-
     subjects = subject_crawler(input_folder)
     sites = site_crawler(input_folder)
 
