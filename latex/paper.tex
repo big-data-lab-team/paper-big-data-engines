@@ -30,7 +30,7 @@
 
 \begin{document}
 
-\title{Impact of engines scheduler on the performance of Big Data pipelines in HPC}
+\title{Impact of engines scheduler on the performance of Big Data pipelines in HPC \TG{Suggested title: Performance comparison of Dask and Apache Spark on HPC systems}}
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 	Department of Computer Science and Software Engineering\\
@@ -57,7 +57,7 @@
 
 \subsection{Dask}
 Dask is a Python-based Big Data engine with growing popularity in the scientific Python ecosystem.
-Dask was designed with data locality and in-memory in mind to mitigate the data transfer bottleneck in Big Data workflows.
+Dask was designed with data locality and in-memory computing in mind, to mitigate the data transfer bottleneck in Big Data workflows.
 Data locality, popularized by Map-Reduce \cite{dean2008mapreduce}, schedules tasks where the data reside.
 In-memory computing minimizes the overhead of transferring data to disk by keeping data in memory when possible.
 Dask uses lazy evaluation to reduce unnecessary communication and computation.
@@ -93,18 +93,18 @@ That is an utter process branch of the Dask graph before proceeding with the nex
 Dask offers multiple ways to deploy a cluster, including, but not limited to, SSH configs, Kubernetes, SLURM, PBS.
 For our experiments, we used the \href{https://jobqueue.dask.org/en/latest/generated/dask_jobqueue.SLURMCluster.html}{Dask SLURM cluster} API.
 
-Dask \MD{Add version when after locking it for experiments.} was used.
+Dask \MD{Add version when after locking it for experiments.} was used. \TG{should be in methods}
 
 \subsection{Apache Spark}
 Apache Spark is a widely-used general-purpose Big Data engine.
 Like Dask, it aims at reducing data transfer costs by incorporating data locality, in-memory computing, and lazy evaluation.
 
 Spark offers three options to schedule jobs: Spark Standalone, Mesos, and YARN.
-The Spark standalone is a simple built-in scheduler.
+Spark Standalone is a simple built-in scheduler.
 YARN is mainly used to schedule Hadoop-based workflows, while Mesos can be used for various workflows.
 We limit our focus to Spark Standalone scheduler, as researchers are likely to execute their workflows in an HPC environment where, usually, neither YARN nor Mesos is available.
 
-In the Spark Standalone scheduler, a \textit{leader} coordinates the resource provisioned by \textit{workers} in the cluster.
+In the Spark Standalone scheduler, a \textit{leader} \TG{I am all in favor of inclusive terminology, but if Spark didn't update their wording we shouldn't do it for them} coordinates the resource provisioned by \textit{workers} in the cluster.
 A \textit{driver}  process receives jobs from clients and requests workers from the leader.
 Jobs are divided into stages to be executed onto workers.
 Each operation in a stage is represented by a high-level task in the computation graph.
@@ -119,9 +119,8 @@ Datasets are similar to RDD but benefit additional performance by leveraging the
 The DataFrames are Datasets organized into named-columns and are used to process tabular data. 
 While the DataFrame API is available in all supported languages, Datasets are limited to Scala and Java. 
 
-Python is a standard programming language in the scientific community.
-This is particularly true in the neuroimaging field, with numerous specialized Python libraries to operate on data.
-While serialization from Python to Java creates overhead, we found it to be minimal \cite{8943502}.
+Python is a standard programming language in the scientific community, offering numerous data processing libraries.
+While serialization from Python to Java, an operation required when using Spark's Python API, creates overhead, we found it minimal \cite{8943502}.
 We focus on PySpark API to have a more balanced environment between the different engines and for its suitability to neuroimaging.
 
 \section{Methods}
@@ -149,7 +148,7 @@ We used all 3,491 anatomical images, representing \SI{39}{\giga\byte} overall (\
 	
 \subsection{Applications}
 \subsubsection{Increment}
-We adapted the increment pipeline used in \cite{hayot2019performance}.
+We adapted the increment application used in \cite{hayot2019performance}.
 This synthetic application reads blocks of the BigBrain from Lustre and simulates computation by sleeping for a specified period.
 To simulate intermediate results, we repeat the sleep process for a configurable amount of time.
 We prevent data caching of the blocks by incrementing their voxels value by one after each sleep operation.
@@ -159,38 +158,38 @@ The map-only scenario of this application mimics the processing of multiple inde
 \MD{TODO: Add the Figure for the application graph.}
 	
 \subsubsection{Multi-Increment}
-Our second application is a revision of the increment pipeline.
+Our second application is an adaptation of the increment application.
 A significant difference is that, at each iteration, it uses a random BigBrain block as the increment value. 
-This change allows the multi-increment application to have inter-worker communication while remaining simplistic.
+This change allows the multi-increment application to have inter-worker communication while remaining simple.
 \MD{TODO: Add the Figure for the application graph.}
 	
 \subsubsection{Histogram}
 As our third application, we calculate the histogram of the BigBrain image. 
-It reads the BigBrain blocks from Lustre, calculates each intensity's frequency, and then writes the aggregated result back on Lustre.
+The application reads the BigBrain blocks from Lustre, calculates each intensity's frequency, and then writes the aggregated result back on Lustre.
 This map-reduce application has a very high read overwrite ratio.
-Moreover, this application requires data shuffling, although little. 
-The amount of inter-worker communication is in-between the increment and multi-increment pipelines.
+Moreover, this application requires shuffling, albeit of a limited amoutn of data. 
+The amount of inter-worker communication is in-between the increment and multi-increment applications.
 \MD{TODO: Add the Figure for the application graph.}
 	
 \subsubsection{Kmeans} % TODO
-For our fourth application, we use Kmeans to cluster the BigBrain image by voxel intensity.
-We set the number of clusters to 3 to segment the white and grey matter and the noise.
+For our fourth application, we apply Kmeans clustering to the voxel intensities of the BigBrain image.
+We set the number of clusters to 3, to segment the white and grey matter and the noise.
 The application starts by reading the image blocks, combining all voxels in a 1-D array, and choosing initial centroids using the min, max, and intermediate values.
 It assigns each voxel to the centroids it is the closest and updates each centroid by computing the average of the voxels associated with it. 
 It repeats the assignment and update steps for a configurable amount of time. 
-Finally, the voxels of the image blocks are classified and write back on the file system.
-Updating the centroids involves a lot of data communication between the worker.
-	
-Spark and Dask's implementation differs slightly for this application to take advantage of the" most suited" API from both engines.
-Spark implementation uses the Map-Reduce paradigm, while Dask implementation uses array programming.
+Finally, the voxels of the image blocks are classified and written back to the file system.
+Updating the centroids involves substantial data communication between the workers.
+
+For this application, the Spark and Dask implementations differ slightly,  to take advantage of the best-suited API from both engines.
+The Spark implementation uses the Map-Reduce paradigm, while the Dask one uses array programming.
 \MD{TODO: Add the Figure for the application graph.}
 	
 	
 \subsubsection{BIDS app example}
-Our last application is BIDS App example: a neuroimaging pipeline to extract brain volume.
+Our last application is BIDS App example: a neuroimaging pipeline to measure the brain volume from MRIs.
 For this application, we use the CoRR dataset.
-It extracts the brain volume of each participant, then computes the average for each group of participants.
-Unlike the other application, BIDS App example is a command-line set in a Docker image (bids/example on DockerHub).
+The application extracts the brain volume of each participant, then computes the average for each group of participants.
+Unlike the other applications, BIDS App example is a command-line executed in a Docker image (bids/example on DockerHub).
 We converted the Docker image to a Singularity image for use in HPC environments, \MD{Cite paper on reason why this is done.}
 using \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
 \MD{Need to discuss if we preload the image on the worker nodes.}
