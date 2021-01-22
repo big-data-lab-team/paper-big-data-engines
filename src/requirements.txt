@@ -2,3 +2,4 @@ nibabel
 pyspark
 dask[complete]
 click
+dask_jobqueue
