@@ -48,7 +48,9 @@ def run(
     )
 
     save_histogram(histogram, **common_args)
-    merge_logs(
-        output_folder=output_folder,
-        experiment=experiment,
-    )
+    
+    if benchmark:
+        merge_logs(
+            output_folder=output_folder,
+            experiment=experiment,
+        )

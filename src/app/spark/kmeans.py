@@ -85,7 +85,9 @@ def run(
     ).collect()
 
     sc.stop()
-    merge_logs(
-        output_folder=output_folder,
-        experiment=experiment,
-    )
+    
+    if benchmark:
+        merge_logs(
+            output_folder=output_folder,
+            experiment=experiment,
+        )

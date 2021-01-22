@@ -36,7 +36,9 @@ def run(
 
     sites = sc.parallelize(site_crawler(input_folder), 512)
     sites.map(lambda x: run_group(site=x, **common_args)).collect()
-    merge_logs(
-        output_folder=output_folder,
-        experiment=experiment,
-    )
+    
+    if benchmark:
+        merge_logs(
+            output_folder=output_folder,
+            experiment=experiment,
+        )

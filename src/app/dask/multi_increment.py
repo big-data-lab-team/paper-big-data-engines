@@ -73,7 +73,8 @@ def run(
     client.gather(futures)
 
     client.close()
-    merge_logs(
-        output_folder=output_folder,
-        experiment=experiment,
-    )
+    if benchmark:
+        merge_logs(
+            output_folder=output_folder,
+            experiment=experiment,
+        )

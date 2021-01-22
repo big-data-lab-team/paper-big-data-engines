@@ -39,7 +39,9 @@ def run(
     img_rdd = img_rdd.map(lambda x: dump(x, **common_args))
 
     img_rdd.collect()
-    merge_logs(
-        output_folder=output_folder,
-        experiment=experiment,
-    )
+    
+    if benchmark:
+        merge_logs(
+            output_folder=output_folder,
+            experiment=experiment,
+        )
