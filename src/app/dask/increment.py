@@ -1,4 +1,5 @@
 import glob
+import os
 import time
 
 import dask
@@ -29,14 +30,15 @@ def run(
     }
 
     if scheduler.lower() == "slurm":
-        cluster = SLURMCluster()
+        hostname = os.environ["HOSTNAME"]
+        cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
         cluster.scale(n_worker)
     else:
         client = Client(scheduler)
 
     print(client)
-    
+
     blocks = [
         dask.delayed(load)(
             filename,

@@ -1,4 +1,5 @@
 import glob
+import os
 import time
 
 import dask
@@ -31,14 +32,15 @@ def run(
     }
 
     if scheduler.lower() == "slurm":
-        cluster = SLURMCluster()
+        hostname = os.environ["HOSTNAME"]
+        cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
         cluster.scale(n_worker)
     else:
         client = Client(scheduler)
 
     print(client)
-    
+
     blocks = [
         dask.delayed(load)(
             filename,
@@ -78,7 +80,10 @@ def run(
         ).persist()
 
         centroids = np.array(
-            [da.mean(voxels[centroid_index == c]).persist() for c in range(len(centroids))]
+            [
+                da.mean(voxels[centroid_index == c]).persist()
+                for c in range(len(centroids))
+            ]
         )
         print(f"{centroids=}")
 
@@ -93,7 +98,7 @@ def run(
                 experiment,
                 "update_centroids",
             )
-    
+
     del voxels
     del centroid_index
 
