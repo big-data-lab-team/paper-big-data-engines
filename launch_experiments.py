@@ -1,6 +1,7 @@
 import os
 import random
 import subprocess
+import time
 
 REPETITIONS = 3
 
@@ -102,3 +103,4 @@ random.shuffle(cmds)
 for cmd in cmds:
     print("Running:", cmd)
     subprocess.run(cmd, shell=True)
+    time.sleep(15)
