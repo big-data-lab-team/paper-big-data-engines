@@ -112,7 +112,7 @@ def kmeans(ctx, iterations):
     "container", type=click.Path(exists=True, file_okay=True, readable=True)
 )
 @click.pass_context
-def bids_app(ctx, container):
+def bids(ctx, container):
     run = import_from(f"app.{ctx.obj['ENGINE']}.bids", "run")
 
     run(
