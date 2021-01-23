@@ -5,8 +5,8 @@ import subprocess
 REPETITIONS = 3
 
 n_nodes = [2, 4, 8]
-n_iterations = [8, 64, 512]
-sleep_time = [0.125, 1, 8, 64]
+n_iterations = [1, 10, 100]
+sleep_time = [0.125, 1, 8, 32]
 
 default = {
     "node": n_nodes[1],

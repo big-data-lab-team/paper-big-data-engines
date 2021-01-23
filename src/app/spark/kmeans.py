@@ -30,7 +30,7 @@ def run(
     sc = SparkContext.getOrCreate(conf=conf)
 
     paths = sc.parallelize(glob.glob(input_folder + "/*.nii"))
-    blocks = paths.map(lambda p: load(p, **common_args))  # Might want to cache it.
+    blocks = paths.map(lambda p: load(p, **common_args)).cache()
     voxels = (
         blocks.flatMap(lambda block: block[1])
         .flatMap(lambda block: block[1].flatten())

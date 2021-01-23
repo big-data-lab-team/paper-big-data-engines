@@ -35,14 +35,14 @@ def run(
 
     filenames = glob.glob(input_folder + "/*.nii")
     paths = sc.parallelize(filenames, len(filenames))
-    img_rdd = paths.map(lambda p: load(p, **common_args))
+    img_rdd = paths.map(lambda p: load(p, **common_args)).cache()
 
     for _ in range(iterations):
         img_rdd = img_rdd.map(
             lambda x: increment(
                 x, delay=delay, increment_data=random.choice(img_rdd)[1], **common_args
             )
-        )
+        ).cache()
 
     img_rdd = img_rdd.map(lambda x: dump(x, **common_args))
 

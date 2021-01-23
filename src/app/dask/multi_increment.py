@@ -45,7 +45,7 @@ def run(
         dask.delayed(load)(
             filename,
             **common_args,
-        )
+        ).persist()
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
@@ -58,7 +58,7 @@ def run(
                 delay=delay,
                 increment_data=random.choice(blocks)[1],
                 **common_args,
-            )
+            ).persist()
 
         results.append(
             dask.delayed(dump)(
