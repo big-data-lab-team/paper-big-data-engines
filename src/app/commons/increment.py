@@ -28,9 +28,9 @@ def increment(
     filename_log = filename
     if not isinstance(increment_data, int):
         filename_log = f"{filename}:{increment_data[0]}"
-        increment_content = increment_data[1]
+        increment_data = increment_data[1]
 
-    content = content + increment_data
+    content += increment_data
     sleep(delay)
 
     end_time = time() - start

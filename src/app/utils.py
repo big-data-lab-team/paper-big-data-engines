@@ -1,14 +1,15 @@
-import glob
 from io import BytesIO
 import os
 import socket
-import uuid
+import subprocess
 from time import time
 import threading
+import uuid
 
 import nibabel as nib
 import numpy as np
 
+# from memory_profiler import profile
 # TODO  write logs to /tmp to save networking bandwidth.
 
 
@@ -53,15 +54,13 @@ def log(start, end, filename, output_folder, experiment, func_name):
 
 def merge_logs(output_folder, experiment):
     log_folder = os.path.join(output_folder, "benchmarks", experiment)
-    filenames = glob.glob(log_folder + "/*.log")
-
     log_summary_file = os.path.join(log_folder, f"summary-{uuid.uuid1()}.csv")
 
-    with open(log_summary_file, "a") as fout:
-        for filename in filenames:
-            with open(filename) as fin:
-                fout.write(fin.read())
-            os.remove(filename)
+    subprocess.run(
+        f"find {log_folder} -name *.log -print0 | xargs -0 cat -- >> {log_summary_file}",
+        shell=True,
+    )
+    subprocess.run(f"rm {log_folder}/*.log", shell=True)
 
 
 def crawl_dir(input_dir):
@@ -86,6 +85,7 @@ def crawl_dir(input_dir):
     return rv
 
 
+# @profile
 def load(filename, *, benchmark, start, output_folder, experiment):
     """Read a Nifti image as a byte stream.
 
@@ -105,11 +105,10 @@ def load(filename, *, benchmark, start, output_folder, experiment):
     """
     start_time = time() - start
 
-    img = None
     with open(filename, "rb") as f_in:
         fh = nib.FileHolder(fileobj=BytesIO(f_in.read()))
         img = nib.Nifti1Image.from_file_map({"header": fh, "image": fh})
-    data = np.asanyarray(img.dataobj)
+    data = np.asanyarray(img.dataobj, dtype=np.uint16)
 
     end_time = time() - start
 

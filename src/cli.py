@@ -41,7 +41,7 @@ def cli(ctx, input_folder, output_folder, scheduler, n_worker, benchmark, engine
 
 @cli.command()
 @click.argument("iterations", type=int)
-@click.argument("delay", type=int)
+@click.argument("delay", type=float)
 @click.pass_context
 def increment(ctx, iterations, delay):
     run = import_from(f"app.{ctx.obj['ENGINE']}.increment", "run")
@@ -60,7 +60,7 @@ def increment(ctx, iterations, delay):
 @cli.command()
 @click.option("-r", "--random-seed", type=int, default=1234)
 @click.argument("iterations", type=int)
-@click.argument("delay", type=int)
+@click.argument("delay", type=float)
 @click.pass_context
 def multi_increment(ctx, random_seed, iterations, delay):
     run = import_from(f"app.{ctx.obj['ENGINE']}.multi_increment", "run")

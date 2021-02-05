@@ -31,7 +31,8 @@ def run(
         "experiment": experiment,
     }
 
-    if scheduler.lower() == "slurm":
+    SLURM = scheduler.lower() == "slurm"
+    if SLURM:
         hostname = os.environ["HOSTNAME"]
         cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
@@ -64,8 +65,7 @@ def run(
 
     # Pick random initial centroids
     centroids = np.linspace(
-        da.min(voxels).compute(),
-        da.max(voxels).compute(),
+        *dask.compute(da.min(voxels), da.max(voxels)),
         num=3,
     )
 
@@ -79,9 +79,10 @@ def run(
 
         centroids = np.array(
             [
-                da.mean(voxels[centroid_index == c]).persist()
+                da.mean(voxels[centroid_index == c], dtype=np.float32).persist()
                 for c in range(len(centroids))
-            ]
+            ],
+            dtype=np.uint16,
         )
         print(f"{centroids=}")
 
@@ -102,17 +103,20 @@ def run(
 
     results = []
     for block in blocks:
-        block = dask.delayed(classify_block)(block, centroids, **common_args)
         results.append(
             dask.delayed(dump)(
-                block,
+                dask.delayed(classify_block)(block, centroids, **common_args),
                 **common_args,
             )
         )
 
-    dask.compute(*results)
+    futures = client.compute(results)
+    client.gather(futures)
 
     client.close()
+    if SLURM:
+        cluster.scale(0)
+
     if benchmark:
         merge_logs(
             output_folder=output_folder,

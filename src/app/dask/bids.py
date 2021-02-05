@@ -28,7 +28,8 @@ def run(
         "container_path": container_path,
     }
 
-    if scheduler.lower() == "slurm":
+    SLURM = scheduler.lower() == "slurm"
+    if SLURM:
         hostname = os.environ["HOSTNAME"]
         cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
@@ -57,7 +58,11 @@ def run(
         [dask.delayed(run_group)(site=site, **common_args) for site in sites]
     )
     client.gather(futures)
+    
     client.close()
+    if SLURM:
+        cluster.scale(0)
+
     if benchmark:
         merge_logs(
             output_folder=output_folder,

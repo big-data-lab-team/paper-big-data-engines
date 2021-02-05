@@ -60,7 +60,8 @@ def run(
             )
             .mapValues(lambda x: x[0] / x[1])
             .values()
-            .collect()
+            .collect(),
+            dtype=np.uint16,
         )
 
         print(f"{centroids=}")
@@ -85,7 +86,7 @@ def run(
     ).collect()
 
     sc.stop()
-    
+
     if benchmark:
         merge_logs(
             output_folder=output_folder,

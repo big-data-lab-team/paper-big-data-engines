@@ -32,7 +32,8 @@ def run(
         "experiment": experiment,
     }
 
-    if scheduler.lower() == "slurm":
+    SLURM = scheduler.lower() == "slurm"
+    if SLURM:
         hostname = os.environ["HOSTNAME"]
         cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
@@ -82,6 +83,9 @@ def run(
     )
 
     client.close()
+    if SLURM:
+        cluster.scale(0)
+
     if benchmark:
         merge_logs(
             output_folder=output_folder,

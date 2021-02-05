@@ -33,7 +33,8 @@ def run(
         "experiment": experiment,
     }
 
-    if scheduler.lower() == "slurm":
+    SLURM = scheduler.lower() == "slurm"
+    if SLURM:
         hostname = os.environ["HOSTNAME"]
         cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
@@ -45,7 +46,7 @@ def run(
         dask.delayed(load)(
             filename,
             **common_args,
-        ).persist()
+        )
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
@@ -56,9 +57,9 @@ def run(
             block = dask.delayed(increment)(
                 block,
                 delay=delay,
-                increment_data=random.choice(blocks)[1],
+                increment_data=random.choice(blocks)[1].persist(),
                 **common_args,
-            ).persist()
+            )
 
         results.append(
             dask.delayed(dump)(
@@ -71,6 +72,9 @@ def run(
     client.gather(futures)
 
     client.close()
+    if SLURM:
+        cluster.scale(0)
+
     if benchmark:
         merge_logs(
             output_folder=output_folder,

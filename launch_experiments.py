@@ -11,7 +11,7 @@ sleep_time = [0.125, 1, 8, 32]
 
 default = {
     "node": n_nodes[1],
-    "itr": n_iterations[0],
+    "itr": n_iterations[1],
     "sleep": sleep_time[1],
 }
 
