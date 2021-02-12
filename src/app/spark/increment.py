@@ -17,7 +17,7 @@ def run(
     iterations: int,
     delay: int,
 ) -> None:
-    experiment = f"spark:increment:iterations={iterations}:delay={delay}"
+    experiment = f"spark:increment:{n_worker=}:{iterations=}:{delay=}"
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,

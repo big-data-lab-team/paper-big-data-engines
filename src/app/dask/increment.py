@@ -20,7 +20,7 @@ def run(
     iterations: int,
     delay: int,
 ) -> None:
-    experiment = f"dask:increment:iterations={iterations}:delay={delay}"
+    experiment = f"dask:increment:{n_worker=}:{iterations=}:{delay=}"
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,

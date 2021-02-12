@@ -20,7 +20,7 @@ def run(
     n_worker: int,
     benchmark: bool,
 ) -> None:
-    experiment = f"spark:histogram"
+    experiment = f"spark:histogram:{n_worker=}"
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,

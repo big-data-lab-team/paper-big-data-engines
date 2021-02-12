@@ -23,7 +23,7 @@ def run(
     n_worker: int,
     benchmark: bool,
 ) -> None:
-    experiment = f"dask:histogram"
+    experiment = f"dask:histogram:{n_worker=}"
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,

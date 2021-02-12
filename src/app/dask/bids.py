@@ -17,7 +17,7 @@ def run(
     benchmark: bool,
     container_path: str,
 ) -> None:
-    experiment = f"dask:bids"
+    experiment = f"dask:bids:{n_worker=}"
     start_time = time.time()
     common_args = {
         "benchmark": benchmark,
