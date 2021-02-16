@@ -13,7 +13,7 @@ import numpy as np
 # TODO  write logs to /tmp to save networking bandwidth.
 
 
-def log(start, end, filename, output_folder, experiment, func_name):
+def log(start, end, filename, benchmark_folder, experiment, func_name):
     """Records function lifetime to a file.
 
     Parameters
@@ -24,14 +24,14 @@ def log(start, end, filename, output_folder, experiment, func_name):
         End time of the function.
     filename : str
         Name of the filename processed.
-    output_folder : str
+    benchmark_folder : str
         Directory were the output is saved.
     experiment : str
         Tag for the experiment.
     func_name : str
         Name of the function benchmarked.
     """
-    benchmark_dir = os.path.join(output_folder, "benchmarks", experiment)
+    benchmark_dir = os.path.join(benchmark_folder, "benchmarks", experiment)
     os.makedirs(benchmark_dir, exist_ok=True)
 
     benchmark_file = os.path.join(
@@ -52,8 +52,8 @@ def log(start, end, filename, output_folder, experiment, func_name):
         )
 
 
-def merge_logs(output_folder, experiment):
-    log_folder = os.path.join(output_folder, "benchmarks", experiment)
+def merge_logs(benchmark_folder, experiment):
+    log_folder = os.path.join(benchmark_folder, "benchmarks", experiment)
     filenames = glob.glob(log_folder + "/*.log")
 
     log_summary_file = os.path.join(log_folder, f"summary-{uuid.uuid1()}.csv")
@@ -87,7 +87,6 @@ def crawl_dir(input_dir):
     return rv
 
 
-# @profile
 def load(filename, *, benchmark, start, output_folder, experiment):
     """Read a Nifti image as a byte stream.
 

@@ -18,12 +18,12 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
 ) -> None:
     experiment = f"spark:histogram:{n_worker=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
         "experiment": experiment,
@@ -49,8 +49,8 @@ def run(
 
     save_histogram(histogram, **common_args)
     
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )

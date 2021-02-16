@@ -21,12 +21,12 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
 ) -> None:
     experiment = f"dask:histogram:{n_worker=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
         "experiment": experiment,
@@ -86,8 +86,8 @@ def run(
     if SLURM:
         cluster.scale(0)
 
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )

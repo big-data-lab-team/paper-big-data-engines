@@ -14,13 +14,13 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
     container_path: str,
 ) -> None:
     experiment = f"dask:bids:{n_worker=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "input_folder": input_folder,
         "output_folder": output_folder,
@@ -58,13 +58,13 @@ def run(
         [dask.delayed(run_group)(site=site, **common_args) for site in sites]
     )
     client.gather(futures)
-    
+
     client.close()
     if SLURM:
         cluster.scale(0)
 
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )

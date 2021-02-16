@@ -12,7 +12,7 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
     *,
     iterations: int,
     delay: int,
@@ -20,7 +20,7 @@ def run(
     experiment = f"spark:increment:{n_worker=}:{iterations=}:{delay=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
         "experiment": experiment,
@@ -40,8 +40,8 @@ def run(
 
     img_rdd.collect()
     
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )

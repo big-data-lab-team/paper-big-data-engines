@@ -11,13 +11,13 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
     container_path: str,
 ) -> None:
     experiment = f"spark:bids:{n_worker=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "input_folder": input_folder,
         "output_folder": output_folder,
@@ -37,8 +37,8 @@ def run(
     sites = sc.parallelize(site_crawler(input_folder), 512)
     sites.map(lambda x: run_group(site=x, **common_args)).collect()
     
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )

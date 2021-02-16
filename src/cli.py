@@ -25,16 +25,20 @@ def import_from(module, name):
 )
 @click.option("-s", "--scheduler", required=True)
 @click.option("-n", "--n-worker", type=int, default=1, required=False)
-@click.option("--benchmark", is_flag=True)
+@click.option(
+    "-b",
+    "--benchmark-folder",
+    type=click.Path(dir_okay=True, writable=True),
+)
 @engine_choices
 @click.pass_context
-def cli(ctx, input_folder, output_folder, scheduler, n_worker, benchmark, engine):
+def cli(ctx, input_folder, output_folder, scheduler, n_worker, benchmark_folder, engine):
     ctx.ensure_object(dict)
 
     ctx.obj["INPUT_FOLDER"] = os.path.abspath(input_folder)
     ctx.obj["OUTPUT_FOLDER"] = os.path.abspath(output_folder)
     ctx.obj["N_WORKER"] = n_worker
-    ctx.obj["BENCHMARK"] = benchmark
+    ctx.obj["BENCHMARK_FOLDER"] = benchmark_folder
     ctx.obj["SCHEDULER"] = scheduler
     ctx.obj["ENGINE"] = engine
 
@@ -51,7 +55,7 @@ def increment(ctx, iterations, delay):
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
-        benchmark=ctx.obj["BENCHMARK"],
+        benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
         iterations=iterations,
         delay=delay,
     )
@@ -70,7 +74,7 @@ def multi_increment(ctx, random_seed, iterations, delay):
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
-        benchmark=ctx.obj["BENCHMARK"],
+        benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
         iterations=iterations,
         delay=delay,
         seed=random_seed,
@@ -87,7 +91,7 @@ def histogram(ctx):
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
-        benchmark=ctx.obj["BENCHMARK"],
+        benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
     )
 
 
@@ -102,7 +106,7 @@ def kmeans(ctx, iterations):
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
-        benchmark=ctx.obj["BENCHMARK"],
+        benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
         iterations=iterations,
     )
 
@@ -120,7 +124,7 @@ def bids(ctx, container):
         output_folder=ctx.obj["OUTPUT_FOLDER"],
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
-        benchmark=ctx.obj["BENCHMARK"],
+        benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
         container_path=container,
     )
 
