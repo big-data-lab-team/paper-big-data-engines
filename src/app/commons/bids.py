@@ -28,6 +28,7 @@ def run_participant(
     output_folder,
     experiment,
     container_path,
+    **kwargs,
 ):
     start_time = time() - start
 
@@ -68,6 +69,7 @@ def run_group(
     output_folder,
     experiment,
     container_path,
+    **kwargs,
 ):
     start_time = time() - start
 

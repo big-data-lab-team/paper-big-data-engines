@@ -32,7 +32,9 @@ def import_from(module, name):
 )
 @engine_choices
 @click.pass_context
-def cli(ctx, input_folder, output_folder, scheduler, n_worker, benchmark_folder, engine):
+def cli(
+    ctx, input_folder, output_folder, scheduler, n_worker, benchmark_folder, engine
+):
     ctx.ensure_object(dict)
 
     ctx.obj["INPUT_FOLDER"] = os.path.abspath(input_folder)

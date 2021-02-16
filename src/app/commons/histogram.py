@@ -6,7 +6,7 @@ import numpy as np
 from ..utils import log
 
 
-def flatten(arr, *, benchmark_folder, start, experiment, filename):
+def flatten(arr, *, benchmark_folder, start, experiment, filename, **kwargs):
     start_time = time() - start
 
     arr = arr.flatten()
@@ -25,7 +25,9 @@ def flatten(arr, *, benchmark_folder, start, experiment, filename):
     return filename, arr
 
 
-def calculate_histogram(arr, *, benchmark_folder, start, experiment, filename):
+def calculate_histogram(
+    arr, *, benchmark_folder, start, experiment, filename, **kwargs
+):
     start_time = time() - start
 
     histogram = np.histogram(arr, bins=range(2 ** 16))[0]
@@ -44,7 +46,7 @@ def calculate_histogram(arr, *, benchmark_folder, start, experiment, filename):
     return histogram
 
 
-def combine_histogram(x, y, *, benchmark_folder, start, experiment):
+def combine_histogram(x, y, *, benchmark_folder, start, experiment, **kwargs):
     start_time = time() - start
 
     rv = x + y
@@ -63,7 +65,9 @@ def combine_histogram(x, y, *, benchmark_folder, start, experiment):
     return rv
 
 
-def save_histogram(histogram, *, benchmark_folder, start, output_folder, experiment):
+def save_histogram(
+    histogram, *, benchmark_folder, start, output_folder, experiment, **kwargs
+):
     start_time = time() - start
 
     with open(

@@ -7,7 +7,7 @@ from ..utils import log
 
 
 def increment(
-    data, delay, increment_data=1, *, benchmark_folder, start, experiment
+    data, delay, increment_data=1, *, benchmark_folder, start, experiment, **kwargs
 ):
     """Increment the data of a Nifti image by 1.
 
@@ -48,7 +48,7 @@ def increment(
     return filename, content, metadata
 
 
-def dump(data, *, benchmark_folder, start, output_folder, experiment):
+def dump(data, *, benchmark_folder, start, output_folder, experiment, **kwargs):
     """Save a Nifti image.
 
     Parameters

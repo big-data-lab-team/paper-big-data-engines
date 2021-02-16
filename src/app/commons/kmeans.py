@@ -7,7 +7,7 @@ import numpy as np
 from ..utils import log
 
 
-def closest_centroids(x, centroids, *, benchmark_folder, start, experiment):
+def closest_centroids(x, centroids, *, benchmark_folder, start, experiment, **kwargs):
     """Returns the index of the closest centroids.
 
     Parameters
@@ -40,7 +40,7 @@ def closest_centroids(x, centroids, *, benchmark_folder, start, experiment):
     return rv
 
 
-def classify_block(block, centroids, *, benchmark_folder, start, experiment):
+def classify_block(block, centroids, *, benchmark_folder, start, experiment, **kwargs):
     start_time = time.time() - start
 
     filename = block[0]
@@ -64,7 +64,7 @@ def classify_block(block, centroids, *, benchmark_folder, start, experiment):
     return filename, img, metadata
 
 
-def dump(img_rdd, *, benchmark_folder, start, output_folder, experiment):
+def dump(img_rdd, *, benchmark_folder, start, output_folder, experiment, **kwargs):
     """Save a Nifti image.
 
     Parameters
