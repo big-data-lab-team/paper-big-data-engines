@@ -7,7 +7,7 @@ import numpy as np
 from ..utils import log
 
 
-def closest_centroids(x, centroids, *, benchmark, start, output_folder, experiment):
+def closest_centroids(x, centroids, *, benchmark_folder, start, experiment):
     """Returns the index of the closest centroids.
 
     Parameters
@@ -27,12 +27,12 @@ def closest_centroids(x, centroids, *, benchmark, start, output_folder, experime
 
     end_time = time.time() - start
 
-    if benchmark:
+    if benchmark_folder:
         log(
             start_time,
             end_time,
             "all",
-            output_folder,
+            benchmark_folder,
             experiment,
             closest_centroids.__name__,
         )
@@ -40,7 +40,7 @@ def closest_centroids(x, centroids, *, benchmark, start, output_folder, experime
     return rv
 
 
-def classify_block(block, centroids, *, benchmark, start, output_folder, experiment):
+def classify_block(block, centroids, *, benchmark_folder, start, experiment):
     start_time = time.time() - start
 
     filename = block[0]
@@ -51,12 +51,12 @@ def classify_block(block, centroids, *, benchmark, start, output_folder, experim
 
     end_time = time.time() - start
 
-    if benchmark:
+    if benchmark_folder:
         log(
             start_time,
             end_time,
             filename,
-            output_folder,
+            benchmark_folder,
             experiment,
             classify_block.__name__,
         )
@@ -64,7 +64,7 @@ def classify_block(block, centroids, *, benchmark, start, output_folder, experim
     return filename, img, metadata
 
 
-def dump(img_rdd, *, benchmark, start, output_folder, experiment):
+def dump(img_rdd, *, benchmark_folder, start, output_folder, experiment):
     """Save a Nifti image.
 
     Parameters
@@ -99,12 +99,12 @@ def dump(img_rdd, *, benchmark, start, output_folder, experiment):
 
     end_time = time.time() - start
 
-    if benchmark:
+    if benchmark_folder:
         log(
             start_time,
             end_time,
             filename,
-            output_folder,
+            benchmark_folder,
             experiment,
             dump.__name__,
         )

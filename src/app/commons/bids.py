@@ -22,7 +22,7 @@ def run_participant(
     subject_id,
     site,
     *,
-    benchmark,
+    benchmark_folder,
     start,
     input_folder,
     output_folder,
@@ -48,12 +48,12 @@ def run_participant(
 
     end_time = time() - start
 
-    if benchmark:
+    if benchmark_folder:
         log(
             start_time,
             end_time,
             subject_id,
-            output_folder,
+            benchmark_folder,
             experiment,
             run_participant.__name__,
         )
@@ -62,7 +62,7 @@ def run_participant(
 def run_group(
     site,
     *,
-    benchmark,
+    benchmark_folder,
     start,
     input_folder,
     output_folder,
@@ -86,12 +86,12 @@ def run_group(
 
     end_time = time() - start
 
-    if benchmark:
+    if benchmark_folder:
         log(
             start_time,
             end_time,
             "all_file",
-            output_folder,
+            benchmark_folder,
             experiment,
             run_group.__name__,
         )
