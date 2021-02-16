@@ -16,8 +16,8 @@ default = {
 }
 
 cmd_templates = [
-    # 'spark-submit --master spark:// cli.py -i {0} -o {0}-output -s spark:// --benchmark {4} spark {1} {2}',  # TODO set master url once spark is configured
-    "benchmark -i {0} -o {0}-output -s slurm -n {3} --benchmark {4} dask {1} {2}",
+    # 'spark-submit --master spark:// cli.py -i {0} -o {0}-output -s spark:// --benchmark-folder {4} spark {1} {2}',  # TODO set master url once spark is configured
+    "benchmark -i {0} -o {0}-output -s slurm -n {3} --benchmark-folder {4} dask {1} {2}",
 ]
 
 benchmark_folder = os.path.join("/", "home", "mathdugre", "ccpe-output")
