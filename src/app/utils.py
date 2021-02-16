@@ -87,7 +87,7 @@ def crawl_dir(input_dir):
     return rv
 
 
-def load(filename, *, benchmark, start, output_folder, experiment):
+def load(filename, *, benchmark_folder, start, experiment):
     """Read a Nifti image as a byte stream.
 
     Parameters
@@ -113,12 +113,13 @@ def load(filename, *, benchmark, start, output_folder, experiment):
 
     end_time = time() - start
 
-    if benchmark:
+    if benchmark_folder:
         log(
             start_time,
             end_time,
             filename,
-            output_folder,
+            benchmark_folder,
+
             experiment,
             load.__name__,
         )
