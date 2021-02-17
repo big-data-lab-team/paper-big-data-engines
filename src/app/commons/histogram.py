@@ -71,7 +71,7 @@ def save_histogram(
     start_time = time() - start
 
     with open(
-        os.path.join(output_folder, "benchmarks", experiment, "histogram.csv"), "w"
+        os.path.join(output_folder, "histogram.csv"), "w"
     ) as f_out:
         for i, elm in enumerate(histogram):
             f_out.write(f"{i};{elm}\n")
