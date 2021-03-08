@@ -1,13 +1,14 @@
+from datetime import datetime
 import os
 import random
 import subprocess
 import time
 
-REPETITIONS = 3
+REPETITIONS = 5
 
 n_nodes = [2, 4, 8]
 n_iterations = [1, 10, 100]
-sleep_time = [0.125, 1, 8, 32]
+sleep_time = [0.125, 1, 8]
 
 default = {
     "node": n_nodes[1],
@@ -17,7 +18,7 @@ default = {
 
 cmd_templates = [
     # 'spark-submit --master spark:// cli.py -i {0} -o {0}-output -s spark:// --benchmark-folder {4} spark {1} {2}',  # TODO set master url once spark is configured
-    "benchmark -i {0} -o {0}-output -s slurm -n {3} --benchmark-folder {4} dask {1} {2}",
+    "benchmark -i {0} -o {0}-output -s slurm -n {3} -b {4} dask {1} {2}",
 ]
 
 benchmark_folder = os.path.join("/", "home", "mathdugre", "ccpe-output")
@@ -37,7 +38,7 @@ BB_blocks = [
     # BB_1000,
 ]
 
-container = os.path.join("/", "mnt", "lustre", "mathdugre", "containers", "bids.sif")
+container = os.path.join("/", "home", "mathdugre", "containers", "bids.sif")
 CoRR = os.path.join("/", "mnt", "lustre", "mathdugre", "datasets", "CoRR")
 
 cmds = []
@@ -46,98 +47,98 @@ for cmd_template in cmd_templates:
     for x in n_nodes:
         cmds.append(
             cmd_template.format(
-                BB_1000,
+                BB_5000,
                 "increment",
                 f"{default['itr']} {default['sleep']}",
                 x,
                 benchmark_folder,
             )
         )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_5000,
+        #         "multi-increment",
+        #         f"{default['itr']} {default['sleep']}",
+        #         x,
+        #         benchmark_folder,
+        #     )
+        # )
         cmds.append(
             cmd_template.format(
-                BB_1000,
-                "multi-increment",
-                f"{default['itr']} {default['sleep']}",
-                x,
-                benchmark_folder,
-            )
-        )
-        cmds.append(
-            cmd_template.format(
-                BB_1000,
+                BB_5000,
                 "histogram",
                 "",
                 x,
                 benchmark_folder,
             )
         )
-        cmds.append(
-            cmd_template.format(
-                BB_1000,
-                "kmeans",
-                f"{default['itr']}",
-                x,
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_5000,
+        #         "kmeans",
+        #         f"{default['itr']}",
+        #         x,
+        #         benchmark_folder,
+        #     )
+        # )
 
     for x in n_iterations:
         cmds.append(
             cmd_template.format(
-                BB_1000,
+                BB_5000,
                 "increment",
                 f"{x} {default['sleep']}",
                 default["node"],
                 benchmark_folder,
             )
         )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_5000,
+        #         "multi-increment",
+        #         f"{x} {default['sleep']}",
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
         cmds.append(
             cmd_template.format(
-                BB_1000,
-                "multi-increment",
-                f"{x} {default['sleep']}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-        cmds.append(
-            cmd_template.format(
-                BB_1000,
+                BB_5000,
                 "histogram",
                 "",
                 default["node"],
                 benchmark_folder,
             )
         )
-        cmds.append(
-            cmd_template.format(
-                BB_1000,
-                "kmeans",
-                x,
-                default["node"],
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_5000,
+        #         "kmeans",
+        #         x,
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
 
     for x in sleep_time:
         cmds.append(
             cmd_template.format(
-                BB_1000,
+                BB_5000,
                 "increment",
                 f"{default['itr']} {x}",
                 default["node"],
                 benchmark_folder,
             )
         )
-        cmds.append(
-            cmd_template.format(
-                BB_1000,
-                "multi-increment",
-                f"{default['itr']} {x}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_5000,
+        #         "multi-increment",
+        #         f"{default['itr']} {x}",
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
 
     for x in BB_blocks:
         cmds.append(
@@ -149,15 +150,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        cmds.append(
-            cmd_template.format(
-                x,
-                "multi-increment",
-                f"{default['itr']} {default['sleep']}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         x,
+        #         "multi-increment",
+        #         f"{default['itr']} {default['sleep']}",
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
         cmds.append(
             cmd_template.format(
                 x,
@@ -167,15 +168,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        cmds.append(
-            cmd_template.format(
-                x,
-                "kmeans",
-                f"{default['itr']}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         x,
+        #         "kmeans",
+        #         f"{default['itr']}",
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
 
     for x in n_nodes:
         cmds.append(
@@ -192,6 +193,6 @@ cmds = list(set(cmds)) * REPETITIONS
 random.shuffle(cmds)
 
 for cmd in cmds:
-    print("Running:", cmd)
+    print(f"[{datetime.now()}] Running: {cmd}")
     subprocess.run(cmd, shell=True)
     time.sleep(15)
