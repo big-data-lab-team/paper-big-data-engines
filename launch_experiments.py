@@ -4,11 +4,11 @@ import random
 import subprocess
 import time
 
-REPETITIONS = 5
+REPETITIONS = 1
 
 n_nodes = [2, 4, 8]
-n_iterations = [1, 10, 100]
-sleep_time = [0.125, 1, 8]
+n_iterations = [1, 8, 64]
+sleep_time = [0.25, 1, 4, 16]
 
 default = {
     "node": n_nodes[1],
@@ -195,4 +195,5 @@ random.shuffle(cmds)
 for cmd in cmds:
     print(f"[{datetime.now()}] Running: {cmd}")
     subprocess.run(cmd, shell=True)
-    time.sleep(15)
+    time.sleep(30)
+    print(f"[{datetime.now()}] Done")
