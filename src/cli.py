@@ -3,6 +3,7 @@ import os
 import click
 
 engine_choices = click.argument("engine", type=click.Choice(["spark", "dask", "ray"]))
+block_size = click.argument("blocksize", type=click.Choice(["5000", "2500", "1000"]))
 
 
 def import_from(module, name):
@@ -46,10 +47,11 @@ def cli(
 
 
 @cli.command()
+@block_size
 @click.argument("iterations", type=int)
 @click.argument("delay", type=float)
 @click.pass_context
-def increment(ctx, iterations, delay):
+def increment(ctx, block_size, iterations, delay):
     run = import_from(f"app.{ctx.obj['ENGINE']}.increment", "run")
 
     run(
@@ -58,6 +60,7 @@ def increment(ctx, iterations, delay):
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
         benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
+        block_size=block_size,
         iterations=iterations,
         delay=delay,
     )
@@ -65,10 +68,11 @@ def increment(ctx, iterations, delay):
 
 @cli.command()
 @click.option("-r", "--random-seed", type=int, default=1234)
+@block_size
 @click.argument("iterations", type=int)
 @click.argument("delay", type=float)
 @click.pass_context
-def multi_increment(ctx, random_seed, iterations, delay):
+def multi_increment(ctx, block_size, random_seed, iterations, delay):
     run = import_from(f"app.{ctx.obj['ENGINE']}.multi_increment", "run")
 
     run(
@@ -77,6 +81,7 @@ def multi_increment(ctx, random_seed, iterations, delay):
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
         benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
+        block_size=block_size,
         iterations=iterations,
         delay=delay,
         seed=random_seed,
@@ -84,8 +89,9 @@ def multi_increment(ctx, random_seed, iterations, delay):
 
 
 @cli.command()
+@block_size
 @click.pass_context
-def histogram(ctx):
+def histogram(ctx, block_size):
     run = import_from(f"app.{ctx.obj['ENGINE']}.histogram", "run")
 
     run(
@@ -94,13 +100,15 @@ def histogram(ctx):
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
         benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
+        block_size=block_size,
     )
 
 
 @cli.command()
+@block_size
 @click.argument("iterations", type=int)
 @click.pass_context
-def kmeans(ctx, iterations):
+def kmeans(ctx, block_size, iterations):
     run = import_from(f"app.{ctx.obj['ENGINE']}.kmeans", "run")
 
     run(
@@ -109,6 +117,7 @@ def kmeans(ctx, iterations):
         scheduler=ctx.obj["SCHEDULER"],
         n_worker=ctx.obj["N_WORKER"],
         benchmark_folder=ctx.obj["BENCHMARK_FOLDER"],
+        block_size=block_size,
         iterations=iterations,
     )
 

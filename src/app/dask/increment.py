@@ -17,10 +17,11 @@ def run(
     n_worker: int,
     benchmark_folder: str,
     *,
+    block_size: int,
     iterations: int,
     delay: int,
 ) -> None:
-    experiment = f"dask:increment:{n_worker=}:{iterations=}:{delay=}"
+    experiment = f"dask:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}"
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,

@@ -22,8 +22,10 @@ def run(
     scheduler: str,
     n_worker: int,
     benchmark_folder: str,
+    *,
+    block_size: int,
 ) -> None:
-    experiment = f"dask:histogram:{n_worker=}"
+    experiment = f"dask:histogram:{n_worker=}:{block_size=}"
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,

@@ -1,3 +1,4 @@
+import os
 import time
 
 from pyspark import SparkConf, SparkContext
@@ -25,6 +26,9 @@ def run(
         "container_path": container_path,
     }
 
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
+
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
 
@@ -36,7 +40,7 @@ def run(
 
     sites = sc.parallelize(site_crawler(input_folder), 512)
     sites.map(lambda x: run_group(site=x, **common_args)).collect()
-    
+
     if benchmark_folder:
         merge_logs(
             benchmark_folder=benchmark_folder,

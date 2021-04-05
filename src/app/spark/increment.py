@@ -1,4 +1,5 @@
 import glob
+import os
 import time
 
 from pyspark import SparkConf, SparkContext
@@ -14,10 +15,11 @@ def run(
     n_worker: int,
     benchmark_folder: str,
     *,
+    block_size: int,
     iterations: int,
     delay: int,
 ) -> None:
-    experiment = f"spark:increment:{n_worker=}:{iterations=}:{delay=}"
+    experiment = f"spark:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}"
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
@@ -25,6 +27,9 @@ def run(
         "output_folder": output_folder,
         "experiment": experiment,
     }
+
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
@@ -39,7 +44,7 @@ def run(
     img_rdd = img_rdd.map(lambda x: dump(x, **common_args))
 
     img_rdd.collect()
-    
+
     if benchmark_folder:
         merge_logs(
             benchmark_folder=benchmark_folder,

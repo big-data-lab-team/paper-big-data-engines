@@ -1,4 +1,5 @@
 import glob
+import os
 import time
 
 import numpy as np
@@ -19,8 +20,10 @@ def run(
     scheduler: str,
     n_worker: int,
     benchmark_folder: str,
+    *,
+    block_size: int,
 ) -> None:
-    experiment = f"spark:histogram:{n_worker=}"
+    experiment = f"spark:histogram:{n_worker=}:{block_size=}"
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
@@ -28,6 +31,9 @@ def run(
         "output_folder": output_folder,
         "experiment": experiment,
     }
+
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
@@ -48,7 +54,7 @@ def run(
     )
 
     save_histogram(histogram, **common_args)
-    
+
     if benchmark_folder:
         merge_logs(
             benchmark_folder=benchmark_folder,
