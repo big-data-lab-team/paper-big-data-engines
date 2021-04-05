@@ -18,7 +18,7 @@ default = {
 }
 
 cmd_templates = [
-    "SLURM_NNODES={3} program='cli.py -i {0} -o {0}-output -s slurm -b {4} spark {1} {2}' ./deploy_spark_cluster.sh",
+    "SLURM_NNODES={3} program='cli.py -i {0} -o {0}-output -s slurm -b {4} spark {1} {2}' ~/projects/paper-big-data-engines/deploy_spark_cluster.sh",
     "benchmark -i {0} -o {0}-output -s slurm -n {3} -b {4} dask {1} {2}",
 ]
 
