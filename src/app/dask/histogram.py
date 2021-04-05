@@ -39,7 +39,7 @@ def run(
         hostname = os.environ["HOSTNAME"]
         cluster = SLURMCluster(scheduler_options={"host": hostname})
         client = Client(cluster)
-        cluster.scale(n_worker * os.environ["NWORKERS"])
+        cluster.scale(n_worker * int(os.environ["NWORKERS"]))
     else:
         client = Client(scheduler)
 
