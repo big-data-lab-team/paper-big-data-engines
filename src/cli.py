@@ -3,7 +3,7 @@ import os
 import click
 
 engine_choices = click.argument("engine", type=click.Choice(["spark", "dask", "ray"]))
-block_size = click.argument("blocksize", type=click.Choice(["5000", "2500", "1000"]))
+block_size = click.argument("block_size", type=click.Choice(["5000", "2500", "1000"]))
 
 
 def import_from(module, name):
