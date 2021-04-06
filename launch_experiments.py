@@ -5,7 +5,6 @@ import subprocess
 import time
 
 REPETITIONS = 1
-os.environ["NWORKERS"] = "8"
 
 n_nodes = [2, 4, 8]
 n_iterations = [1, 8, 64]
