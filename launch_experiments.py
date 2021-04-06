@@ -23,6 +23,7 @@ cmd_templates = [
 ]
 
 benchmark_folder = os.path.join("/", "home", "mathdugre", "ccpe-output")
+os.makedirs(benchmark_folder, exist_ok=True)
 
 BB_5000 = os.path.join(
     "/", "mnt", "lustre", "mathdugre", "datasets", "bigbrain", "nii", "5000_blocks"
