@@ -69,7 +69,7 @@ for cmd_template in cmd_templates:
             cmd_template.format(
                 BB_5000,
                 "histogram",
-                "{5000}",
+                f"{5000}",
                 x,
                 benchmark_folder,
             )
@@ -107,7 +107,7 @@ for cmd_template in cmd_templates:
             cmd_template.format(
                 BB_5000,
                 "histogram",
-                "{5000}",
+                f"{5000}",
                 default["node"],
                 benchmark_folder,
             )
