@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export NODE_MEM=250
+export NODE_MEM=232 # Convert to GiB
 export NODE_NPROC=64
 export NWORKERS=8
 
