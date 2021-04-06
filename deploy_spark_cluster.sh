@@ -26,6 +26,7 @@ batch_program()
             echo "master not found"
             sleep 5
     done
+    export MASTER_URL
 
     SPARK_WORKER_INSTANCES=${NWORKERS} SPARK_NO_DAEMONIZE=1 srun -n ${TOTAL_WORKERS} -N ${SLURM_NNODES} ${SPARK_HOME}/sbin/start-worker.sh -m ${WORKER_MEM} -c ${WORKER_NPROC} ${MASTER_URL} &
     workers_pid=$!
