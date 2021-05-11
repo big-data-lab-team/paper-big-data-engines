@@ -196,6 +196,7 @@ random.shuffle(cmds)
 
 for cmd in cmds:
     print(f"[{datetime.now()}] Running: {cmd}")
+    subprocess.run("sudo /home/shared/dropcache_compute.sh", shell=True)
     subprocess.run(cmd, shell=True)
-    time.sleep(30)
+    time.sleep(15)
     print(f"[{datetime.now()}] Done")
