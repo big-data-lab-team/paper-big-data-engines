@@ -33,7 +33,7 @@ batch_program()
 
     if [ ! -z "$program" ]
     then
-       SPARK_NO_DAEMONIZE=1 ${SPARK_HOME}/bin/spark-submit --master ${MASTER_URL} --executor-memory ${WORKER_MEM} $program
+       SPARK_NO_DAEMONIZE=1 ${SPARK_HOME}/bin/spark-submit --master ${MASTER_URL} --driver-memory 32G --executor-memory ${WORKER_MEM} $program
     fi
 
     kill $workers_pid
