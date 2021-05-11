@@ -4,7 +4,10 @@ import random
 import subprocess
 import time
 
-REPETITIONS = 1
+from tqdm import tqdm
+
+
+REPETITIONS = 10
 
 n_nodes = [2, 4, 8]
 n_iterations = [1, 8, 64]
@@ -193,7 +196,7 @@ for cmd_template in cmd_templates:
 cmds = list(set(cmds)) * REPETITIONS
 random.shuffle(cmds)
 
-for cmd in cmds:
+for cmd in tqdm(cmds):
     print(f"[{datetime.now()}] Running: {cmd}")
     subprocess.run("sudo /home/shared/dropcache_compute.sh", shell=True)
     subprocess.run(cmd, shell=True)
