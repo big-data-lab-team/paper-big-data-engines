@@ -13,14 +13,15 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
     *,
+    block_size: int,
     iterations,
 ) -> None:
-    experiment = f"spark:kmeans:iterations={iterations}"
+    experiment = f"spark:kmeans:{n_worker=}:{block_size=}:{iterations=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
         "experiment": experiment,
@@ -68,12 +69,12 @@ def run(
 
         end_time = time.time() - start_time
 
-        if benchmark:
+        if benchmark_folder:
             log(
                 start,
                 end_time,
                 "all",
-                output_folder,
+                benchmark_folder,
                 experiment,
                 "update_centroids",
             )
@@ -87,8 +88,8 @@ def run(
 
     sc.stop()
 
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )

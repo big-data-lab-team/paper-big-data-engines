@@ -18,14 +18,15 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
     *,
+    block_size: int,
     iterations,
 ) -> None:
-    experiment = f"dask:kmeans:iterations={iterations}"
+    experiment = f"dask:kmeans:{n_worker=}:{block_size=}:{iterations=}"
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
         "experiment": experiment,
@@ -58,7 +59,7 @@ def run(
             ]
         )
         .reshape(-1)
-        .rechunk(16_000_000)  # 128MB chunks
+        .rechunk(block_size_limit=64*1024**2)  # 64MB chunks
         .persist()
     )
     del sample
@@ -88,12 +89,12 @@ def run(
 
         end_time = time.time() - start_time
 
-        if benchmark:
+        if benchmark_folder:
             log(
                 start,
                 end_time,
                 "all",
-                output_folder,
+                benchmark_folder,
                 experiment,
                 "update_centroids",
             )
@@ -110,15 +111,17 @@ def run(
             )
         )
 
-    futures = client.compute(results)
-    client.gather(futures)
+    N_BATCH = 5
+    for i in range(N_BATCH):
+        futures = client.compute(results[i::N_BATCH])
+        client.gather(futures)
 
     client.close()
     if SLURM:
         cluster.scale(0)
 
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
+            benchmark_folder=benchmark_folder,
             experiment=experiment,
         )
