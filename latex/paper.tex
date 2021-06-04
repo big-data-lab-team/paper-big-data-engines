@@ -30,7 +30,7 @@
 
 \begin{document}
 
-\title{Impact of engines scheduler on the performance of Big Data pipelines in HPC \TG{Suggested title: Performance comparison of Dask and Apache Spark on HPC systems}}
+\title{Performance comparison of Dask and Apache Spark on HPC systems}
 
 \author{Mathieu Dugr\'e, Val\'erie Hayot-Sasson, Tristan Glatard\\
 	Department of Computer Science and Software Engineering\\
@@ -46,7 +46,7 @@
 \end{abstract}
 
 \begin{IEEEkeywords}
-	Performance, Scheduler, Big Data, Dask, Spark, Neuroimaging
+	Performance, Big Data, Dask, Spark, Neuroimaging
 \end{IEEEkeywords}
 \MD{Discuss which keyword to use for the paper.}
 
@@ -87,13 +87,11 @@ We chose to use Dask Distributed scheduler to keep the environment balanced betw
 
 In the Dask Distributed scheduler, a \textit{dask-scheduler} process administrates the resource provided by  \textit{dask-worker}s in the cluster.
 The scheduler receives jobs from clients and assigns tasks to available workers.
-Task scheduler uses a FIFO (First-In-First-Out) job scheduling policy.
+Task scheduler uses a LIFO (Last-In-First-Out) job scheduling policy.
 That is an utter process branch of the Dask graph before proceeding with the next one.
 
 Dask offers multiple ways to deploy a cluster, including, but not limited to, SSH configs, Kubernetes, SLURM, PBS.
 For our experiments, we used the \href{https://jobqueue.dask.org/en/latest/generated/dask_jobqueue.SLURMCluster.html}{Dask SLURM cluster} API.
-
-Dask \MD{Add version when after locking it for experiments.} was used. \TG{should be in methods}
 
 \subsection{Apache Spark}
 Apache Spark is a widely-used general-purpose Big Data engine.
@@ -108,7 +106,7 @@ In the Spark Standalone scheduler, a \textit{leader} \TG{I am all in favor of in
 A \textit{driver}  process receives jobs from clients and requests workers from the leader.
 Jobs are divided into stages to be executed onto workers.
 Each operation in a stage is represented by a high-level task in the computation graph.
-Like Dask, Spark Standalone scheduler uses a FIFO policy to schedule tasks.
+Like Dask, Spark Standalone scheduler uses a LIFO policy to schedule tasks.
 Spark Standalone has two execution modes: (1) the client mode, where the driver process runs in a dedicated process,
 and (2) the cluster mode, where the driver runs within a worker process.
 Our experiments use the client mode since cluster mode is not available in PySpark.
@@ -127,22 +125,25 @@ We focus on PySpark API to have a more balanced environment between the differen
 \subsection{Infrastructure}
 For our experiments we used the SlashBin cluster at Concordia University.
 Each compute node has 2 16-cores CPUs,
-\SI{256}{\giga\byte} memory, \MD{find out what's the memory speed and \#-channel supported.}
-\SI{2.88}{\tera\byte} SSDs of mounted storage.
+\SI{256}{\giga\byte} \SI{2666}{\mega\hertz} memory in 8-channel,
+and \SI{2.88}{\tera\byte} SSDs of mounted storage.
 The nodes are interconnected with a dedicated \SI{10}{\giga\bit/\second} Ethernet connection.
-Centos \MD{Verify version} and Linux kernel \MD{Verify kernel version} is installed on the nodes.
+Centos 8 with Linux kernel \textit{4.18.0-240.1.1.el8\_lustre.x86\_64} installed on the compute nodes.
 
-\MD{Write about the worker/leader setup once the dataset size is determined. Need to tune so that 2-3 blocks can fit in the excutors memmory}
+Both Spark and Dask are configured to have 8 worker processes each with 8 threads.
+Each worker is allocated \SI{31.5}{\giga\byte} of memory.
+A new cluster is spinned up and teared down for each experiment.
 
+Dask ?? and Spark ?? \MD{Add version when after locking it for experiments.} was used for our experiments.
 
 \subsection{Dataset}
 We used BigBrain\cite{Amunts:13}, a 3-D image of the human brain with voxel intensity ranging between 0 and 65,535.
 We converted the blocks into the NIfTI format, a popular format in neuroimaging.
-We left the NIfTI blocks uncompressed, resulting in a total data size of \SI{00}{\giga\byte}\MD{Verify the size of the dataset when Lustre back on}.
-To evaluate the effect of block size, we resplit these blocks into 30, 125 and 750 blocks of \MD{size for each block segment}, using the \href{https://github.com/big-data-lab-team/sam}{sam} library.
+We left the NIfTI blocks uncompressed, resulting in a total data size of \SI{648}{\giga\byte}.
+To evaluate the effect of block size, we resplit these blocks into 1000, 2500, and 5000 blocks of \SI{648}{\mega\byte}, \SI{259.2}{\mega\byte}, and \SI{129.6}{\mega\byte}, respectively.
+\href{https://github.com/big-data-lab-team/sam}{sam} library was used to resplit the image.
 	
-We also used the dataset provided by the Consortium for Reliability and Reproducibility (\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR}) \cite{zuo2014open}.
-This dataset is freely available on \href{https://datasets.datalad.org/?dir=/corr/RawDataBIDS}{datalad}.
+We also used the dataset provided by the Consortium for Reliability and Reproducibility (\href{http://fcon_1000.projects.nitrc.org/indi/CoRR/html/}{CoRR}) \cite{zuo2014open}, freely available on \href{https://datasets.datalad.org/?dir=/corr/RawDataBIDS}{datalad}.
 The entire dataset is \SI{408.4}{\giga\byte}, containing anatomical, diffusion and functional images of 1,397 subjects acquiredin 29 sites.
 We used all 3,491 anatomical images, representing \SI{39}{\giga\byte} overall (\SI{11.17}{\mega\byte} per image on average).
 	
@@ -155,13 +156,29 @@ We prevent data caching of the blocks by incrementing their voxels value by one 
 Finally, we write the resulting NIfTI image back to Lustre.
 This application allows us to study the engines when their inputs are processed independently.
 The map-only scenario of this application mimics the processing of multiple independent subjects in parallel.
-\MD{TODO: Add the Figure for the application graph.}
-	
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[height=\columnwidth,
+	angle=0]{figures/increment.png}
+	\caption{Task graph for Incrementation with 3 iterations and 3 BigBrain blocks.}
+	\label{fig:graph-increment}
+\end{figure}
+
+% Currently ommitted due to issue with memory.
+% 
 \subsubsection{Multi-Increment}
 Our second application is an adaptation of the increment application.
 A significant difference is that, at each iteration, it uses a random BigBrain block as the increment value. 
 This change allows the multi-increment application to have inter-worker communication while remaining simple.
-\MD{TODO: Add the Figure for the application graph.}
+
+\begin{figure}[!hb]
+	\centering
+	\includegraphics[height=\columnwidth,
+	angle=0]{figures/multi-increment.png}
+	\caption{Task graph for Multi-Incrementation with 3 iterations and 3 BigBrain blocks.}
+	\label{fig:graph-muti-increment}
+\end{figure}
 	
 \subsubsection{Histogram}
 As our third application, we calculate the histogram of the BigBrain image. 
@@ -169,9 +186,16 @@ The application reads the BigBrain blocks from Lustre, calculates each intensity
 This map-reduce application has a very high read overwrite ratio.
 Moreover, this application requires shuffling, albeit of a limited amoutn of data. 
 The amount of inter-worker communication is in-between the increment and multi-increment applications.
-\MD{TODO: Add the Figure for the application graph.}
+
+\begin{figure}[!hb]
+	\centering
+	\includegraphics[height=\columnwidth,
+	angle=0]{figures/histogram.png}
+	\caption{Task graph for Histogram with 3 BigBrain blocks.}
+	\label{fig:graph-histogram}
+\end{figure}
 	
-\subsubsection{Kmeans} % TODO
+\subsubsection{Kmeans}
 For our fourth application, we apply Kmeans clustering to the voxel intensities of the BigBrain image.
 We set the number of clusters to 3, to segment the white and grey matter and the noise.
 The application starts by reading the image blocks, combining all voxels in a 1-D array, and choosing initial centroids using the min, max, and intermediate values.
@@ -182,31 +206,60 @@ Updating the centroids involves substantial data communication between the worke
 
 For this application, the Spark and Dask implementations differ slightly,  to take advantage of the best-suited API from both engines.
 The Spark implementation uses the Map-Reduce paradigm, while the Dask one uses array programming.
-\MD{TODO: Add the Figure for the application graph.}
 	
 	
-\subsubsection{BIDS app example}
-Our last application is BIDS App example: a neuroimaging pipeline to measure the brain volume from MRIs.
+\subsubsection{BIDS App example}
+Our fifth application is BIDS App example: a neuroimaging pipeline to measure the brain volume from MRIs.
 For this application, we use the CoRR dataset.
 The application extracts the brain volume of each participant, then computes the average for each group of participants.
 Unlike the other applications, BIDS App example is a command-line executed in a Docker image (bids/example on DockerHub).
 We converted the Docker image to a Singularity image for use in HPC environments, \MD{Cite paper on reason why this is done.}
 using \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
-\MD{Need to discuss if we preload the image on the worker nodes.}
-\MD{TODO: Add the Figure for the application graph.}
+
+\subsubsection{BIDS App MRIQC}
+Our last application is BIDS App MRIQC: a neuroimaging pipeline to perfom quality control of a brain image.
+For this application, we use the CoRR dataset. \MD{Validate if this one was used after running the experiments. Maybe another dataset will be required; e.g. ADHD200}
+This application verifies the quality of images on a per-sbuject basis.
+Like the BIDS App example, this application is runned using a command-line tool.
+We use the same method to convert the Docker image to a Singularity image.
 	
-\subsection{Experiments} % TODO
-	
+\subsection{Experiments}
+Table~\ref{table:parameters} the four parameters that are varied throughout the experiments.
+We varied (1) the number of workers to assess the scalibility of the scheduler for the engine,
+(2) the BigBrain block size in Increment, Multi-Increment, and Histogram to measure the effect of the different I/O pattern and parallelization degrees,
+(3) the number of iterations to evaluate the effect of number of task,
+and (4) the sleep delay to study the effect of task duration.
+It should note that increasing the number of iterations for a given sleep delay also increases the total compute time of an application.
+
+To avoid potential external bias such as caching, background process and network load, we ran the applications in randomized order and cleared the page cache in between every experiments.
+Each benchmark was run ten times.
+
+For each run, we measure the makespan of the application as well as the cumulative time spent in the different functions for read, processing, and writing data.
+The overhead calculation for each CPU thread is the end time of the last processed task minus the total runtime of the tasks ran for this thread.
+Summing those results gives the total overhead for the application.
+
+\begin{table*}[t]
+	\renewcommand{\arraystretch}{1.5}
+	\caption{Parameters for the experiments}\label{table:parameters}
+	\centering
+	\begin{tabular}{|l|c|c|c|c|c|c|}
+		\hline & Increment & Multi-Increment & Kmeans & Histogram & BIDS Example & BIDS MRIQC \\\hline
+		\# of Nodes & \multicolumn{6}{c|}{2, 4, 8} \\\hline
+		\# of Workers & \multicolumn{6}{c|}{16, 32 , 64} \\ \hline
+		Block resplit & \multicolumn{4}{c|}{1000, 2500, 5000}  & \multicolumn{2}{c|}{n/a} \\\hline
+		Block Size {[}\SI{}{\mega\byte}{]} & \multicolumn{4}{c|}{648, 259.2, 129.6} & \multicolumn{2}{c|}{n/a} \\\hline
+		% \# of Subjects & \multicolumn{4}{c|}{n/a} & \multicolumn{2}{c|}{1397} \\ \hline
+		\# of Iterations & \multicolumn{3}{c|}{1, 8, 64}                 & \multicolumn{3}{c|}{n/a} \\\hline
+		Sleep Delay {[}\SI{}{\second}{]} & \multicolumn{2}{c|}{0.25, 1, 4, 16} & \multicolumn{4}{c|}{n/a} \\\hline
+	\end{tabular}
+\end{table*}
+\MD{Decide which row to keep for (\# fo nodes / \# of workers) and (Block resplit / Block size)}
+
 \section{Results} % TODO
-	
 \section{Discussion} % TODO
-	
 \section{Conclusion} % TODO
-	
 \section*{Acknowledgment} % TODO
-	
-	
+
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,reference}
-	
 \end{document}

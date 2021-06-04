@@ -1,0 +1,20 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Background}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Lustre}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Dask}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Apache Spark}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Methods}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{Infrastructure}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{Dataset}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.3}{Applications}{section.3}% 9
+\BOOKMARK [3][-]{subsubsection.3.3.1}{Increment}{subsection.3.3}% 10
+\BOOKMARK [3][-]{subsubsection.3.3.2}{Multi-Increment}{subsection.3.3}% 11
+\BOOKMARK [3][-]{subsubsection.3.3.3}{Histogram}{subsection.3.3}% 12
+\BOOKMARK [3][-]{subsubsection.3.3.4}{Kmeans}{subsection.3.3}% 13
+\BOOKMARK [3][-]{subsubsection.3.3.5}{BIDS App example}{subsection.3.3}% 14
+\BOOKMARK [3][-]{subsubsection.3.3.6}{BIDS App MRIQC}{subsection.3.3}% 15
+\BOOKMARK [2][-]{subsection.3.4}{Experiments}{section.3}% 16
+\BOOKMARK [1][-]{section.4}{Results}{}% 17
+\BOOKMARK [1][-]{section.5}{Discussion}{}% 18
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 19
+\BOOKMARK [1][-]{section*.6}{References}{}% 20
