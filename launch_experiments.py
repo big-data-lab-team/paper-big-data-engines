@@ -10,8 +10,8 @@ from tqdm import tqdm
 REPETITIONS = 10
 
 n_nodes = [2, 4, 8]
-n_iterations = [1, 8, 64]
-sleep_time = [0.25, 1, 4, 16]
+n_iterations = [1, 5, 25]
+sleep_time = [0.33, 1, 3, 9]
 
 default = {
     "node": n_nodes[1],
@@ -70,79 +70,30 @@ for cmd_template in cmd_templates:
         cmds.append(
             cmd_template.format(
                 BB_5000,
+                "kmeans",
+                f"{5000} {default['itr']}",
+                x,
+                benchmark_folder,
+            )
+        )
+        cmds.append(
+            cmd_template.format(
+                BB_5000,
                 "histogram",
                 f"{5000}",
                 x,
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "kmeans",
-        #         f"{5000} {default['itr']}",
-        #         x,
-        #         benchmark_folder,
-        #     )
-        # )
-
-    for x in n_iterations:
         cmds.append(
             cmd_template.format(
-                BB_5000,
-                "increment",
-                f"{5000} {x} {default['sleep']}",
-                default["node"],
+                CoRR,
+                "bids",
+                container,
+                x,
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "multi-increment",
-        #         f"{5000} {x} {default['sleep']}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
-        cmds.append(
-            cmd_template.format(
-                BB_5000,
-                "histogram",
-                f"{5000}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "kmeans",
-        #         f"{5000} {x}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
-
-    for x in sleep_time:
-        cmds.append(
-            cmd_template.format(
-                BB_5000,
-                "increment",
-                f"{5000} {default['itr']} {x}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "multi-increment",
-        #         f"{5000} {default['itr']} {x}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
 
     for n, path in BB_blocks.items():
         cmds.append(
@@ -166,32 +117,70 @@ for cmd_template in cmd_templates:
         cmds.append(
             cmd_template.format(
                 path,
+                "kmeans",
+                f"{n} {default['itr']}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
+        cmds.append(
+            cmd_template.format(
+                path,
                 "histogram",
                 f"{n}",
                 default["node"],
                 benchmark_folder,
             )
         )
+
+    for x in n_iterations:
+        cmds.append(
+            cmd_template.format(
+                BB_5000,
+                "increment",
+                f"{5000} {x} {default['sleep']}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
         # cmds.append(
         #     cmd_template.format(
-        #         path,
-        #         "kmeans",
-        #         f"{n} {default['itr']}",
+        #         BB_5000,
+        #         "multi-increment",
+        #         f"{5000} {x} {default['sleep']}",
         #         default["node"],
         #         benchmark_folder,
         #     )
         # )
-
-    for x in n_nodes:
         cmds.append(
             cmd_template.format(
-                CoRR,
-                "bids",
-                container,
-                x,
+                BB_5000,
+                "kmeans",
+                f"{5000} {x}",
+                default["node"],
                 benchmark_folder,
             )
         )
+
+    for x in sleep_time:
+        cmds.append(
+            cmd_template.format(
+                BB_5000,
+                "increment",
+                f"{5000} {default['itr']} {x}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_5000,
+        #         "multi-increment",
+        #         f"{5000} {default['itr']} {x}",
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
 
 cmds = list(set(cmds)) * REPETITIONS
 random.shuffle(cmds)
