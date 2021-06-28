@@ -27,7 +27,9 @@ def import_from(module, name):
 @click.option("-s", "--scheduler", required=True)
 @click.option("-n", "--n-worker", type=int, default=1, required=False)
 @click.option(
-    "-b", "--benchmark-folder", type=click.Path(dir_okay=True, writable=True),
+    "-b",
+    "--benchmark-folder",
+    type=click.Path(dir_okay=True, writable=True),
 )
 @engine_choices
 @click.pass_context

@@ -15,7 +15,12 @@ def flatten(arr, *, benchmark_folder, start, experiment, filename, **kwargs):
 
     if benchmark_folder:
         log(
-            start_time, end_time, filename, benchmark_folder, experiment, "flatten",
+            start_time,
+            end_time,
+            filename,
+            benchmark_folder,
+            experiment,
+            "flatten",
         )
     return filename, arr
 
