@@ -1,5 +1,6 @@
 import glob
 import time
+import uuid
 
 from pyspark import SparkConf, SparkContext
 import numpy as np
@@ -24,7 +25,7 @@ def run(
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": experiment,
+        "experiment": f"{experiment}-{uuid.uuid1()}",
     }
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
@@ -40,11 +41,7 @@ def run(
 
     # Pick random initial centroids
     # TODO benchmark
-    centroids = np.linspace(
-        voxels.min(),
-        voxels.max(),
-        num=3,
-    )
+    centroids = np.linspace(voxels.min(), voxels.max(), num=3,)
 
     for _ in range(0, iterations):  # Disregard convergence.
         start = time.time() - start_time
@@ -75,21 +72,17 @@ def run(
                 end_time,
                 "all",
                 benchmark_folder,
-                experiment,
+                common_args["experiment"],
                 "update_centroids",
             )
 
     blocks.map(lambda block: classify_block(block, centroids, **common_args)).map(
-        lambda block: dump(
-            block,
-            **common_args,
-        )
+        lambda block: dump(block, **common_args,)
     ).collect()
 
     sc.stop()
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder,
-            experiment=experiment,
+            benchmark_folder=benchmark_folder, experiment=experiment,
         )

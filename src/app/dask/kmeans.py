@@ -1,6 +1,7 @@
 import glob
 import os
 import time
+import uuid
 
 import dask
 import dask.array as da
@@ -29,7 +30,7 @@ def run(
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": experiment,
+        "experiment": f"{experiment}-{uuid.uuid1()}",
     }
 
     SLURM = scheduler.lower() == "slurm"
@@ -42,10 +43,7 @@ def run(
         client = Client(scheduler)
 
     blocks = [
-        dask.delayed(load)(
-            filename,
-            **common_args,
-        ).persist()
+        dask.delayed(load)(filename, **common_args,).persist()
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
@@ -59,16 +57,13 @@ def run(
             ]
         )
         .reshape(-1)
-        .rechunk(block_size_limit=64*1024**2)  # 64MB chunks
+        .rechunk(block_size_limit=64 * 1024 ** 2)  # 64MB chunks
         .persist()
     )
     del sample
 
     # Pick random initial centroids
-    centroids = np.linspace(
-        *dask.compute(da.min(voxels), da.max(voxels)),
-        num=3,
-    )
+    centroids = np.linspace(*dask.compute(da.min(voxels), da.max(voxels)), num=3,)
 
     centroid_index = None
     for _ in range(0, iterations):  # Disregard convergence.
@@ -95,7 +90,7 @@ def run(
                 end_time,
                 "all",
                 benchmark_folder,
-                experiment,
+                common_args["experiment"],
                 "update_centroids",
             )
 
@@ -122,6 +117,5 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder,
-            experiment=experiment,
+            benchmark_folder=benchmark_folder, experiment=experiment,
         )

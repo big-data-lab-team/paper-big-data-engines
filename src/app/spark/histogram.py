@@ -1,6 +1,7 @@
 import glob
 import os
 import time
+import uuid
 
 import numpy as np
 from pyspark import SparkConf, SparkContext
@@ -29,7 +30,7 @@ def run(
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": experiment,
+        "experiment": f"{experiment}-{uuid.uuid1()}",
     }
 
     if scheduler.lower() == "slurm":
@@ -51,12 +52,11 @@ def run(
     histogram = partial_histogram.fold(
         np.array([0] * (2 ** 16 - 1)),
         lambda x, y: combine_histogram(x, y, **common_args),
-    )
+    ).collect()
 
     save_histogram(histogram, **common_args)
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder,
-            experiment=experiment,
+            benchmark_folder=benchmark_folder, experiment=experiment,
         )

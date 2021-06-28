@@ -1,5 +1,6 @@
 import os
 import time
+import uuid
 
 import dask
 from dask.distributed import Client
@@ -24,7 +25,7 @@ def run(
         "start": start_time,
         "input_folder": input_folder,
         "output_folder": output_folder,
-        "experiment": experiment,
+        "experiment": f"{experiment}-{uuid.uuid1()}",
         "container_path": container_path,
     }
 
@@ -66,6 +67,5 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder,
-            experiment=experiment,
+            benchmark_folder=benchmark_folder, experiment=experiment,
         )

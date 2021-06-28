@@ -1,6 +1,7 @@
 import glob
 import os
 import time
+import uuid
 
 import dask
 from dask.distributed import Client
@@ -27,7 +28,7 @@ def run(
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": experiment,
+        "experiment": f"{experiment}-{uuid.uuid1()}",
     }
 
     SLURM = scheduler.lower() == "slurm"
@@ -40,28 +41,16 @@ def run(
         client = Client(scheduler)
 
     blocks = [
-        dask.delayed(load)(
-            filename,
-            **common_args,
-        )
+        dask.delayed(load)(filename, **common_args,)
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
     results = []
     for block in blocks:
         for _ in range(iterations):
-            block = dask.delayed(increment)(
-                block,
-                delay=delay,
-                **common_args,
-            )
+            block = dask.delayed(increment)(block, delay=delay, **common_args,)
 
-        results.append(
-            dask.delayed(dump)(
-                block,
-                **common_args,
-            )
-        )
+        results.append(dask.delayed(dump)(block, **common_args,))
 
     futures = client.compute(results)
     client.gather(futures)
@@ -72,6 +61,5 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder,
-            experiment=experiment,
+            benchmark_folder=benchmark_folder, experiment=experiment,
         )

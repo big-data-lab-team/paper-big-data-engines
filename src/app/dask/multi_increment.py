@@ -2,6 +2,7 @@ import glob
 import os
 import random
 import time
+import uuid
 
 import dask
 from dask.distributed import Client
@@ -16,21 +17,22 @@ def run(
     output_folder: str,
     scheduler: str,
     n_worker: int,
-    benchmark: bool,
+    benchmark_folder: str,
     *,
+    block_size: int,
     iterations: int,
     delay: int,
     seed: int = 1234,
 ) -> None:
     experiment = (
-        f"dask:multi-increment:iterations={iterations}:delay={delay}:seed={seed}"
+        f"dask:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}"
     )
     start_time = time.time()
     common_args = {
-        "benchmark": benchmark,
+        "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": experiment,
+        "experiment": f"{experiment}-{uuid.uuid1()}",
     }
 
     SLURM = scheduler.lower() == "slurm"
@@ -43,10 +45,7 @@ def run(
         client = Client(scheduler)
 
     blocks = [
-        dask.delayed(load)(
-            filename,
-            **common_args,
-        )
+        dask.delayed(load)(filename, **common_args,)
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
@@ -61,22 +60,20 @@ def run(
                 **common_args,
             )
 
-        results.append(
-            dask.delayed(dump)(
-                block,
-                **common_args,
-            )
-        )
+        results.append(dask.delayed(dump)(block, **common_args,))
 
-    futures = client.compute(results)
-    client.gather(futures)
+    N_BATCH = 3
+    for i in range(N_BATCH):
+        futures = client.compute(results[i::N_BATCH])
+        client.gather(futures)
+    # futures = client.compute(results)
+    # client.gather(futures)
 
     client.close()
     if SLURM:
         cluster.scale(0)
 
-    if benchmark:
+    if benchmark_folder:
         merge_logs(
-            output_folder=output_folder,
-            experiment=experiment,
+            benchmark_folder=benchmark_folder, experiment=experiment,
         )
