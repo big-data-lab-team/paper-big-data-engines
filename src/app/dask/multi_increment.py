@@ -24,15 +24,16 @@ def run(
     delay: int,
     seed: int = 1234,
 ) -> None:
-    experiment = (
-        f"dask:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}"
+    experiment = os.path.join(
+        f"dask:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}",
+        uuid.uuid1(),
     )
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": f"{experiment}-{uuid.uuid1()}",
+        "experiment": experiment,
     }
 
     SLURM = scheduler.lower() == "slurm"
@@ -45,7 +46,10 @@ def run(
         client = Client(scheduler)
 
     blocks = [
-        dask.delayed(load)(filename, **common_args,)
+        dask.delayed(load)(
+            filename,
+            **common_args,
+        )
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
@@ -60,7 +64,12 @@ def run(
                 **common_args,
             )
 
-        results.append(dask.delayed(dump)(block, **common_args,))
+        results.append(
+            dask.delayed(dump)(
+                block,
+                **common_args,
+            )
+        )
 
     N_BATCH = 3
     for i in range(N_BATCH):
@@ -75,5 +84,6 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder, experiment=experiment,
+            benchmark_folder=benchmark_folder,
+            experiment=experiment,
         )

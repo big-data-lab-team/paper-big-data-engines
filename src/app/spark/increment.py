@@ -20,13 +20,16 @@ def run(
     iterations: int,
     delay: int,
 ) -> None:
-    experiment = f"spark:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}"
+    experiment = os.path.join(
+        f"spark:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}",
+        uuid.uuid1(),
+    )
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": f"{experiment}-{uuid.uuid1()}",
+        "experiment": experiment,
     }
 
     if scheduler.lower() == "slurm":
@@ -48,5 +51,6 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder, experiment=experiment,
+            benchmark_folder=benchmark_folder,
+            experiment=experiment,
         )

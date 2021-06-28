@@ -18,14 +18,14 @@ def run(
     benchmark_folder: str,
     container_path: str,
 ) -> None:
-    experiment = f"dask:bids:{n_worker=}"
+    experiment = os.path.join(f"dask:bids:{n_worker=}", uuid.uuid1())
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "input_folder": input_folder,
         "output_folder": output_folder,
-        "experiment": f"{experiment}-{uuid.uuid1()}",
+        "experiment": experiment,
         "container_path": container_path,
     }
 
@@ -67,5 +67,6 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder, experiment=experiment,
+            benchmark_folder=benchmark_folder,
+            experiment=experiment,
         )

@@ -56,13 +56,17 @@ def merge_logs(benchmark_folder, experiment):
     log_folder = os.path.join(benchmark_folder, "benchmarks", experiment)
     filenames = glob.glob(log_folder + "/*.log")
 
-    log_summary_file = os.path.join(log_folder, f"summary-{uuid.uuid1()}.csv")
+    log_summary_file = os.path.join(
+        os.path.dirname(log_folder), f"summary-{os.path.basename(log_folder)}.csv"
+    )
 
     with open(log_summary_file, "a") as fout:
         for filename in filenames:
             with open(filename) as fin:
                 fout.write(fin.read())
             os.remove(filename)
+
+    os.rmdir(os.path.dirname(log_folder))
 
 
 def crawl_dir(input_dir):
@@ -115,7 +119,12 @@ def load(filename, *, benchmark_folder, start, experiment, **kwargs):
 
     if benchmark_folder:
         log(
-            start_time, end_time, filename, benchmark_folder, experiment, load.__name__,
+            start_time,
+            end_time,
+            filename,
+            benchmark_folder,
+            experiment,
+            load.__name__,
         )
 
     return filename, data, (img.affine, img.header)

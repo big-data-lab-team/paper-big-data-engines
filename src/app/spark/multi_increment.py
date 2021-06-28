@@ -1,4 +1,5 @@
 import glob
+import os
 import random
 import time
 import uuid
@@ -21,13 +22,16 @@ def run(
     delay: int,
     seed: int = 1234,
 ) -> None:
-    experiment = f"spark:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}"
+    experiment = os.path.join(
+        f"spark:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}",
+        uuid.uuid1(),
+    )
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": f"{experiment}-{uuid.uuid1()}",
+        "experiment": experiment,
     }
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
@@ -42,7 +46,12 @@ def run(
     for _ in range(iterations):
         tmp = img_rdd.lookup(random.choice(range(len(filenames))))[0]
         img_rdd = img_rdd.map(
-            lambda x: increment(x[1], delay=delay, increment_data=tmp, **common_args,)
+            lambda x: increment(
+                x[1],
+                delay=delay,
+                increment_data=tmp,
+                **common_args,
+            )
         ).cache()
 
     img_rdd = img_rdd.map(lambda x: dump(x[1], **common_args))
@@ -51,5 +60,6 @@ def run(
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder, experiment=experiment,
+            benchmark_folder=benchmark_folder,
+            experiment=experiment,
         )

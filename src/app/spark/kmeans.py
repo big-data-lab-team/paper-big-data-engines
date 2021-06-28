@@ -1,4 +1,5 @@
 import glob
+import os
 import time
 import uuid
 
@@ -19,13 +20,15 @@ def run(
     block_size: int,
     iterations,
 ) -> None:
-    experiment = f"spark:kmeans:{n_worker=}:{block_size=}:{iterations=}"
+    experiment = os.path.join(
+        f"spark:kmeans:{n_worker=}:{block_size=}:{iterations=}", uuid.uuid1()
+    )
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
         "start": start_time,
         "output_folder": output_folder,
-        "experiment": f"{experiment}-{uuid.uuid1()}",
+        "experiment": experiment,
     }
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
@@ -41,7 +44,11 @@ def run(
 
     # Pick random initial centroids
     # TODO benchmark
-    centroids = np.linspace(voxels.min(), voxels.max(), num=3,)
+    centroids = np.linspace(
+        voxels.min(),
+        voxels.max(),
+        num=3,
+    )
 
     for _ in range(0, iterations):  # Disregard convergence.
         start = time.time() - start_time
@@ -72,17 +79,21 @@ def run(
                 end_time,
                 "all",
                 benchmark_folder,
-                common_args["experiment"],
+                experiment,
                 "update_centroids",
             )
 
     blocks.map(lambda block: classify_block(block, centroids, **common_args)).map(
-        lambda block: dump(block, **common_args,)
+        lambda block: dump(
+            block,
+            **common_args,
+        )
     ).collect()
 
     sc.stop()
 
     if benchmark_folder:
         merge_logs(
-            benchmark_folder=benchmark_folder, experiment=experiment,
+            benchmark_folder=benchmark_folder,
+            experiment=experiment,
         )
