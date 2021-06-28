@@ -15,12 +15,7 @@ def flatten(arr, *, benchmark_folder, start, experiment, filename, **kwargs):
 
     if benchmark_folder:
         log(
-            start_time,
-            end_time,
-            filename,
-            benchmark_folder,
-            experiment,
-            "flatten",
+            start_time, end_time, filename, benchmark_folder, experiment, "flatten",
         )
     return filename, arr
 
@@ -70,9 +65,7 @@ def save_histogram(
 ):
     start_time = time() - start
 
-    with open(
-        os.path.join(output_folder, "histogram.csv"), "w"
-    ) as f_out:
+    with open(os.path.join(output_folder, "histogram.csv"), "w") as f_out:
         for i, elm in enumerate(histogram):
             f_out.write(f"{i};{elm}\n")
 

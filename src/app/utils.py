@@ -115,12 +115,7 @@ def load(filename, *, benchmark_folder, start, experiment, **kwargs):
 
     if benchmark_folder:
         log(
-            start_time,
-            end_time,
-            filename,
-            benchmark_folder,
-            experiment,
-            load.__name__,
+            start_time, end_time, filename, benchmark_folder, experiment, load.__name__,
         )
 
     return filename, data, (img.affine, img.header)

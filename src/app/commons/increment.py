@@ -79,12 +79,7 @@ def dump(data, *, benchmark_folder, start, output_folder, experiment, **kwargs):
 
     if benchmark_folder:
         log(
-            start_time,
-            end_time,
-            filename,
-            benchmark_folder,
-            experiment,
-            dump.__name__,
+            start_time, end_time, filename, benchmark_folder, experiment, dump.__name__,
         )
 
     return f_out, "SUCCESS"
