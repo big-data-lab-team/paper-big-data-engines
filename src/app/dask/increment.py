@@ -23,7 +23,8 @@ def run(
     delay: int,
 ) -> None:
     experiment = os.path.join(
-        f"dask:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}", uuid.uuid1()
+        f"dask:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}",
+        str(uuid.uuid1()),
     )
     start_time = time.time()
     common_args = {

@@ -25,7 +25,7 @@ def run(
     block_size: int,
 ) -> None:
     experiment = os.join.path(
-        f"spark:histogram:{n_worker=}:{block_size=}", uuid.uuid1()
+        f"spark:histogram:{n_worker=}:{block_size=}", str(uuid.uuid1())
     )
     start_time = time.time()
     common_args = {

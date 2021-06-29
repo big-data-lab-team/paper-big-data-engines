@@ -25,7 +25,7 @@ def run(
     iterations,
 ) -> None:
     experiment = os.path.join(
-        f"dask:kmeans:{n_worker=}:{block_size=}:{iterations=}", uuid.uuid1()
+        f"dask:kmeans:{n_worker=}:{block_size=}:{iterations=}", str(uuid.uuid1())
     )
     start_time = time.time()
     common_args = {

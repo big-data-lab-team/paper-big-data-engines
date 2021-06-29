@@ -18,7 +18,7 @@ def run(
     benchmark_folder: str,
     container_path: str,
 ) -> None:
-    experiment = os.path.join(f"dask:bids:{n_worker=}", uuid.uuid1())
+    experiment = os.path.join(f"dask:bids:{n_worker=}", str(uuid.uuid1()))
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,

@@ -22,7 +22,7 @@ def run(
 ) -> None:
     experiment = os.path.join(
         f"spark:increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}",
-        uuid.uuid1(),
+        str(uuid.uuid1()),
     )
     start_time = time.time()
     common_args = {

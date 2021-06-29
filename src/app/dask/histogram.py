@@ -26,7 +26,9 @@ def run(
     *,
     block_size: int,
 ) -> None:
-    experiment = os.path.join(f"dask:histogram:{n_worker=}:{block_size=}", uuid.uuid1())
+    experiment = os.path.join(
+        f"dask:histogram:{n_worker=}:{block_size=}", str(uuid.uuid1())
+    )
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
