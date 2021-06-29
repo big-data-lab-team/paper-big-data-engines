@@ -66,7 +66,7 @@ def merge_logs(benchmark_folder, experiment):
                 fout.write(fin.read())
             os.remove(filename)
 
-    os.rmdir(os.path.dirname(log_folder))
+    os.rmdir(log_folder)
 
 
 def crawl_dir(input_dir):
