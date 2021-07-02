@@ -39,6 +39,7 @@ def run(
         scheduler = os.environ["MASTER_URL"]
 
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
+    conf.set("spark.driver.maxResultSize", "4g")
     sc = SparkContext.getOrCreate(conf=conf)
 
     filenames = glob.glob(input_folder + "/*.nii")
@@ -54,7 +55,7 @@ def run(
     histogram = partial_histogram.fold(
         np.array([0] * (2 ** 16 - 1)),
         lambda x, y: combine_histogram(x, y, **common_args),
-    ).collect()
+    )
 
     save_histogram(histogram, **common_args)
 
