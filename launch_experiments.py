@@ -58,15 +58,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "multi-increment",
-        #         f"{5000} {default['itr']} {default['sleep']}",
-        #         x,
-        #         benchmark_folder,
-        #     )
-        # )
+        cmds.append(
+            cmd_template.format(
+                BB_5000,
+                "multi-increment",
+                f"{5000} {default['itr']} {default['sleep']}",
+                x,
+                benchmark_folder,
+            )
+        )
         cmds.append(
             cmd_template.format(
                 BB_5000,
@@ -105,15 +105,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         path,
-        #         "multi-increment",
-        #         f"{n} {default['itr']} {default['sleep']}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
+        cmds.append(
+            cmd_template.format(
+                path,
+                "multi-increment",
+                f"{n} {default['itr']} {default['sleep']}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
         cmds.append(
             cmd_template.format(
                 path,
@@ -143,15 +143,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "multi-increment",
-        #         f"{5000} {x} {default['sleep']}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
+        cmds.append(
+            cmd_template.format(
+                BB_5000,
+                "multi-increment",
+                f"{5000} {x} {default['sleep']}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
         cmds.append(
             cmd_template.format(
                 BB_5000,
@@ -172,15 +172,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_5000,
-        #         "multi-increment",
-        #         f"{5000} {default['itr']} {x}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
+        cmds.append(
+            cmd_template.format(
+                BB_5000,
+                "multi-increment",
+                f"{5000} {default['itr']} {x}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
 
 cmds = list(set(cmds)) * REPETITIONS
 random.shuffle(cmds)
