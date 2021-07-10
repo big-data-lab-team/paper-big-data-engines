@@ -42,15 +42,13 @@ def run(
         .cache()
     )
 
-    # Pick random initial centroids
-    # TODO benchmark
     centroids = np.linspace(
         voxels.min(),
         voxels.max(),
         num=3,
     )
 
-    for _ in range(0, iterations):  # Disregard convergence.
+    for _ in range(iterations):  # Disregard convergence.
         start = time.time() - start_time
 
         centroids = np.array(

@@ -1,10 +1,9 @@
-from functools import reduce
 import glob
 import os
 import time
 import uuid
 
-import dask
+import dask.bag as db
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
 
@@ -46,41 +45,19 @@ def run(
     else:
         client = Client(scheduler)
 
-    blocks = [
-        dask.delayed(load)(
-            filename,
-            **common_args,
-        )
-        for filename in glob.glob(input_folder + "/*.nii")
-    ]
+    filenames = glob.glob(input_folder + "/*.nii")
+    paths = db.from_sequence(filenames, npartitions=len(filenames))
+    img = paths.map(lambda p: load(p, **common_args))
 
-    partial_histogram = []
-    for block in blocks:
-        img = dask.delayed(flatten)(
-            block[1],
-            **common_args,
-            filename=block[0],
-        )
+    img = img.map(lambda x: flatten(x[1], **common_args, filename=x[0]))
 
-        partial_histogram.append(
-            dask.delayed(calculate_histogram)(
-                img[1],
-                **common_args,
-                filename=img[0],
-            )
-        )
-
-    histogram = dask.delayed(reduce)(
-        lambda x, y: combine_histogram(
-            x,
-            y,
-            **common_args,
-        ),
-        partial_histogram,
+    partial_histogram = img.map(
+        lambda x: calculate_histogram(x[1], **common_args, filename=x[0])
     )
 
-    future = client.compute(histogram)
-    histogram = client.gather(future)
+    histogram = partial_histogram.fold(
+        lambda x, y: combine_histogram(x, y, **common_args),
+    ).compute()
 
     save_histogram(
         histogram,

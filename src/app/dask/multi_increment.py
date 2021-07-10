@@ -60,7 +60,7 @@ def run(
             block = dask.delayed(increment)(
                 block,
                 delay=delay,
-                increment_data=random.choice(blocks)[1].persist(),
+                increment_data=random.choice(blocks)[1],
                 **common_args,
             )
 
@@ -71,12 +71,8 @@ def run(
             )
         )
 
-    N_BATCH = 3
-    for i in range(N_BATCH):
-        futures = client.compute(results[i::N_BATCH])
-        client.gather(futures)
-    # futures = client.compute(results)
-    # client.gather(futures)
+    futures = client.compute(results)
+    client.gather(futures)
 
     client.close()
     if SLURM:

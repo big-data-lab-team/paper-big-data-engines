@@ -7,11 +7,28 @@ import dask
 import dask.array as da
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
-
+import numba
 import numpy as np
 
 from ..commons.kmeans import classify_block, dump
 from ..utils import load, log, merge_logs
+
+
+
+@numba.njit(nogil=True, fastmath=True)
+def _centers_dense(X, labels, n_clusters):
+    centers = np.zeros(n_clusters, dtype=np.uint16)
+
+    for i in range(X.shape[0]):
+        centers[labels[i]] += X[i]
+
+    return centers
+
+
+def get_labels(X, centroids):
+    array = np.subtract.outer(X, centroids)
+    np.square(array, out=array)
+    return np.argmin(array, axis=1)
 
 
 def run(
@@ -48,47 +65,63 @@ def run(
         dask.delayed(load)(
             filename,
             **common_args,
-        ).persist()
+        )
         for filename in glob.glob(input_folder + "/*.nii")
     ]
 
     sample = blocks[0].compute()[1]  # Compute a sample block to obtain dtype and shape.
+    dtype = sample.dtype
 
     voxels = (
         da.stack(
             [
-                da.from_delayed(block[1], dtype=sample.dtype, shape=sample.shape)
+                da.from_delayed(block[1], dtype=dtype, shape=sample.shape)
                 for block in blocks
-            ]
+            ],
         )
         .reshape(-1)
-        .rechunk(block_size_limit=64 * 1024 ** 2)  # 64MB chunks
-        .persist()
+        .rechunk(block_size_limit=128 * 1024 ** 2)  # 128MB chunks
     )
     del sample
 
-    # Pick random initial centroids
+    n_clusters = 3
     centroids = np.linspace(
-        *dask.compute(da.min(voxels), da.max(voxels)),
-        num=3,
+        da.min(voxels).compute(),
+        da.max(voxels).compute(),
+        num=n_clusters,
     )
 
-    centroid_index = None
-    for _ in range(0, iterations):  # Disregard convergence.
+    labels = None
+    for _ in range(iterations):  # Disregard convergence.
         start = time.time() - start_time
 
-        centroid_index = da.argmin(
-            da.fabs(da.subtract.outer(voxels, centroids)), axis=1
-        ).persist()
-
-        centroids = np.array(
-            [
-                da.mean(voxels[centroid_index == c], dtype=np.float32).persist()
-                for c in range(len(centroids))
-            ],
-            dtype=np.uint16,
+        labels = da.map_blocks(
+            lambda X: get_labels(X, centroids),
+            voxels,
+            dtype=dtype,
         )
+
+        # Ref: from dask_ml.cluster.k_means::_kmeans_single_lloyd
+        r = da.blockwise(
+            _centers_dense,
+            "i",
+            voxels,
+            "i",
+            labels,
+            "i",
+            n_clusters,
+            None,
+            dtype=voxels.dtype,
+        )
+        new_centers = da.from_delayed(sum(r.to_delayed()), (n_clusters,), voxels.dtype)
+        counts = da.bincount(labels, minlength=n_clusters)
+        # Require at least one per bucket, to avoid division by 0.
+        counts = da.maximum(counts, 1)
+        new_centers = new_centers / counts
+        (centroids,) = dask.compute(new_centers)
+
         print(f"{centroids=}")
+        # del centroid_index
 
         end_time = time.time() - start_time
 
@@ -103,7 +136,7 @@ def run(
             )
 
     del voxels
-    del centroid_index
+    del labels
 
     results = []
     for block in blocks:
@@ -114,10 +147,8 @@ def run(
             )
         )
 
-    N_BATCH = 5
-    for i in range(N_BATCH):
-        futures = client.compute(results[i::N_BATCH])
-        client.gather(futures)
+    futures = client.compute(results)
+    client.gather(futures)
 
     client.close()
     if SLURM:
