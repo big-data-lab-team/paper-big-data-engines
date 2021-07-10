@@ -31,6 +31,9 @@ def run(
         "experiment": experiment,
     }
 
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
+
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     sc = SparkContext.getOrCreate(conf=conf)
 
