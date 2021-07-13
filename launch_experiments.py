@@ -15,6 +15,7 @@ BB_blocks = [1000, 2500, 5000]
 default = {
     "node": n_nodes[1],
     "itr": n_iterations[1],
+    "small_itr": n_iterations_small[1],
     "sleep": 1,
 }
 
@@ -54,7 +55,7 @@ for cmd_template in cmd_templates:
             cmd_template.format(
                 BB_sample_path(5000),
                 "multi-increment",
-                f"{5000} {default['itr']} {default['sleep']}",
+                f"{5000} {default['small_itr']} {default['sleep']}",
                 x,
                 benchmark_folder,
             )
@@ -63,7 +64,7 @@ for cmd_template in cmd_templates:
             cmd_template.format(
                 BB_sample_path(5000),
                 "kmeans",
-                f"{5000} {default['itr']}",
+                f"{5000} {default['small_itr']}",
                 x,
                 benchmark_folder,
             )
@@ -101,7 +102,7 @@ for cmd_template in cmd_templates:
             cmd_template.format(
                 BB_sample_path(n),
                 "multi-increment",
-                f"{n} {default['itr']} {default['sleep']}",
+                f"{n} {default['small_itr']} {default['sleep']}",
                 default["node"],
                 benchmark_folder,
             )
@@ -110,7 +111,7 @@ for cmd_template in cmd_templates:
             cmd_template.format(
                 BB_sample_path(n),
                 "kmeans",
-                f"{n} {default['itr']}",
+                f"{n} {default['small_itr']}",
                 default["node"],
                 benchmark_folder,
             )
