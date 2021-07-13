@@ -52,7 +52,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_path(5000),
+                BB_sample_path(5000),
                 "multi-increment",
                 f"{5000} {default['itr']} {default['sleep']}",
                 x,
@@ -61,7 +61,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_path(5000),
+                BB_sample_path(5000),
                 "kmeans",
                 f"{5000} {default['itr']}",
                 x,
@@ -138,7 +138,7 @@ for cmd_template in cmd_templates:
     for x in n_iterations_small:
         cmds.append(
             cmd_template.format(
-                BB_path(5000),
+                BB_sample_path(5000),
                 "multi-increment",
                 f"{5000} {x} {default['sleep']}",
                 default["node"],
@@ -147,7 +147,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_path(5000),
+                BB_sample_path(5000),
                 "kmeans",
                 f"{5000} {x}",
                 default["node"],
