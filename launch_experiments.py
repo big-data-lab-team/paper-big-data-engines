@@ -160,7 +160,7 @@ random.shuffle(cmds)
 
 total_cmds = len(cmds)
 for i, cmd in enumerate(cmds, 1):
-    print(f"[{datetime.now()}] -- ({i}/{len(total_cmds)}) -- Running : {cmd}")
+    print(f"[{datetime.now()}] -- ({i}/{total_cmds}) -- Running : {cmd}")
     subprocess.run("sudo /home/shared/dropcache_compute.sh", shell=True)
     subprocess.run(cmd, shell=True)
     time.sleep(10)
