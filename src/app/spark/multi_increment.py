@@ -26,6 +26,13 @@ def run(
         f"spark:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}",
         str(uuid.uuid1()),
     )
+
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
+
+    conf = SparkConf().setMaster(scheduler).setAppName(experiment)
+    sc = SparkContext.getOrCreate(conf=conf)
+
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
@@ -33,12 +40,6 @@ def run(
         "output_folder": output_folder,
         "experiment": experiment,
     }
-
-    if scheduler.lower() == "slurm":
-        scheduler = os.environ["MASTER_URL"]
-
-    conf = SparkConf().setMaster(scheduler).setAppName(experiment)
-    sc = SparkContext.getOrCreate(conf=conf)
 
     filenames = glob.glob(input_folder + "/*.nii")
     paths = sc.parallelize(filenames, len(filenames))

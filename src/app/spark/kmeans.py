@@ -23,6 +23,13 @@ def run(
     experiment = os.path.join(
         f"spark:kmeans:{n_worker=}:{block_size=}:{iterations=}", str(uuid.uuid1())
     )
+
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
+
+    conf = SparkConf().setMaster(scheduler).setAppName(experiment)
+    sc = SparkContext.getOrCreate(conf=conf)
+
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
@@ -30,12 +37,6 @@ def run(
         "output_folder": output_folder,
         "experiment": experiment,
     }
-
-    if scheduler.lower() == "slurm":
-        scheduler = os.environ["MASTER_URL"]
-
-    conf = SparkConf().setMaster(scheduler).setAppName(experiment)
-    sc = SparkContext.getOrCreate(conf=conf)
 
     paths = sc.parallelize(glob.glob(input_folder + "/*.nii"))
     blocks = paths.map(lambda p: load(p, **common_args)).cache()

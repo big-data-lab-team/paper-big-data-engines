@@ -28,13 +28,6 @@ def run(
     experiment = os.path.join(
         f"dask:histogram:{n_worker=}:{block_size=}", str(uuid.uuid1())
     )
-    start_time = time.time()
-    common_args = {
-        "benchmark_folder": benchmark_folder,
-        "start": start_time,
-        "output_folder": output_folder,
-        "experiment": experiment,
-    }
 
     SLURM = scheduler.lower() == "slurm"
     if SLURM:
@@ -44,6 +37,14 @@ def run(
         cluster.scale(jobs=n_worker)
     else:
         client = Client(scheduler)
+
+    start_time = time.time()
+    common_args = {
+        "benchmark_folder": benchmark_folder,
+        "start": start_time,
+        "output_folder": output_folder,
+        "experiment": experiment,
+    }
 
     filenames = glob.glob(input_folder + "/*.nii")
     paths = db.from_sequence(filenames, npartitions=len(filenames))

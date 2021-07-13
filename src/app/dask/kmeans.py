@@ -14,7 +14,6 @@ from ..commons.kmeans import classify_block, dump
 from ..utils import load, log, merge_logs
 
 
-
 @numba.njit(nogil=True, fastmath=True)
 def _centers_dense(X, labels, n_clusters):
     centers = np.zeros(n_clusters, dtype=np.uint16)
@@ -44,13 +43,6 @@ def run(
     experiment = os.path.join(
         f"dask:kmeans:{n_worker=}:{block_size=}:{iterations=}", str(uuid.uuid1())
     )
-    start_time = time.time()
-    common_args = {
-        "benchmark_folder": benchmark_folder,
-        "start": start_time,
-        "output_folder": output_folder,
-        "experiment": experiment,
-    }
 
     SLURM = scheduler.lower() == "slurm"
     if SLURM:
@@ -60,6 +52,14 @@ def run(
         cluster.scale(jobs=n_worker)
     else:
         client = Client(scheduler)
+
+    start_time = time.time()
+    common_args = {
+        "benchmark_folder": benchmark_folder,
+        "start": start_time,
+        "output_folder": output_folder,
+        "experiment": experiment,
+    }
 
     blocks = [
         dask.delayed(load)(
@@ -121,7 +121,7 @@ def run(
         (centroids,) = dask.compute(new_centers)
 
         print(f"{centroids=}")
-        # del centroid_index
+        del labels
 
         end_time = time.time() - start_time
 

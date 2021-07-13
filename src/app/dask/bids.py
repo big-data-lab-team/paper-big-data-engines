@@ -19,15 +19,6 @@ def run(
     container_path: str,
 ) -> None:
     experiment = os.path.join(f"dask:bids:{n_worker=}", str(uuid.uuid1()))
-    start_time = time.time()
-    common_args = {
-        "benchmark_folder": benchmark_folder,
-        "start": start_time,
-        "input_folder": input_folder,
-        "output_folder": output_folder,
-        "experiment": experiment,
-        "container_path": container_path,
-    }
 
     SLURM = scheduler.lower() == "slurm"
     if SLURM:
@@ -38,6 +29,16 @@ def run(
 
     else:
         client = Client(scheduler)
+
+    start_time = time.time()
+    common_args = {
+        "benchmark_folder": benchmark_folder,
+        "start": start_time,
+        "input_folder": input_folder,
+        "output_folder": output_folder,
+        "experiment": experiment,
+        "container_path": container_path,
+    }
 
     subjects = subject_crawler(input_folder)
     sites = site_crawler(input_folder)

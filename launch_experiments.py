@@ -4,19 +4,18 @@ import random
 import subprocess
 import time
 
-from tqdm import tqdm
-
 
 REPETITIONS = 10
 
 n_nodes = [2, 4, 8]
 n_iterations = [1, 5, 25]
-sleep_time = [0.33, 1, 3, 9]
+n_iterations_small = [1, 3, 9]
+BB_blocks = [1000, 2500, 5000]
 
 default = {
     "node": n_nodes[1],
     "itr": n_iterations[1],
-    "sleep": sleep_time[1],
+    "sleep": 1,
 }
 
 cmd_templates = [
@@ -27,20 +26,13 @@ cmd_templates = [
 benchmark_folder = os.path.join("/", "home", "mathdugre", "ccpe-output")
 os.makedirs(benchmark_folder, exist_ok=True)
 
-BB_5000 = os.path.join(
-    "/", "mnt", "lustre", "mathdugre", "datasets", "bigbrain", "nii", "5000_blocks"
+BB_path = lambda x: os.path.join(
+    "/", "mnt", "lustre", "mathdugre", "datasets", "bigbrain", "nii", f"{x}_blocks"
 )
-BB_2500 = os.path.join(
-    "/", "mnt", "lustre", "mathdugre", "datasets", "bigbrain", "nii", "2500_blocks"
+BB_sample_path = lambda x: os.path.join(
+    "/", "mnt", "lustre", "mathdugre", "datasets", "bigbrain", "nii", f"{x}_blocks-sample"
 )
-BB_1000 = os.path.join(
-    "/", "mnt", "lustre", "mathdugre", "datasets", "bigbrain", "nii", "1000_blocks"
-)
-BB_blocks = {
-    "5000": BB_5000,
-    "2500": BB_2500,
-    "1000": BB_1000,
-}
+
 
 container = os.path.join("/", "home", "mathdugre", "containers", "bids.sif")
 CoRR = os.path.join("/", "mnt", "lustre", "mathdugre", "datasets", "CoRR")
@@ -51,7 +43,7 @@ for cmd_template in cmd_templates:
     for x in n_nodes:
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "increment",
                 f"{5000} {default['itr']} {default['sleep']}",
                 x,
@@ -60,7 +52,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "multi-increment",
                 f"{5000} {default['itr']} {default['sleep']}",
                 x,
@@ -69,7 +61,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "kmeans",
                 f"{5000} {default['itr']}",
                 x,
@@ -78,7 +70,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "histogram",
                 f"{5000}",
                 x,
@@ -95,10 +87,10 @@ for cmd_template in cmd_templates:
             )
         )
 
-    for n, path in BB_blocks.items():
+    for n in BB_blocks:
         cmds.append(
             cmd_template.format(
-                path,
+                BB_path(n),
                 "increment",
                 f"{n} {default['itr']} {default['sleep']}",
                 default["node"],
@@ -107,7 +99,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                path,
+                BB_sample_path(n),
                 "multi-increment",
                 f"{n} {default['itr']} {default['sleep']}",
                 default["node"],
@@ -116,7 +108,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                path,
+                BB_sample_path(n),
                 "kmeans",
                 f"{n} {default['itr']}",
                 default["node"],
@@ -125,7 +117,7 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                path,
+                BB_path(n),
                 "histogram",
                 f"{n}",
                 default["node"],
@@ -136,16 +128,17 @@ for cmd_template in cmd_templates:
     for x in n_iterations:
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "increment",
                 f"{5000} {x} {default['sleep']}",
                 default["node"],
                 benchmark_folder,
             )
         )
+    for x in n_iterations_small:
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "multi-increment",
                 f"{5000} {x} {default['sleep']}",
                 default["node"],
@@ -154,29 +147,9 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_5000,
+                BB_path(5000),
                 "kmeans",
                 f"{5000} {x}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-
-    for x in sleep_time:
-        cmds.append(
-            cmd_template.format(
-                BB_5000,
-                "increment",
-                f"{5000} {default['itr']} {x}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-        cmds.append(
-            cmd_template.format(
-                BB_5000,
-                "multi-increment",
-                f"{5000} {default['itr']} {x}",
                 default["node"],
                 benchmark_folder,
             )
@@ -185,9 +158,10 @@ for cmd_template in cmd_templates:
 cmds = list(set(cmds)) * REPETITIONS
 random.shuffle(cmds)
 
-for cmd in tqdm(cmds):
-    print(f"[{datetime.now()}] Running: {cmd}")
+total_cmds = len(cmds)
+for i, cmd in enumerate(cmds, 1):
+    print(f"[{datetime.now()}] -- ({i}/{len(total_cmds)}) -- Running : {cmd}")
     subprocess.run("sudo /home/shared/dropcache_compute.sh", shell=True)
     subprocess.run(cmd, shell=True)
-    time.sleep(15)
+    time.sleep(10)
     print(f"[{datetime.now()}] Done")

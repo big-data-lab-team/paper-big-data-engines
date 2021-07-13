@@ -28,13 +28,6 @@ def run(
         f"dask:multi-increment:{n_worker=}:{block_size=}:{iterations=}:{delay=}:{seed=}",
         str(uuid.uuid1()),
     )
-    start_time = time.time()
-    common_args = {
-        "benchmark_folder": benchmark_folder,
-        "start": start_time,
-        "output_folder": output_folder,
-        "experiment": experiment,
-    }
 
     SLURM = scheduler.lower() == "slurm"
     if SLURM:
@@ -44,6 +37,14 @@ def run(
         cluster.scale(jobs=n_worker)
     else:
         client = Client(scheduler)
+
+    start_time = time.time()
+    common_args = {
+        "benchmark_folder": benchmark_folder,
+        "start": start_time,
+        "output_folder": output_folder,
+        "experiment": experiment,
+    }
 
     blocks = [
         dask.delayed(load)(
