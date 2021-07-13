@@ -136,7 +136,6 @@ def run(
             )
 
     del voxels
-    del labels
 
     results = []
     for block in blocks:
