@@ -27,13 +27,6 @@ def run(
     experiment = os.path.join(
         f"spark:histogram:{n_worker=}:{block_size=}", str(uuid.uuid1())
     )
-    start_time = time.time()
-    common_args = {
-        "benchmark_folder": benchmark_folder,
-        "start": start_time,
-        "output_folder": output_folder,
-        "experiment": experiment,
-    }
 
     if scheduler.lower() == "slurm":
         scheduler = os.environ["MASTER_URL"]
@@ -41,6 +34,14 @@ def run(
     conf = SparkConf().setMaster(scheduler).setAppName(experiment)
     conf.set("spark.driver.maxResultSize", "4g")
     sc = SparkContext.getOrCreate(conf=conf)
+
+    start_time = time.time()
+    common_args = {
+        "benchmark_folder": benchmark_folder,
+        "start": start_time,
+        "output_folder": output_folder,
+        "experiment": experiment,
+    }
 
     filenames = glob.glob(input_folder + "/*.nii")
     paths = sc.parallelize(filenames, len(filenames))

@@ -17,6 +17,13 @@ def run(
     container_path: str,
 ) -> None:
     experiment = os.path.join(f"spark:bids:{n_worker=}", str(uuid.uuid1()))
+
+    if scheduler.lower() == "slurm":
+        scheduler = os.environ["MASTER_URL"]
+
+    conf = SparkConf().setMaster(scheduler).setAppName(experiment)
+    sc = SparkContext.getOrCreate(conf=conf)
+
     start_time = time.time()
     common_args = {
         "benchmark_folder": benchmark_folder,
@@ -26,12 +33,6 @@ def run(
         "experiment": experiment,
         "container_path": container_path,
     }
-
-    if scheduler.lower() == "slurm":
-        scheduler = os.environ["MASTER_URL"]
-
-    conf = SparkConf().setMaster(scheduler).setAppName(experiment)
-    sc = SparkContext.getOrCreate(conf=conf)
 
     subjects_to_analyze = sc.parallelize(subject_crawler(input_folder), 512)
 
