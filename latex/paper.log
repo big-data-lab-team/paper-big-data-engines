@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2019.4.15)  4 JUN 2021 00:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2019.4.15)  12 JUL 2021 20:26
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -831,26 +831,26 @@ Package: subcaption 2016/05/22 v1.1-161 Sub-captions (AR)
 ) (./paper.aux)
 \openout1 = `paper.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 31.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 31.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 26.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 26.
  (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 31.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 31.
-LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
 
 -- Lines per column: 56 (exact).
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -894,7 +894,7 @@ File: siunitx-abbreviations.cfg 2017/01/01 v2.7a siunitx: Abbreviated units
 File: siunitx-binary.cfg 2017/01/01 v2.7a siunitx: Binary units
 )
 \AtBeginShipoutBox=\box57
-Package hyperref Info: Link coloring ON on input line 31.
+Package hyperref Info: Link coloring ON on input line 26.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -904,9 +904,9 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count180
 )
-LaTeX Info: Redefining \ref on input line 31.
-LaTeX Info: Redefining \pageref on input line 31.
-LaTeX Info: Redefining \nameref on input line 31.
+LaTeX Info: Redefining \ref on input line 26.
+LaTeX Info: Redefining \pageref on input line 26.
+LaTeX Info: Redefining \nameref on input line 26.
 
 (./paper.out) (./paper.out)
 \@outlinefile=\write3
@@ -915,55 +915,126 @@ LaTeX Info: Redefining \nameref on input line 31.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
 \c__siunitx_mathsf_int=\count181
-LaTeX Font Info:    Try loading font information for U+msa on input line 31.
+LaTeX Font Info:    Try loading font information for U+msa on input line 26.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 31.
+LaTeX Font Info:    Try loading font information for U+msb on input line 26.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for U+lasy on input line 31.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 26.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
 \c__siunitx_mathtt_int=\count182
-LaTeX Font Info:    Try loading font information for OMS+ptm on input line 43.
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 38.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omsptm.fd
 File: omsptm.fd 
 )
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <11> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 43.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 38.
  [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
-]
-<figures/increment.png, id=112, 428.60126pt x 726.715pt>
+] [2]
+<figures/increment.png, id=155, 428.60126pt x 726.715pt>
 File: figures/increment.png Graphic file (type png)
 
 <use figures/increment.png>
-Package pdftex.def Info: figures/increment.png used on input line 163.
+Package pdftex.def Info: figures/increment.png used on input line 195.
 (pdftex.def)             Requested size: 148.62622pt x 252.0pt.
 
-<figures/multi-increment.png, id=113, 668.4975pt x 1069.9975pt>
+<figures/multi-increment.png, id=156, 668.4975pt x 1069.9975pt>
 File: figures/multi-increment.png Graphic file (type png)
 
 <use figures/multi-increment.png>
-Package pdftex.def Info: figures/multi-increment.png used on input line 178.
+Package pdftex.def Info: figures/multi-increment.png used on input line 210.
 (pdftex.def)             Requested size: 157.43355pt x 252.0pt.
 
-<figures/histogram.png, id=115, 826.08624pt x 921.4425pt>
+<figures/histogram.png, id=158, 826.08624pt x 921.4425pt>
 File: figures/histogram.png Graphic file (type png)
 
 <use figures/histogram.png>
-Package pdftex.def Info: figures/histogram.png used on input line 193.
+Package pdftex.def Info: figures/histogram.png used on input line 225.
 (pdftex.def)             Requested size: 225.92021pt x 252.0pt.
- [2 <./figures/increment.png>] (./paper.bbl [3 <./figures/multi-increment.png> 
-<./figures/histogram.png>]
+
+Underfull \vbox (badness 1502) has occurred while \output is active []
+
+ [3 <./figures/increment.png> <./figures/multi-increment.png> <./figures/histog
+ram.png>]
+<figures/stacked_increment_worker.jpg, id=173, 1250.6725pt x 759.83875pt>
+File: figures/stacked_increment_worker.jpg Graphic file (type jpg)
+
+<use figures/stacked_increment_worker.jpg>
+Package pdftex.def Info: figures/stacked_increment_worker.jpg used on input lin
+e 293.
+(pdftex.def)             Requested size: 252.0pt x 153.10129pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<figures/stacked_increment_block.jpg, id=175, 1235.61626pt x 767.86874pt>
+File: figures/stacked_increment_block.jpg Graphic file (type jpg)
+
+<use figures/stacked_increment_block.jpg>
+Package pdftex.def Info: figures/stacked_increment_block.jpg used on input line
+ 302.
+(pdftex.def)             Requested size: 252.0pt x 156.59393pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<figures/stacked_increment_itr.jpg, id=177, 1250.6725pt x 767.86874pt>
+File: figures/stacked_increment_itr.jpg Graphic file (type jpg)
+
+<use figures/stacked_increment_itr.jpg>
+Package pdftex.def Info: figures/stacked_increment_itr.jpg used on input line 3
+11.
+(pdftex.def)             Requested size: 252.0pt x 154.71925pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<figures/stacked_histogram_worker.jpg, id=180, 1235.61626pt x 833.1125pt>
+File: figures/stacked_histogram_worker.jpg Graphic file (type jpg)
+
+<use figures/stacked_histogram_worker.jpg>
+Package pdftex.def Info: figures/stacked_histogram_worker.jpg used on input lin
+e 337.
+(pdftex.def)             Requested size: 252.0pt x 169.8993pt.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4 <./figures/stacked_increment_worker.jpg> <./figures/stacked_increment_block
+.jpg> <./figures/stacked_increment_itr.jpg>]
+<figures/stacked_histogram_block.jpg, id=194, 1235.61626pt x 833.1125pt>
+File: figures/stacked_histogram_block.jpg Graphic file (type jpg)
+
+<use figures/stacked_histogram_block.jpg>
+Package pdftex.def Info: figures/stacked_histogram_block.jpg used on input line
+ 346.
+(pdftex.def)             Requested size: 252.0pt x 169.8993pt.
+
+<figures/stacked_bids.jpg, id=197, 1221.56375pt x 730.73pt>
+File: figures/stacked_bids.jpg Graphic file (type jpg)
+
+<use figures/stacked_bids.jpg>
+Package pdftex.def Info: figures/stacked_bids.jpg used on input line 359.
+(pdftex.def)             Requested size: 252.0pt x 150.73721pt.
+ (./paper.bbl
+Missing character: There is no ‚ in font ptmr7t!
+Missing character: There is no Ä in font ptmr7t!
+Missing character: There is no ú in font ptmr7t!
+Missing character: There is no ‚ in font ptmr7t!
+Missing character: There is no Ä in font ptmr7t!
+Missing character: There is no ù in font ptmr7t!
+ [5 <./figures/stacked_histogram_worker.jpg> <./figures/stacked_histogram_block
+.jpg> <./figures/stacked_bids.jpg>]
 Missing character: There is no √ in font ptmr7t!
 Missing character: There is no © in font ptmr7t!
 )
@@ -978,26 +1049,26 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 265.
-[4
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 376.
+[6
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 265.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 376.
  (./paper.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 265.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 265.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 376.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 376.
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 9D660501948075C273A87A369E36A85F;1155.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 265.
+(rerunfilecheck)             Checksum: 61D85D459BE753B14F6A6B6E5A4792CB;1383.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 376.
  ) 
 Here is how much of TeX's memory you used:
- 19369 strings out of 493013
- 367486 string characters out of 6135682
- 409139 words of memory out of 5000000
- 22694 multiletter control sequences out of 15000+600000
+ 19426 strings out of 493013
+ 368956 string characters out of 6135682
+ 411823 words of memory out of 5000000
+ 22725 multiletter control sequences out of 15000+600000
  42074 words of font info for 99 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,12n,39p,10377b,1010s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,12n,50p,10377b,1067s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/
@@ -1006,10 +1077,10 @@ pe1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/ur
 w/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a
 .pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on paper.pdf (4 pages, 321653 bytes).
+Output written on paper.pdf (6 pages, 1314083 bytes).
 PDF statistics:
- 182 PDF objects out of 1000 (max. 8388607)
- 161 compressed objects within 2 object streams
- 36 named destinations out of 1000 (max. 500000)
- 176 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 258 PDF objects out of 1000 (max. 8388607)
+ 222 compressed objects within 3 object streams
+ 55 named destinations out of 1000 (max. 500000)
+ 274 words of extra memory for PDF output out of 10000 (max. 10000000)
 
