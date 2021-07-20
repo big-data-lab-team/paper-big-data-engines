@@ -38,8 +38,9 @@ def run(
         "experiment": experiment,
     }
 
-    paths = sc.parallelize(glob.glob(input_folder + "/*.nii"))
-    blocks = paths.map(lambda p: load(p, **common_args)).cache()
+    files= glob.glob(input_folder + "/*.nii")
+    paths = sc.parallelize(files, len(files))
+    blocks = paths.map(lambda p: load(p, **common_args))
     voxels = (
         blocks.flatMap(lambda block: block[1])
         .flatMap(lambda block: block[1].flatten())
