@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-export NODE_MEM=232 # Convert to GiB
+export NODE_MEM=250 # Convert to GiB
 export NODE_NPROC=64
 export NWORKERS=8
 
 export TOTAL_WORKERS=$(( ${NWORKERS} * ${SLURM_NNODES} ))
 export WORKER_NPROC=$(( ${NODE_NPROC} / ${NWORKERS} ))
-export WORKER_MEM="$(( ${NODE_MEM} / ${NWORKERS} ))G"
+export WORKER_MEM=$(echo $(echo "${NODE_MEM} / ${NWORKERS} * .95 / 1" | bc)G)
 
 term_handler()
 {
