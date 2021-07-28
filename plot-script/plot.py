@@ -335,56 +335,8 @@ def stacked_bar(
         framework = experiment.split(":")[0]
         results[framework][experiment].append(x)
 
-    # Application makespan
-    for summary_xs, (framework, experiments) in enumerate(sorted(results.items())):
-        data = [
-            [
-                pd.read_csv(file_, names=col_names).end.max()
-                for file_ in experiments[key]
-            ]
-            for key in sorted(
-                experiments,
-                key=lambda k: float(re.search(f"{freedom}=(\d+\.?\d*)", k).group(1)),
-            )
-        ]
-
-        stats = {
-            "mean": list(map(np.mean, data)),
-            "std": list(map(np.std, data)),
-        }
-        y_offset = max(stats["mean"]) * 0.01
-        totals = stats["mean"]
-        color = Colorblind8[summary_xs % len(Colorblind8)]
-
-        ############
-        # Plotting #
-        ############
-        ax.bar(
-            x_pos(summary_xs),
-            stats["mean"],
-            yerr=stats["std"],
-            color=color,
-            width=bar_width,
-            edgecolor="black",
-            alpha=1,
-            #             label=framework.capitalize(),
-        )
-
-        # Annotate bar height
-        for x, total in zip(x_pos(summary_xs), totals):
-            ax.text(
-                x,
-                total + y_offset,
-                round(total),
-                ha="center",
-                weight="bold",
-                fontsize=14,
-                color=color,
-            )
-
     # Application detailed time spent
-    ax2 = ax.twinx()
-    for detailed_xs, (framework, experiments) in enumerate(sorted(results.items())):
+    for xs, (framework, experiments) in enumerate(sorted(results.items())):
         data = [
             np.array(
                 [
@@ -409,11 +361,11 @@ def stacked_bar(
         ############
         y_offset = stats["mean"].max() * 0.01
         totals = stats["mean"].sum(axis=0)
-        color = Colorblind8[detailed_xs % len(Colorblind8)]
+        color = Colorblind8[xs % len(Colorblind8)]
         # Plot idle time as a special case since it always exist.
         # Thus we want to having consistent hatch and position.
-        ax2.bar(
-            x_pos(detailed_xs + summary_xs + 1),
+        ax.bar(
+            x_pos(xs),
             stats["mean"][0],
             yerr=stats["std"][0],
             color=color,
@@ -427,8 +379,8 @@ def stacked_bar(
         y_bottom = stats["mean"][0]
 
         for j in range(1, len(stats["mean"][1:]) + 1):
-            ax2.bar(
-                x_pos(detailed_xs + summary_xs + 1),
+            ax.bar(
+                x_pos(xs),
                 stats["mean"][j],
                 yerr=stats["std"][j],
                 bottom=y_bottom,
@@ -443,8 +395,8 @@ def stacked_bar(
             y_bottom += stats["mean"][j]
 
         # Annotate bar height
-        for x, total in zip(x_pos(detailed_xs + summary_xs + 1), totals):
-            ax2.text(
+        for x, total in zip(x_pos(xs), totals):
+            ax.text(
                 x,
                 total + y_offset,
                 round(total),
@@ -454,13 +406,11 @@ def stacked_bar(
                 color=color,
             )
 
-    xticks_loc = (
-        np.arange(len(xticks_label)) + bar_width * (detailed_xs + summary_xs + 1) / 2
-    )
+    xticks_loc = np.arange(len(xticks_label)) + bar_width * xs / 2
     plt.xticks(xticks_loc, xticks_label)
     ax.set_xlabel(xlabel, fontweight="bold")
     ax.set_ylabel("Makespan [s]", fontweight="bold")
-    ax2.set_ylabel("Total time [s]", fontweight="bold")
+    ax.set_ylabel("Total time [s]", fontweight="bold")
 
     if ylim:
         plt.ylim([0, ylim])
@@ -468,24 +418,6 @@ def stacked_bar(
     plt.title(title)
 
     # Total time legend (Summary)
-    patches = []
-    for i, (framework, _) in enumerate(sorted(results.items())):
-        patches.append(
-            Patch(
-                facecolor=Colorblind8[i % len(Colorblind8)],
-                edgecolor="black",
-                label=framework.capitalize(),
-            )
-        )
-    legend_1 = plt.legend(
-        handles=patches,
-        loc="upper left",
-        bbox_to_anchor=(0, -0.05),
-        title="Makespan [s]",
-    )
-    plt.gca().add_artist(legend_1)
-
-    # Makespan legend (Detailed)
     framework_patches = []
     for i, (framework, _) in enumerate(sorted(results.items())):
         framework_patches.append(

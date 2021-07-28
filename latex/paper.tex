@@ -41,9 +41,8 @@
 \end{abstract}
 
 \begin{IEEEkeywords}
-	Performance, Big Data, Dask, Spark, Neuroimaging
+	Performance, Big Data, Dask, Spark, Neuroimaging, HPC
 \end{IEEEkeywords}
-\MD{Discuss which keyword to use for the paper.}
 
 \section{Introduction}
 The raise in data sharing coupled with improved data collection technologies lead neuroimaging into the Big Data era\cite{ALFAROALMAGRO:18, van2014human}. \MD{cite CONP portal}
@@ -51,15 +50,14 @@ While common neuroimaging workflow engines, such as Nipype\cite{Nipype:11}, are 
 they lack Big Data strategies (i.e. in-memory computing, data locality, and lazy-evaluation) to improve the performance of increasingly prevalent data-intensive pipelines.
 A previous study\cite{hayot2019performance} notes the importantce of in-memory computing and data locality to improve the performance of data-intensive pipelines.
 In this work, we study how performance benchmarks generalize accross Big Data engines in an HPC environement.
-In particular, we study the performance difference between Dask\cite{Dask:15} and Apache Spark\cite{Spark:16}, for their sutability to process neuroimaging pipelines.
+In particular, we study the detailed performance difference between Dask\cite{Dask:15} and Apache Spark\cite{Spark:16}, for their suitability to process neuroimaging pipelines.
 Our objective is to assess whether Spark or Dask has substantial performance benefits to process data-intensive pipeline in HPC clusters.
 
-Spark and Dask both provide in-memory computing, data locality, and lazy-evlaution, which is common for Big Data engines.
+Spark and Dask both provide in-memory computing, data locality, and lazy-evaluation, which is common for Big Data engines.
 Both of their scheduler operate dynamically, which benefit applications with runtime unknown ahead of time\cite{Dask:15}.
 They also provide rich high-level API and support a variety of scyeduler and deployment environment, such as Mesos\cite{hindman2011mesos}, YARN\cite{vavilapalli2013apache}, Kubernetes, and HPC clusters.
 Although sharing similarities, these engines have differences.
 
-% Overview of dask and spark
 First and foremost, Spark is written in Scala while Dask is in Python.
 Given the popularity of Python in the scientific community, this arguably gives a edge to Dask due to the serialization cost between Python and Scala.
 However, if not careful, the Python Global Intepreter Lock (GIL) can significatly reduce the parallelism of an application, in some cases.
@@ -68,11 +66,23 @@ On the one hand, as part of the Scipy ecosystem, Dask provides almost transparen
 On the other hand, Spark's Java, Scala, R, and Python APIs allow to easily parallelize pipelines with minimal performance loss; thanks to the JVM.
 Our study is restrained to performance, although, we recognize that, in practice, other factors affect the choice of an engine.
 
-% Why we chose Lustre TODO
 While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructure to perform studies.
 This paper focuses on the performance of Big Data engine in HPCs environments.
+We installed the Lustre file system \MD{Not sure which paper to cite} on a dedicated cluster to mimic an HPC system.
+Lustre is a powerful and scalable file system for HPC environement offering parallel file access.
 
-% Related work TODO
+In our previous study\cite{8943502} we found that their was no significant performance between Apache Spark and Dask for data-intensive application.
+However, due to the use of a network file-system (NFS) the performance of the application were limited by an I/O bottleneck.
+Another study \cite{8588652} also reported network and I/O bottleneck when having too many nodes.
+This same study found that the startup overhead time for Spark was larger than Dask.
+On the opposite, \cite{Mehta:17} claims that Dask startup overhead is larger than Spark.
+This suggests that the startup overhead might vary depending on cluster configuration.
+\cite{Mehta:17} processed a \SI{100}{\giga\byte} dataset using a neuroimaging pipeline and found Dask to be up to 14\% faster than Spark due to ``more efficient pipelining" and serialization time to Python.
+On the contrary, \cite{10.1145/3225058.3225128} shows that with large datasets, Spark provides better speedup than Dask.
+However, that study used the Dask Bag API which is know to have performance limitation compared to other Dask APIs.
+The above studies compared the engines performance at a high-level.
+In comparison, our study provides a detailed analysis of the performance differences and similarities between Dask and Spark for data-intensive applications.
+
 
 The next section introduce the Lustre file system and both Big Data engines used: Dask and Apache Spark.
 Following, we present the design of our benchmarking experiments.
@@ -84,7 +94,15 @@ Further sections present our results, dicsussion, and concusion.
 
 \section{Background}
 \subsection{Lustre}
-% TODO
+The Lustre file-system is a parallel file system well suited for HPC environment.
+Lustre offers a POSIX compliant interface with the file system.
+Powering some of the most powerful supercomputer, Lustre is designed to scale to thousands of nodes, petabytes of storage, and hundreds of gigabit per second of I/O throughput.
+
+At the core of Lustre are the \textit{management servers} (MGSs) and \textit{metatdata server} (MDSs) in charge of the files operations and metadata,
+the \textit{object storage targets} (OSTs) to store file data, and the \textit{obejct sotrage server} (OSSs) to handle the OSTs.
+Lustre clients will then make requests to the MGSs to access files on the OSTs.
+To handle failure in the system, the MGSs, MDSs, and OSTs have failover capabilities.
+To connect the different component of the Lustre file system, it is possible to use InfiniBand network, Ethernet Network, or both.
 
 \subsection{Dask}
 Dask is a Python-based Big Data engine with growing popularity in the scientific Python ecosystem.
@@ -168,7 +186,7 @@ CentOS~8.1 and Linux kernel
 
 Both Spark and Dask were configured to have 8 worker processes each with 8
 threads. Each worker was allocated \SI{31.5}{\giga\byte} of memory \TG{,
-determined as the amount of memory that ...}. \TG{any other Spark or Dask
+	determined as the amount of memory that ...}. \TG{any other Spark or Dask
 param? Location of log files, etc} A new Dask or Spark cluster was started and
 teared down for each experiment.
 
@@ -179,11 +197,11 @@ We used BigBrain\cite{Amunts:13}, a 3-D image of the human brain with voxel
 intensities ranging from 0 to 65,535. We converted the blocks into the
 NIfTI format, a popular format in neuroimaging. We left the NIfTI blocks
 uncompressed, resulting in a total data size of \SI{648}{\giga\byte}. To
-evaluate the effect of block size, we resplit these blocks into 1000, 2500,
-and 5000 blocks of \SI{648}{\mega\byte}, \SI{259.2}{\mega\byte}, and
+evaluate the effect of block size, we split the image into 1000, 2500,
+and 5000 files of \SI{648}{\mega\byte}, \SI{259.2}{\mega\byte}, and
 \SI{129.6}{\mega\byte}, respectively. The
 \href{https://github.com/big-data-lab-team/sam}{sam} library was used to
-resplit the image.
+split the image.
 
 We also used the dataset provided by the Consortium for Reliability and
 Reproducibility
@@ -196,9 +214,18 @@ and functional images of 1,397 subjects acquired in 29 sites. We used all
 (\SI{11.17}{\mega\byte} per image on average).
 
 \subsection{Applications}
+In this section, we describe the applications used to benchmark Dask and Spark.
+We use three simple synthetic applications to have a deep understanding of the 
+underlying behavior of the applications with simple I/O pattern; namely
+\textit{Increment}, \textit{Multi-Increment}, and \textit{Histogram}.
+Also, two neuroimaging applications are used to study more realistic 
+applications; namely \textit{Kmeans} and \textit{BIDS App Example}.
+
+To have a fair comparison between the engines, the code base for the core functions of the applications is the same for both engines.
+This allow us to reduce the performance difference from different implementations.
+Note that this is not the case for the \textit{Kmeans} application as the best performing API for Dask and Spark differed largely in term of implementation.
 
 \subsubsection{Increment}
-
 We adapted the increment application used in \cite{hayot2019performance}.
 This synthetic application reads blocks of the BigBrain from Lustre and
 simulates computation by sleeping for a specified period. To simulate
@@ -207,35 +234,33 @@ of time. We prevent data caching of the blocks by incrementing their voxels
 value by one after each sleep operation. Finally, we write the resulting
 NIfTI image back to Lustre. This application allows us to study the engines
 when their inputs are processed independently. The map-only pattern
- mimics the processing of multiple independent subjects in
-parallel.
+mimics the processing of multiple independent subjects in parallel.
 
 
 \begin{figure}[!ht]
 	\centering
 	\includegraphics[height=\columnwidth,
 	angle=0]{figures/increment.png}
-	\caption{Task graph for Incrementation with 3 iterations and 3 BigBrain blocks.
-	\TG{nitpick: I'd prefer using ``read and write" than ``load and dump''}}
+	\caption{Task graph for Incrementation with 3 iterations and 3 BigBrain blocks.}
 	\label{fig:graph-increment}
 \end{figure}
 
 % Currently ommitted due to issue with memory.
 % 
-\subsubsection{Multi-Increment}
-Our second application is an adaptation of the increment application. A
-significant difference is that, at each iteration, it uses a random
-BigBrain block as the increment value. This change allows the
-multi-increment application to have inter-worker communication while
-remaining simple.
+% \subsubsection{Multi-Increment}
+% Our second application is an adaptation of the increment application. A
+% significant difference is that, at each iteration, it uses a random
+% BigBrain block as the increment value. This change allows the
+% multi-increment application to have inter-worker communication while
+% remaining simple.
 
-\begin{figure}[!hb]
-	\centering
-	\includegraphics[height=\columnwidth,
-	angle=0]{figures/multi-increment.png}
-	\caption{Task graph for Multi-Incrementation with 3 iterations and 3 BigBrain blocks.}
-	\label{fig:graph-muti-increment}
-\end{figure}
+% \begin{figure}[!hb]
+% 	\centering
+% 	\includegraphics[height=\columnwidth,
+% 	angle=0]{figures/multi-increment.png}
+% 	\caption{Task graph for Multi-Incrementation with 3 iterations and 3 BigBrain blocks.}
+% 	\label{fig:graph-muti-increment}
+% \end{figure}
 	
 \subsubsection{Histogram}
 As our third application, we calculate the histogram of the BigBrain image. 
@@ -282,8 +307,7 @@ done.} using
 \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
 
 \TG{You should explain how the applications were implemented in Dask and
-Spark, that you reused the same code in both  cases, which APIs were used 
-and why, etc}
+Spark which APIs were used and why, etc}
 
 \subsection{Experiments}
 Table~\ref{table:parameters} shows the parameters that were varied
@@ -307,12 +331,13 @@ of the last processed task minus the total runtime of the tasks ran for
 this thread \TG{unclear definition. Don't refer to CPU threads as a given task may be executed on more than 1. Maybe refer to engine executors?}. Summing those results gives the total overhead for the
 application.
 
+%  TODO Fix table for the final parameters/applications used.
 \begin{table*}[t]
 	\renewcommand{\arraystretch}{1.5}
 	\caption{Parameters for the experiments}\label{table:parameters}
 	\centering
 	\begin{tabular}{|l|c|c|c|c|c|}
-		\hline & Increment & Multi-Increment & Kmeans & Histogram & BIDS Example \\\hline
+		\hline & Increment & Multi-Increment & Kmeans & Histogram & BIDS App Example \\\hline
 		\# of Nodes & \multicolumn{5}{c|}{2, 4, 8} \\\hline
 		Dataset size [\SI{}{\giga\byte}] & 648 &\multicolumn{2}{c|}{486} & 648 & \multicolumn{1}{c|}{39} \\\hline
 		Number of file & \multicolumn{4}{c|}{1000, 2500, 5000}  & \multicolumn{1}{c|}{3491} \\\hline
@@ -323,7 +348,7 @@ application.
 \section{Results}
 \subsection{Increment}
 Figure \ref{fig:increment_worker} depicts the total execution time spent in each code segment of the \textit{Increment} application.
-The bars are broken down into Idle, Load, Dump, and other functions representing the overhead from the engine, the read and write time, and the aplication function, respectilvely.
+The bars are broken down into Idle, Read, Write, and other application specific functions.
 The mean of each bar was calulated from 10 repetitions, with the error bar representing the standard deviation.
 As expected, the compute time, from \textit{Increment}, remains the same when we vary the number of nodes.
 However, the \textit{Load} and \textit{Dump} time increase with the number of nodes for both engines.
@@ -331,68 +356,84 @@ This is explained by an I/O bottleneck on the Lustre file system.
 
 From Figure \ref{fig:increment_worker}, we also observe that Dask's overhead is higher than Spark's.
 While the overhead of both engines increases with the number of nodes, Dask's overhead is significantly worse when scaling.
-The difference in total execution time between the engines is explained from this overhead difference.
+Althought Dask has higher overhead, the total time for both engine is similar; with a maximum makespan difference of \SI{7}{\second} for 2 nodes.
+This is due to a tradeoff between disk bandwidth and compute/idle time.
+When a multiple threads access Lustre concurrently, they shared the disk bandwitdth resulting in longer I/O time.
+However, when most threads are either idle or performing computations, it reduce the contention on the disk bandwitdh.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_worker.jpg}
-	\caption{Increment: varying nodes -- 5000 block resplit, 5 iterations, \SI{1}{\second} delay}
+	\caption{Increment: varying nodes -- 5000 files, 5 iterations, \SI{1}{\second} delay}
 	\label{fig:increment_worker}
 \end{figure}
 
+Figure \ref{fig:increment_itr} shows the detailed execution time for the \textit{Increment} application while varying the number of iterations.
+As expected, the idle time for both engines increases with the number of iterations.
+However, idle time for Dask increase significantly faster that Spark; resulting in a \SI{38}{\second} makespan difference for 25 iterations.
 
-% Block resplit
-\begin{figure}[!h]
-	\centering
-	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_block.jpg}
-	\caption{Increment: varying resplit -- 4 nodes, 5 iterations, \SI{1}{\second} delay}
-	\label{fig:increment_block}
-\end{figure}
-
-
+Figure \ref{fig:increment_itr} also depicts that as the total computation time increases the total I/O time decreases.
+This is explained by an I/O bottleneck on the Lustre file system.
+When threads are busy with computations they reduce the contention on Lustre, thus improving I/O speed for individual accesses.
 %  # of iterations
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_itr.jpg}
-	\caption{Increment: varying iterations -- 4 nodes, 5000 block resplit, \SI{1}{\second} delay}
+	\caption{Increment: varying iterations -- 4 nodes, 5000 files, \SI{1}{\second} delay}
 	\label{fig:increment_itr}
 \end{figure}
 
+Figure \ref{fig:increment_block} shows an increase in \textit{Increment} time.
+This is because the increment is performed on each file.
+Thus increasing the number of file increase the computation time.
+Similarly to Fig. \ref{fig:increment_itr} increasing the total compute time of the application reduce the total I/O time.
+Again, this is explain by the I/O tradeoff between compute time and contention of disk bandwidth.
 
-%  Sleep delay
-% \begin{figure}[!h]
-% 	\centering
-% 	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_delay.jpg}
-% 	\caption{Increment: varying sleep delay -- 4 nodes, 5000 block resplit, 5 iterations}
-% 	\label{fig:increment_delay}
-% \end{figure}
+From figure \ref{fig:increment_block} we also observe that Dask has significantly higher idle time than Spark.
+However, the total of the application is similar due to the tradeoff between I/O and compute/idle time.
 
-\subsection{Multi-Increment}
+% # of files
+\begin{figure}[!h]
+	\centering
+	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_block.jpg}
+	\caption{Increment: varying \# of files -- 4 nodes, 5 iterations, \SI{1}{\second} delay}
+	\label{fig:increment_block}
+\end{figure}
+
+
+
+% \subsection{Multi-Increment}
 % TODO: experiment
+% Memory issue with Spark (Heap space runs out of memory)
 
 \subsection{Kmeans}
-% TODO: experiement
-% Memory issues
+
 
 \subsection{Histogram}
 Figure \ref{fig:histogram_worker} depicts the execution time for the \textit{Histogram} when varying the number of nodes.
+Overall, Spark has upt to 5\% lower total execution time with the difference comming from a shorter execution time for \textit{Calculate\_histogram}.
+This is unexpected as the code base for both engine is the same; with only the calling APIs differing.
+% This happened for both Bags and Delayed. There might be a higher serialization cost.
+As with previous experiments, the overhead for Spark is less and scale better, although, compensated by a longer total I/O time.
 % # of nodes
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_histogram_worker.jpg}
-	\caption{Histogram: varying nodes -- 5000 block resplit, 5 iterations, \SI{1}{\second} delay}
+	\caption{Histogram: varying nodes -- 5000 files, 5 iterations, \SI{1}{\second} delay}
 	\label{fig:histogram_worker}
 \end{figure}
 
-Figure \ref{fig:histogram_worker} shows the execution time for the \textit{Histogram} when varying the number of resplit.
-% Block resplit
+Figure \ref{fig:histogram_worker} shows the execution time for the \textit{Histogram} when varying the number of files.
+The results are similar to varying the number of nodes with Spark having faster compute time for \textit{Calculate\_histogram}.
+However, the makespan difference is much smaller due to larger I/O time for both engine.
+%  # of files
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_histogram_block.jpg}
-	\caption{Histogram: varying resplit -- 4 nodes, 5 iterations, \SI{1}{\second} delay}
+	\caption{Histogram: varying \# of files -- 4 nodes, 5 iterations, \SI{1}{\second} delay}
 	\label{fig:histogram_block}
 \end{figure}
 
-\subsection{BIDS Example}
+\subsection{BIDS App Example}
 Figure \ref{fig:bids} shows the total execution time for the \textit{BIDS App example} application when varying the number of nodes.
 We observe that Dask has significantly lower execution time than Spark; between 10\% to 15\%.
 The main difference comes from a increased amount of stagger tasks for Spark, thus increasing the idle time of the application.

@@ -26,7 +26,7 @@ Table and/or short summary on the different engines.
 
 - Rationale for using NFS; for ease of use / quick deployment.
 - Limitation of NFS.
-- 1-2 Sentences on pNFS.
+- ~~1-2 Sentences on pNFS.~~
 
 ## Lustre
 
@@ -44,7 +44,7 @@ Description of slashbin cluster.
 
 - Big Brain
 - CoRR
-- BOLD 500 (if time allows for additional applications)
+- BOLD 5000 (if time allows for additional applications)
 
 ## Incrementation
 
@@ -62,7 +62,7 @@ Description of slashbin cluster.
 
 <!-- Only include the NumPy version. -->
 
-## BIDS App Example
+## ~~BIDS App Example~~
 
 - Engines mostly used for quick distribution/parrallism. Should not diverge in performance.
 
@@ -70,6 +70,9 @@ Description of slashbin cluster.
 
 - Lazy random sampling of Dask bag is now available. [see](https://github.com/dask/dask/pull/6208)
 - Provides a more complex application.
+
+## Nirhes (ask Dzung)
+
 
 ## Additional
 
