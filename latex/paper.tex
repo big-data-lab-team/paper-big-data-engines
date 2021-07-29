@@ -45,17 +45,17 @@
 \end{IEEEkeywords}
 
 \section{Introduction}
-The raise in data sharing coupled with improved data collection technologies lead neuroimaging into the Big Data era\cite{ALFAROALMAGRO:18, van2014human}. \MD{cite CONP portal}
+The rise in data sharing coupled with improved data collection technologies lead neuroimaging into the Big Data era\cite{ALFAROALMAGRO:18, van2014human}. \MD{cite CONP portal}
 While common neuroimaging workflow engines, such as Nipype\cite{Nipype:11}, are well rounded to process standard compute-intensive pipeline,
 they lack Big Data strategies (i.e. in-memory computing, data locality, and lazy-evaluation) to improve the performance of increasingly prevalent data-intensive pipelines.
-A previous study\cite{hayot2019performance} notes the importantce of in-memory computing and data locality to improve the performance of data-intensive pipelines.
+A previous study\cite{hayot2019performance} noted the importantce of in-memory computing and data locality to improve the performance of data-intensive pipelines.
 In this work, we study how performance benchmarks generalize accross Big Data engines in an HPC environement.
 In particular, we study the detailed performance difference between Dask\cite{Dask:15} and Apache Spark\cite{Spark:16}, for their suitability to process neuroimaging pipelines.
 Our objective is to assess whether Spark or Dask has substantial performance benefits to process data-intensive pipeline in HPC clusters.
 
 Spark and Dask both provide in-memory computing, data locality, and lazy-evaluation, which is common for Big Data engines.
 Both of their scheduler operate dynamically, which benefit applications with runtime unknown ahead of time\cite{Dask:15}.
-They also provide rich high-level API and support a variety of scyeduler and deployment environment, such as Mesos\cite{hindman2011mesos}, YARN\cite{vavilapalli2013apache}, Kubernetes, and HPC clusters.
+They also provide rich high-level API and support a variety of schedulers and deployment environment, such as Mesos\cite{hindman2011mesos}, YARN\cite{vavilapalli2013apache}, Kubernetes, and HPC clusters.
 Although sharing similarities, these engines have differences.
 
 First and foremost, Spark is written in Scala while Dask is in Python.
@@ -63,46 +63,45 @@ Given the popularity of Python in the scientific community, this arguably gives 
 However, if not careful, the Python Global Intepreter Lock (GIL) can significatly reduce the parallelism of an application, in some cases.
 The difference in programmming language also provides different benefits.
 On the one hand, as part of the Scipy ecosystem, Dask provides almost transparent integration with APIs such as Numpy arrays, Pandas dataframe, or RAPIDS GPU accelerated code framework.
-On the other hand, Spark's Java, Scala, R, and Python APIs allow to easily parallelize pipelines with minimal performance loss; thanks to the JVM.
-Our study is restrained to performance, although, we recognize that, in practice, other factors affect the choice of an engine.
+On the other hand, Spark's Java, Scala, R, and Python APIs allow to easily parallelize pipelines with minimal performance loss, thanks to the Java Virtual Machine \TG{you could add a few words to explain why the JVM is useful for parallelization ("thanks to the JVM that ...")}.
+Our study is restrained to performance, although, we recognize that other factors affect the choice of an engine in practice.
 
-While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructure to perform studies.
-This paper focuses on the performance of Big Data engine in HPCs environments.
-We installed the Lustre file system \MD{Not sure which paper to cite} on a dedicated cluster to mimic an HPC system.
-Lustre is a powerful and scalable file system for HPC environement offering parallel file access.
+While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructures.
+This paper focuses on the performance of Big Data engines in HPCs environments.
+We installed the Slurm scheduler and Lustre file system~\cite{braam2019lustre} on a dedicated cluster to mimic a typical HPC system.
+Lustre is a powerful and scalable file system for HPC environement offering parallel file accesses.
 
-In our previous study\cite{8943502} we found that their was no significant performance between Apache Spark and Dask for data-intensive application.
-However, due to the use of a network file-system (NFS) the performance of the application were limited by an I/O bottleneck.
-Another study \cite{8588652} also reported network and I/O bottleneck when having too many nodes.
-This same study found that the startup overhead time for Spark was larger than Dask.
-On the opposite, \cite{Mehta:17} claims that Dask startup overhead is larger than Spark.
+In a previous study\cite{8943502} we found that their was no significant performance difference between Apache Spark and Dask for data-intensive application.
+However, due to the use of the network file-system (NFS) the performance of the applications was limited by an I/O bottleneck.
+Another study \cite{8588652} also reported network and I/O bottlenecks when concurrency increased.
+This same study found that the startup overhead time for Spark was larger than for Dask.
+On the contrary, the work in~\cite{Mehta:17} claims that the startup overhead is larger for Dask than for Spark.
 This suggests that the startup overhead might vary depending on cluster configuration.
-\cite{Mehta:17} processed a \SI{100}{\giga\byte} dataset using a neuroimaging pipeline and found Dask to be up to 14\% faster than Spark due to ``more efficient pipelining" and serialization time to Python.
-On the contrary, \cite{10.1145/3225058.3225128} shows that with large datasets, Spark provides better speedup than Dask.
+The latter study processed a \SI{100}{\giga\byte} dataset using a neuroimaging pipeline and found Dask to be up to 14\% faster than Spark due to ``more efficient pipelining" and serialization time to Python.
+On the contrary, the work in \cite{10.1145/3225058.3225128} shows that with large datasets, Spark provides better speedup than Dask.
 However, that study used the Dask Bag API which is know to have performance limitation compared to other Dask APIs.
 The above studies compared the engines performance at a high-level.
 In comparison, our study provides a detailed analysis of the performance differences and similarities between Dask and Spark for data-intensive applications.
 
 
-The next section introduce the Lustre file system and both Big Data engines used: Dask and Apache Spark.
-Following, we present the design of our benchmarking experiments.
-We consider two type of data-intensive neuroimaging pipelines: high-resolution imaging and large functional MRI studies.
+The next section introduce the Lustre file system and the Big Data engines.
+Next, we present the design of our benchmarking experiments.
+We consider two types of data-intensive neuroimaging pipelines: high-resolution imaging and large functional MRI studies.
 The pipelines we chose involve different compute and I/O patterns; e.g. map-reduce or map-only and requiring partial data in memory or the whole dataset.
-Our experiments were executed on a dedicated cluster representative of an HPC environment used to process state-of-the-art data-intensive neuroimaging studies.
-Further sections present our results, dicsussion, and concusion.
+Further sections present our results, discussion, and conclusion.
 
 
 \section{Background}
 \subsection{Lustre}
-The Lustre file-system is a parallel file system well suited for HPC environment.
+The Lustre file-system is a parallel file system well suited for HPC environments.
 Lustre offers a POSIX compliant interface with the file system.
-Powering some of the most powerful supercomputer, Lustre is designed to scale to thousands of nodes, petabytes of storage, and hundreds of gigabit per second of I/O throughput.
+Installed in some of the most powerful supercomputer, Lustre is designed to scale to thousands of nodes, petabytes of storage, and hundreds of gigabits per second of I/O throughput.
 
 At the core of Lustre are the \textit{management servers} (MGSs) and \textit{metatdata server} (MDSs) in charge of the files operations and metadata,
 the \textit{object storage targets} (OSTs) to store file data, and the \textit{obejct sotrage server} (OSSs) to handle the OSTs.
-Lustre clients will then make requests to the MGSs to access files on the OSTs.
-To handle failure in the system, the MGSs, MDSs, and OSTs have failover capabilities.
-To connect the different component of the Lustre file system, it is possible to use InfiniBand network, Ethernet Network, or both.
+Lustre clients make requests to the MGSs to access files on the OSTs.
+To handle failures in the system, the MGSs, MDSs, and OSTs have failover capabilities.
+InfiniBand, Ethernet, or a combination of both can be used to interconnect these different components.
 
 \subsection{Dask}
 Dask is a Python-based Big Data engine with growing popularity in the scientific Python ecosystem.
@@ -111,8 +110,8 @@ Data locality, popularized by Map-Reduce \cite{dean2008mapreduce}, schedules tas
 In-memory computing minimizes the overhead of transferring data to disk by keeping data in memory when possible.
 Dask uses lazy evaluation to reduce unnecessary communication and computation.
 The engine builds a dynamic graph before execution, allowing it to determine which task to compute.
-Dask workflows can further reduce data transfer by leveraging multithreading whenever Python's GIL does not restrict it.
-Fault-tolerance is achieved by recording data lineage: the sequence of operations used to modify the initial data.
+Dask workflows can further reduce data transfer by leveraging multithreading whenever the Python GIL does not restrict it.
+Fault-tolerance is achieved by recording data lineage, the sequence of operations used to modify the initial data.
 
 Dask offers five data structures:
 \href{https://docs.dask.org/en/latest/array.html}{Array},
@@ -125,7 +124,7 @@ Bags are a distributed collection of Python object that offers a programming abs
 Dataframes are a parallel composition of \href{https://pandas.pydata.org/}{Pandas} Dataframes used to process a large amount of tabular data.
 Dask Delayed offers an API for distributing arbitrary functions that do not fit in the above frameworks.
 Lastly, Dask Futures can also execute arbitrary functions; however, it launches computation immediately rather than lazily.
-Dask modularity allows users to install only required components making it lightweight.
+Dask allows users to install only required components making it lightweight.
 
 In Dask, a scheduler decides where and when to execute tasks using the Dask graph.
 API operations generate multiple fine-coarse tasks in the computation graph, allowing a more straightforward representation of complex algorithms.
@@ -135,9 +134,8 @@ Dask also provides its own \textit{Dask Distributed scheduler}.
 We chose to use Dask Distributed scheduler to keep the environment balanced between the engines.
 
 In the Dask Distributed scheduler, a \textit{dask-scheduler} process administrates the resource provided by  \textit{dask-worker}s in the cluster.
-The scheduler receives jobs from clients and assigns tasks to available workers.
-Task scheduler uses a LIFO (Last-In-First-Out) job scheduling policy.
-That is an utter process branch of the Dask graph before proceeding with the next one.
+The scheduler receives jobs from clients and assigns tasks to available workers using a LIFO (Last-In-First-Out) job scheduling policy.
+That is an utter process branch of the Dask graph before proceeding with the next one \TG{No comprendo, please revise syntax :)}.
 
 Dask offers multiple ways to deploy a cluster, including, but not limited to, SSH configs, Kubernetes, SLURM, PBS.
 For our experiments, we used the \href{https://jobqueue.dask.org/en/latest/generated/dask_jobqueue.SLURMCluster.html}{Dask SLURM cluster} API.
@@ -151,7 +149,7 @@ Spark Standalone is a simple built-in scheduler.
 YARN is mainly used to schedule Hadoop-based workflows, while Mesos can be used for various workflows.
 We limit our focus to Spark Standalone scheduler, as researchers are likely to execute their workflows in an HPC environment where, usually, neither YARN nor Mesos is available.
 
-In the Spark Standalone scheduler, a \textit{leader} \TG{I am all in favor of inclusive terminology, but if Spark didn't update their wording we shouldn't do it for them} coordinates the resource provisioned by \textit{workers} in the cluster.
+In the Spark Standalone scheduler, a \textit{leader} (a.k.a master) coordinates the resource provisioned by \textit{workers} in the cluster.
 A \textit{driver}  process receives jobs from clients and requests workers from the leader.
 Jobs are divided into stages to be executed onto workers.
 Each operation in a stage is represented by a high-level task in the computation graph.
