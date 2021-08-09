@@ -2,9 +2,62 @@ import os
 import time
 
 import nibabel as nib
+import numba
 import numpy as np
 
 from ..utils import log
+
+
+@numba.njit(nogil=True, fastmath=True)
+def _centers_dense(
+    X, labels, n_clusters, *, benchmark_folder, start, experiment, output_folder
+):
+    start_time = time.time() - start
+
+    centers = np.zeros(
+        (n_clusters, 2),
+        dtype=np.uint16,
+    )
+
+    for i in range(X.shape[0]):
+        centers[labels[i], 0] += X[i]
+        centers[labels[i], 1] += 1
+
+    end_time = time.time() - start_time
+
+    if benchmark_folder:
+        log(
+            start_time,
+            end_time,
+            "all",
+            benchmark_folder,
+            experiment,
+            "update_centroids",
+        )
+
+    return centers
+
+
+def get_labels(X, centroids, *, benchmark_folder, start, experiment, **kwargs):
+    start_time = time.time() - start
+
+    array = np.subtract.outer(X, centroids)
+    np.square(array, out=array)
+    rv = np.argmin(array, axis=1)
+
+    end_time = time.time() - start_time
+
+    if benchmark_folder:
+        log(
+            start_time,
+            end_time,
+            "all",
+            benchmark_folder,
+            experiment,
+            get_labels.__name__,
+        )
+
+    return rv
 
 
 def closest_centroids(x, centroids, *, benchmark_folder, start, experiment, **kwargs):

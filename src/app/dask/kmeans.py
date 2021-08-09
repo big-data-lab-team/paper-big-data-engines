@@ -10,24 +10,8 @@ from dask_jobqueue import SLURMCluster
 import numba
 import numpy as np
 
-from ..commons.kmeans import classify_block, dump
+from ..commons.kmeans import classify_block, dump, get_labels, _centers_dense
 from ..utils import load, log, merge_logs
-
-
-@numba.njit(nogil=True, fastmath=True)
-def _centers_dense(X, labels, n_clusters):
-    centers = np.zeros(n_clusters, dtype=np.uint16)
-
-    for i in range(X.shape[0]):
-        centers[labels[i]] += X[i]
-
-    return centers
-
-
-def get_labels(X, centroids):
-    array = np.subtract.outer(X, centroids)
-    np.square(array, out=array)
-    return np.argmin(array, axis=1)
 
 
 def run(
@@ -80,9 +64,8 @@ def run(
             ],
         )
         .reshape(-1)
-        .rechunk(block_size_limit=128 * 1024 ** 2)  # 128MB chunks
+        .rechunk(block_size_limit=64 * 1024 ** 2)  # 64MB chunks
     )
-    del sample
 
     n_clusters = 3
     centroids = np.linspace(
@@ -90,52 +73,38 @@ def run(
         da.max(voxels).compute(),
         num=n_clusters,
     )
+    print(f"{centroids=}")
 
     labels = None
     for _ in range(iterations):  # Disregard convergence.
-        start = time.time() - start_time
 
         labels = da.map_blocks(
-            lambda X: get_labels(X, centroids),
+            lambda X: get_labels(X, centroids, **common_args),
             voxels,
-            dtype=dtype,
+            dtype=np.ubyte,
         )
 
         # Ref: from dask_ml.cluster.k_means::_kmeans_single_lloyd
         r = da.blockwise(
             _centers_dense,
-            "i",
+            "ik",
             voxels,
             "i",
             labels,
             "i",
             n_clusters,
             None,
+            **common_args,
+            new_axes={"k": 2},
             dtype=voxels.dtype,
         )
-        new_centers = da.from_delayed(sum(r.to_delayed()), (n_clusters,), voxels.dtype)
-        counts = da.bincount(labels, minlength=n_clusters)
-        # Require at least one per bucket, to avoid division by 0.
-        counts = da.maximum(counts, 1)
-        new_centers = new_centers / counts
-        (centroids,) = dask.compute(new_centers)
+        centers_meta = np.sum(dask.compute(*r.to_delayed().flatten()), axis=0)
+        new_centers = centers_meta[:, 0]
+        counts = centers_meta[:, 1]
+        counts = np.maximum(counts, 1, out=counts)
+        centroids = new_centers / counts
 
         print(f"{centroids=}")
-        del labels
-
-        end_time = time.time() - start_time
-
-        if benchmark_folder:
-            log(
-                start,
-                end_time,
-                "all",
-                benchmark_folder,
-                experiment,
-                "update_centroids",
-            )
-
-    del voxels
 
     results = []
     for block in blocks:

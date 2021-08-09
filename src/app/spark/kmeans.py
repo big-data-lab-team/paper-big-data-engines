@@ -1,4 +1,5 @@
 import glob
+import math
 import os
 import time
 import uuid
@@ -6,8 +7,27 @@ import uuid
 from pyspark import SparkConf, SparkContext
 import numpy as np
 
-from ..commons.kmeans import classify_block, dump
+from ..commons.kmeans import classify_block, dump, get_labels, _centers_dense
 from ..utils import load, log, merge_logs
+
+
+def rechunk(X: np.array, *, chunk_size: int) -> list[np.array]:
+    """Chunk a NumPy array into arrays of a given maximum size.
+
+    Parameters
+    ----------
+    X: np.array
+        Array to rechunk.
+    chunk_size: int
+        Maximum size for an array chunk in byte.
+
+    Returns
+    -------
+    list[np.array]
+        Newly created chunks from original array.
+    """
+    n_chunks = math.ceil(X.itemsize * X.size / chunk_size)
+    return np.array_split(X, n_chunks)
 
 
 def run(
@@ -38,53 +58,36 @@ def run(
         "experiment": experiment,
     }
 
-    files= glob.glob(input_folder + "/*.nii")
+    files = glob.glob(input_folder + "/*.nii")
     paths = sc.parallelize(files, len(files))
     blocks = paths.map(lambda p: load(p, **common_args))
-    voxels = (
-        blocks.flatMap(lambda block: block[1])
-        .flatMap(lambda block: block[1].flatten())
-        .cache()
-    )
+    voxels = blocks.flatMap(
+        lambda block: rechunk(block[1].flatten(), chunk_size=1.6e7)
+    )  # 16MB chunks
+    voxels = voxels.repartition(voxels.count()).cache()
 
+    n_clusters = 3
     centroids = np.linspace(
-        voxels.min(),
-        voxels.max(),
-        num=3,
+        voxels.flatMap(lambda x: x).min(),
+        voxels.flatMap(lambda x: x).max(),
+        num=n_clusters,
     )
+    print(centroids)
 
     for _ in range(iterations):  # Disregard convergence.
-        start = time.time() - start_time
 
-        centroids = np.array(
-            voxels.map(lambda x: (np.argmin([abs(x - c) for c in centroids]), x))
-            .aggregateByKey(
-                (0, 0),
-                lambda x, y: (
-                    x[0] + y,
-                    x[1] + 1,
-                ),  # (runningSum, runningCount), nextValue
-                lambda x, y: (x[0] + y[0], x[1] + y[1]),
-            )
-            .mapValues(lambda x: x[0] / x[1])
-            .values()
-            .collect(),
-            dtype=np.uint16,
+        labels = voxels.map(lambda X: get_labels(X, centroids, **common_args))
+
+        r = voxels.zip(labels).map(
+            lambda x: _centers_dense(x[0], x[1], n_clusters, **common_args)
         )
+        centers_meta = np.array(r.collect()).sum(axis=0)
+        new_centers = centers_meta[:, 0]
+        counts = centers_meta[:, 1]
+        counts = np.maximum(counts, 1, out=counts)
+        centroids = new_centers / counts
 
         print(f"{centroids=}")
-
-        end_time = time.time() - start_time
-
-        if benchmark_folder:
-            log(
-                start,
-                end_time,
-                "all",
-                benchmark_folder,
-                experiment,
-                "update_centroids",
-            )
 
     blocks.map(lambda block: classify_block(block, centroids, **common_args)).map(
         lambda block: dump(
