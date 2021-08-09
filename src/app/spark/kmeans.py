@@ -7,8 +7,8 @@ import uuid
 from pyspark import SparkConf, SparkContext
 import numpy as np
 
-from ..commons.kmeans import classify_block, dump, get_labels, _centers_dense
-from ..utils import load, log, merge_logs
+from ..commons.kmeans import classify_block, dump, get_labels, centers_dense
+from ..utils import load, merge_logs
 
 
 def rechunk(X: np.array, *, chunk_size: int) -> list[np.array]:
@@ -79,7 +79,7 @@ def run(
         labels = voxels.map(lambda X: get_labels(X, centroids, **common_args))
 
         r = voxels.zip(labels).map(
-            lambda x: _centers_dense(x[0], x[1], n_clusters, **common_args)
+            lambda x: centers_dense(x[0], x[1], n_clusters, **common_args)
         )
         centers_meta = np.array(r.collect()).sum(axis=0)
         new_centers = centers_meta[:, 0]

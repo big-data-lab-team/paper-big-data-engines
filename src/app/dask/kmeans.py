@@ -10,8 +10,8 @@ from dask_jobqueue import SLURMCluster
 import numba
 import numpy as np
 
-from ..commons.kmeans import classify_block, dump, get_labels, _centers_dense
-from ..utils import load, log, merge_logs
+from ..commons.kmeans import classify_block, dump, get_labels, centers_dense
+from ..utils import load, merge_logs
 
 
 def run(
@@ -86,7 +86,7 @@ def run(
 
         # Ref: from dask_ml.cluster.k_means::_kmeans_single_lloyd
         r = da.blockwise(
-            _centers_dense,
+            centers_dense,
             "ik",
             voxels,
             "i",

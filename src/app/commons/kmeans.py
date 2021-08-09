@@ -8,20 +8,12 @@ import numpy as np
 from ..utils import log
 
 
-@numba.njit(nogil=True, fastmath=True)
-def _centers_dense(
+def centers_dense(
     X, labels, n_clusters, *, benchmark_folder, start, experiment, output_folder
 ):
     start_time = time.time() - start
 
-    centers = np.zeros(
-        (n_clusters, 2),
-        dtype=np.uint16,
-    )
-
-    for i in range(X.shape[0]):
-        centers[labels[i], 0] += X[i]
-        centers[labels[i], 1] += 1
+    centers = _centers_dense(X, labels, n_clusters)
 
     end_time = time.time() - start_time
 
@@ -34,6 +26,21 @@ def _centers_dense(
             experiment,
             "update_centroids",
         )
+
+    return centers
+
+
+@numba.njit(nogil=True, fastmath=True)
+def _centers_dense(X, labels, n_clusters):
+
+    centers = np.zeros(
+        (n_clusters, 2),
+        dtype=np.uint16,
+    )
+
+    for i in range(X.shape[0]):
+        centers[labels[i], 0] += X[i]
+        centers[labels[i], 1] += 1
 
     return centers
 
