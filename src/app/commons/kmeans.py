@@ -35,7 +35,7 @@ def _centers_dense(X, labels, n_clusters):
 
     centers = np.zeros(
         (n_clusters, 2),
-        dtype=np.uint16,
+        dtype=np.uint64,
     )
 
     for i in range(X.shape[0]):
