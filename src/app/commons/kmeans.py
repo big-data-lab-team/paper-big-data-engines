@@ -107,7 +107,9 @@ def classify_block(block, centroids, *, benchmark_folder, start, experiment, **k
     img = block[1]
     metadata = block[2]
 
-    img = np.argmin(np.fabs(np.subtract.outer(img, centroids)), axis=0)
+    array = np.subtract.outer(img, centroids)
+    np.square(array, out=array)
+    img = np.argmin(array, axis=1)
 
     end_time = time.time() - start
 
