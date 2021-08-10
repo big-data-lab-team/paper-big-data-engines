@@ -51,15 +51,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        cmds.append(
-            cmd_template.format(
-                BB_sample_path(5000),
-                "multi-increment",
-                f"{5000} {default['small_itr']} {default['sleep']}",
-                x,
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_sample_path(5000),
+        #         "multi-increment",
+        #         f"{5000} {default['small_itr']} {default['sleep']}",
+        #         x,
+        #         benchmark_folder,
+        #     )
+        # )
         cmds.append(
             cmd_template.format(
                 BB_sample_path(5000),
@@ -100,24 +100,6 @@ for cmd_template in cmd_templates:
         )
         cmds.append(
             cmd_template.format(
-                BB_sample_path(n),
-                "multi-increment",
-                f"{n} {default['small_itr']} {default['sleep']}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-        cmds.append(
-            cmd_template.format(
-                BB_sample_path(n),
-                "kmeans",
-                f"{n} {default['small_itr']}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
-        cmds.append(
-            cmd_template.format(
                 BB_path(n),
                 "histogram",
                 f"{n}",
@@ -137,15 +119,15 @@ for cmd_template in cmd_templates:
             )
         )
     for x in n_iterations_small:
-        cmds.append(
-            cmd_template.format(
-                BB_sample_path(5000),
-                "multi-increment",
-                f"{5000} {x} {default['sleep']}",
-                default["node"],
-                benchmark_folder,
-            )
-        )
+        # cmds.append(
+        #     cmd_template.format(
+        #         BB_sample_path(5000),
+        #         "multi-increment",
+        #         f"{5000} {x} {default['sleep']}",
+        #         default["node"],
+        #         benchmark_folder,
+        #     )
+        # )
         cmds.append(
             cmd_template.format(
                 BB_sample_path(5000),
