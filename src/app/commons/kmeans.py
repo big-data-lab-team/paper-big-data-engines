@@ -107,9 +107,12 @@ def classify_block(block, centroids, *, benchmark_folder, start, experiment, **k
     img = block[1]
     metadata = block[2]
 
-    array = np.subtract.outer(img, centroids)
-    np.square(array, out=array)
-    img = np.argmin(array, axis=1)
+    rv = []
+    for arr in np.array_split(img, img.shape[0]):
+        dist = np.subtract.outer(arr, centroids)
+        np.square(dist, out=dist)
+        rv.append(np.argmin(dist, axis=1))
+    rv = np.stack(rv)
 
     end_time = time.time() - start
 
@@ -123,7 +126,7 @@ def classify_block(block, centroids, *, benchmark_folder, start, experiment, **k
             classify_block.__name__,
         )
 
-    return filename, img, metadata
+    return filename, rv, metadata
 
 
 def dump(img_rdd, *, benchmark_folder, start, output_folder, experiment, **kwargs):

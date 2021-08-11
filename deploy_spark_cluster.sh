@@ -6,7 +6,7 @@ export NWORKERS=8
 
 export TOTAL_WORKERS=$(( ${NWORKERS} * ${SLURM_NNODES} ))
 export WORKER_NPROC=$(( ${NODE_NPROC} / ${NWORKERS} ))
-export WORKER_MEM=$(echo $(echo "${NODE_MEM} / ${NWORKERS} * .95 / 1" | bc)G)
+export WORKER_MEM=$(echo $(echo "${NODE_MEM} / ${NWORKERS} * .9 / 1" | bc)G)
 
 term_handler()
 {

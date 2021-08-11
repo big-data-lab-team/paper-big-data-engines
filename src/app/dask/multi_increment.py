@@ -61,7 +61,7 @@ def run(
             block = dask.delayed(increment)(
                 block,
                 delay=delay,
-                increment_data=random.choice(blocks)[1],
+                increment_data=random.choice(blocks),
                 **common_args,
             )
 

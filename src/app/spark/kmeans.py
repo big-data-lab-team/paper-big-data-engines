@@ -62,7 +62,7 @@ def run(
     paths = sc.parallelize(files, len(files))
     blocks = paths.map(lambda p: load(p, **common_args))
     voxels = blocks.flatMap(
-        lambda block: rechunk(block[1].flatten(), chunk_size=6.4e7)
+        lambda block: rechunk(block[1].flatten(), chunk_size=64 * 1024 ** 2)
     )  # 64MB chunks
 
     n_clusters = 3
