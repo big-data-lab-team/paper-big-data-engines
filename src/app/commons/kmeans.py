@@ -15,7 +15,7 @@ def centers_dense(
 
     centers = _centers_dense(X, labels, n_clusters)
 
-    end_time = time.time() - start_time
+    end_time = time.time() - start
 
     if benchmark_folder:
         log(
@@ -52,39 +52,6 @@ def get_labels(X, centroids, *, benchmark_folder, start, experiment, **kwargs):
     np.square(array, out=array)
     rv = np.argmin(array, axis=1)
 
-    end_time = time.time() - start_time
-
-    if benchmark_folder:
-        log(
-            start_time,
-            end_time,
-            "all",
-            benchmark_folder,
-            experiment,
-            get_labels.__name__,
-        )
-
-    return rv
-
-
-def closest_centroids(x, centroids, *, benchmark_folder, start, experiment, **kwargs):
-    """Returns the index of the closest centroids.
-
-    Parameters
-    ----------
-    x : np.array
-        1-D array of voxels.
-    centroids : list(T)
-        List of current centroids.
-
-    Returns
-    -------
-    closest_centroid : T
-    """
-    start_time = time.time() - start
-
-    rv = np.argmin([np.absolute(x - c) for c in centroids], axis=0)
-
     end_time = time.time() - start
 
     if benchmark_folder:
@@ -94,7 +61,7 @@ def closest_centroids(x, centroids, *, benchmark_folder, start, experiment, **kw
             "all",
             benchmark_folder,
             experiment,
-            closest_centroids.__name__,
+            get_labels.__name__,
         )
 
     return rv
