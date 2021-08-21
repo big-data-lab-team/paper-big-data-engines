@@ -62,8 +62,9 @@ def run(
     paths = sc.parallelize(files, len(files))
     blocks = paths.map(lambda p: load(p, **common_args))
     voxels = blocks.flatMap(
-        lambda block: rechunk(block[1].flatten(), chunk_size=64 * 1024 ** 2)
-    )  # 64MB chunks
+        lambda block: rechunk(block[1].flatten(), chunk_size=32 * 1024 ** 2)
+    )  # 32MB chunks
+    voxels = voxels.repartition(voxels.count())
 
     n_clusters = 3
     centroids = np.linspace(
