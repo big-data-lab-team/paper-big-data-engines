@@ -38,6 +38,24 @@
 
 \begin{abstract}
 	% TODO
+	In recent years, the joint increase in image resolution, data sharing and
+	study sizes in neuroimaging demands for Big Data strategies.
+	However, while several options are available, no particular engine emerged.
+	In this paper, we compare the runtime performance of two popular Big Data engines with
+	Python APIs, Apache Spark, and Dask, in processing neuroimaging pipelines.
+	Our experiments use three synthetic data-intensive applications to process
+	the \SI{606}{\gibi\byte} BigBrain image and an actual pipeline to process data
+	from thousands of anatomical images.
+	We benchmark these applications on a dedicated HPC cluster while using varying
+	combinations of the number of nodes, file size, and duration threshold for the pipelines.
+	Our results show that although there are slight differences between Dask and Spark,
+	the performance of the engines is comparable for data-intensive applications.
+	However, Spark requires more memory than Dask to execute, which can lead to 
+	slower runtime depending on configuration and infrastructure.
+	In general, the limiting factor was the data transfer time.
+	While both engines are suitable for neuroimaging, more efforts need to be put
+	to reduce the data transfer time and the memory footprint of applications.
+						
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -273,28 +291,25 @@ The computation to find the closest centroids for each voxels scales with the nu
 It can be computed in parallel at the cost of higher memory or sequentially to reduce memory usage.
 We decided to compute the nearest centroids in parallel since we use only three centroids.
 
-\subsubsection{BIDS App example}
-Our fifth application is the BIDS App example, a neuroimaging pipeline to
+\subsubsection{BIDS App Example}
+Our fifth application is the BIDS App Example, a neuroimaging pipeline to
 measure brain volume from MRIs. For this application, we use the CoRR
 dataset. The application extracts the brain volume of each participant,
 then computes the average for each group of participants. Unlike the other
-applications, the BIDS App example is a command-line executed in a Docker image
+applications, the BIDS App Example is a command-line executed in a Docker image
 (bids/example on DockerHub). We converted the Docker image to a Singularity
-image for use in HPC environments, \MD{Cite paper on the reason why this is
-done.} using
+image for use in HPC environments, using
 \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
 		
 \subsection{Experiments}
 Table~\ref{table:parameters} shows the parameters that we varied
-throughout the experiments. We varied (1) the number of workers to assess
-the scalability of the engine scheduler, (2) the BigBrain
-block size in Increment, Multi-Increment, and Histogram to measure the
-effect of different I/O patterns and parallelization degrees, (3) the
-number of iterations to evaluate the effect of the number of tasks, and (4) the
-sleep delay to study the effect of task duration. \TG{these parameters don't seem to match the names used in Table I, they should be harmonized}
- It should be noted that
-increasing the number of iterations for a given sleep delay also increases
-the total compute time of an application.
+throughout the experiments. We varied (1) the number of nodes to assess
+the scalability of the engines' scheduler, (2) the number of files for the BigBrain
+in Increment, and Histogram to measure the
+effect of different I/O patterns and parallelization degrees, and (3) the
+number of iterations to evaluate the effect of the number of tasks.
+It should be noted that increasing the number of iterations for a given sleep 
+delay also increases the total compute time of an application.
 		
 To avoid potential external biases due to caching, background processes and,
 network load, we ran the applications in randomized order and cleared the
@@ -313,8 +328,8 @@ Summing those results gives the total overhead for the application.
 	\centering
 	\begin{tabular}{|l|c|c|c|c|c|}
 		\hline           & Increment & Histogram & Kmeans  & BIDS App Example \\\hline
-		\# of Nodes & \multicolumn{4}{c|}{2, 4, 8} \\\hline
 		Dataset size [\SI{}{\gibi\byte}] &\multicolumn{2}{c|}{606} & 303 & \multicolumn{1}{c|}{26.67} \\\hline
+		\# of Nodes & \multicolumn{4}{c|}{2, 4, 8} \\\hline
 		Number of file & \multicolumn{2}{c|}{1000, 2500, 5000} & - & \multicolumn{1}{c|}{3491} \\\hline
 		\# of Iterations & 1, 5, 25  & -         & 1, 3, 9 & -                \\\hline
 	\end{tabular}
@@ -323,8 +338,7 @@ Summing those results gives the total overhead for the application.
 \section{Results}
 \subsection{Increment}
 Figure \ref{fig:increment_worker} depicts the total execution time spent in each code segment of the \textit{Increment} application.
-The bars are broken down into Idle, Read, Write, and other application-specific functions. \TG{Add a sentence to explain what Idle is. Is it exactly the overhead mentioned previously? if
-so, I would just call it Overhead everywhere (in the figures and in the text)}
+The bars are broken down into Overhead, Read, Write, and other application-specific functions.
 The mean of each bar is calculated from ten repetitions, with the error bar representing the standard deviation.
 As expected, the compute time, from \textit{Increment}, remains the same when we vary the number of nodes.
 However, the \textit{Read} and \textit{Write} time increase with the number of nodes for both engines.
@@ -332,8 +346,8 @@ This is explained by an I/O bottleneck on the Lustre file system.
 		
 From Figure \ref{fig:increment_worker}, we also observe that Dask's overhead is higher than Spark's.
 While the overhead of both engines increases with the number of nodes, Dask's overhead is significantly worse when scaling.
-Although Dask has a higher overhead, the total time for both engines is similar; with a maximum makespan difference of \SI{7}{\second} for two nodes.
-This is due to a tradeoff between disk bandwidth and compute/idle time.
+Although Dask has a higher overhead, the total time for both engines is similar; with a maximum makespan difference of 2\% for two nodes.
+This is due to a tradeoff between disk bandwidth and compute/overhead time.
 On the one hand, multiple threads access Lustre concurrently, thus sharing the disk bandwidth resulting in longer I/O time.
 On the other hand, when most threads are either idle or performing computations, it reduces the contention on the disk bandwidth resulting in shorter I/O time.
 \begin{figure}[!t]
@@ -344,12 +358,12 @@ On the other hand, when most threads are either idle or performing computations,
 \end{figure}
 		
 Figure \ref{fig:increment_itr} shows the detailed execution time for the \textit{Increment} application while varying the number of iterations.
-As expected, the idle time for both engines increases with the number of iterations.
-However, idle time for Dask increases significantly faster than Spark, resulting in a \SI{38}{\second} makespan difference for 25 iterations.
+As expected, the overhead for both engines increases with the number of iterations.
+However, overhead for Dask increases significantly faster than Spark, resulting in a 7\% makespan difference for 25 iterations.
 		
-Figure \ref{fig:increment_itr} also shows that the total computation time increases as the total I/O time decreases.
+Figure \ref{fig:increment_itr} also shows that the the total I/O time decreases as total computation time increases.
 This is explained by an I/O bottleneck on the Lustre file system.
-When threads are busy with computations, they reduce the contention on Lustre, thus improving I/O speed for individual accesses \TG{but then read or write time should decrease, not computing time.}.
+When threads are busy with computations, it reduces the contention on Lustre, thus improving I/O speed for individual accesses.
 \begin{figure}[!t]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_itr.jpg}
@@ -361,9 +375,9 @@ Figure \ref{fig:increment_block} shows an increase in \textit{Increment} time.
 This is because the application performs an incrementation for each file, thus increasing the computation time.
 Similarly to Figure \ref{fig:increment_itr}, increasing the total compute time of the application reduces the total I/O time.
 Again, this is explained by the I/O tradeoff between compute time and contention of disk bandwidth.
-		
-From Figure \ref{fig:increment_block} we also observe that Dask has significantly higher idle time than Spark.
-However, the total execution time of the application is similar due to the tradeoff between I/O and compute/idle time.
+
+From Figure \ref{fig:increment_block} we also observe that Dask has significantly higher overhead than Spark.
+However, the total execution time of the application is similar due to the tradeoff between I/O and compute/overhead time.
 \begin{figure}[!t]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_increment_block.jpg}
@@ -386,6 +400,7 @@ As with previous experiments, the overhead for Spark is less and scales better, 
 		
 Figure \ref{fig:histogram_block} shows the execution time for the \textit{Histogram} when varying the number of files.
 The results are similar to varying the number of nodes with Spark having faster compute time for \textit{Calculate\_histogram}.
+This results in a makespan difference of up to 3\%.
 \begin{figure}[!t]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/stacked_histogram_block.jpg}
@@ -395,12 +410,9 @@ The results are similar to varying the number of nodes with Spark having faster 
 
 \subsection{Kmeans}
 Figure \ref{fig:kmeans_worker} depicts the total execution time for the \textit{Kmeans} application when varying the number of workers.
-We observe that Dask is multifold faster than Spark.
-Specifically, Spark has much longer idle, \textit{get\_labels} and read time than Dask.
+We observe that Dask is multifold faster than Spark, resulting in a $1.79\times$ to $2.71\times$ lower makespan.
+Specifically, Spark has much longer overhead, \textit{get\_labels} and read time than Dask.
 This difference arises from Spark workers restarting due to lack of executor memory, leading to recomputation of tasks.
-
-% For Spark, we reduced the number of processes per node from 64 to 32 while keeping the memory the same and found similar execution times.
-% However, the Spark worker did not restart with a lower process count and no longer recomputed tasks \TG{removed this as it is discussed later more clearly}.
 
 For brevity we omitted the figure when varying the number of iterations as the results are similar to varying the number of workers.
 \begin{figure}[!t]
@@ -411,10 +423,11 @@ For brevity we omitted the figure when varying the number of iterations as the r
 \end{figure}
 
 \subsection{BIDS App Example}
-Figure \ref{fig:bids} shows the total execution time for the \textit{BIDS App example} application when varying the number of nodes.
-We observe that Dask has a significantly lower execution time than Spark, between 10\% to 15\%.
-The main difference comes from an increased amount of stagger tasks for Spark, thus increasing the idle time of the application.
-Moreover, although minimal, a shorter cluster deployment time for Dask reinforces the difference in idle time.
+Figure \ref{fig:bids} shows the total execution time for the \textit{BIDS App Example} application when varying the number of nodes.
+We observe that Dask has slightly lower overhead, thank Spark, although not significant.
+However, the makespan for Dask is between 7.5\% to 14.5\% lower than Spark.
+The main difference comes from an increased amount of stagger tasks for Spark, thus increasing the overhead of the application.
+Moreover, although minimal, a shorter cluster deployment time for Dask reinforces the difference in overhead time.
 As with other experiments, the I/O from Lustre affects the scaling of both engines as we increase the number of nodes.
 \begin{figure}[!t]
 	\centering
@@ -422,8 +435,6 @@ As with other experiments, the I/O from Lustre affects the scaling of both engin
 	\caption{BIDS App Example: varying nodes}
 	\label{fig:bids}
 \end{figure}
-		
-\TG{Could you add information about how the differences in total times translated into makespans, for each application? Either as sentences in the text or as an extra table.}
 
 \section{Discussion}
 \subsection{I/O bottleneck}
@@ -471,7 +482,7 @@ However, this was compensated by the overhead and data transfer tradeoff mention
 Since our focus is on data-intensive applications, we conclude that the performance of Dask and Spark is equivalent.
 
 The experiments from \cite{Mehta:17} found that Dask has a larger startup overhead than Spark, while another study \cite{8588652} found the opposite.
-We did not find significant differences in startup overhead between the engines in this study nor our previous study \cite{8943502}.
+In this study, we found that Dask has a lower startup overhead than Spark; however, we did not in our previous study \cite{8943502}.
 Those apparent contractions most likely come from differences in infrastructure and configuration of the engines.
 
 Our results from the Histogram experiments show that the Dask Bags API was slower than Spark.
