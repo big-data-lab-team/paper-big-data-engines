@@ -63,7 +63,7 @@ The popularity of Python in the scientific community arguably gives an edge to D
 However, if not careful, the Python Global Interpreter Lock (GIL) can significantly reduce the parallelism of an application in some cases.
 The difference in programming languages also provides different benefits.
 On the one hand, as part of the Scipy ecosystem, Dask provides almost transparent integration with APIs such as Numpy arrays, Pandas dataframe, or RAPIDS GPU accelerated code framework.
-On the other hand, Spark's Java, Scala, R, and Python APIs efficiently parallelize pipelines with minimal performance loss, due to the Java Virtual Machine. \TG{you could add a few words to explain why the JVM is useful for parallelization ("thanks to the JVM that ...")}
+On the other hand, Spark's Java, Scala, R, and Python APIs efficiently parallelize pipelines with minimal performance loss, due to the Java Virtual Machine.
 Our study is restrained to performance, although we recognize that other factors affect the choice of an engine in practice.
 
 While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructures.
