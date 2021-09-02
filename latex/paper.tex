@@ -38,19 +38,19 @@
 
 \begin{abstract}
 	% TODO
-	In recent years, the joint increase in image resolution, data sharing and
-	study sizes in neuroimaging demands for Big Data strategies.
-	However, while several options are available, no particular engine emerged.
+	The joint increase in data resolution, data sharing and
+	study sizes motivates the adoption of Big Data strategies in a number of scientific disciplines.
+	However, while several options are available, no particular Big Data engine emerged.
 	In this paper, we compare the runtime performance of two popular Big Data engines with
 	Python APIs, Apache Spark, and Dask, in processing neuroimaging pipelines.
 	Our experiments use three synthetic data-intensive applications to process
 	the \SI{606}{\gibi\byte} BigBrain image and an actual pipeline to process data
 	from thousands of anatomical images.
-	We benchmark these applications on a dedicated HPC cluster while using varying
-	combinations of the number of nodes, file size, and duration threshold for the pipelines.
+	We benchmark these applications on a dedicated HPC cluster running the Lustre file system while using varying
+	combinations of number of nodes, file size, and task duration.
 	Our results show that although there are slight differences between Dask and Spark,
 	the performance of the engines is comparable for data-intensive applications.
-	However, Spark requires more memory than Dask to execute, which can lead to 
+	However, Spark requires more memory than Dask, which can lead to 
 	slower runtime depending on configuration and infrastructure.
 	In general, the limiting factor was the data transfer time.
 	While both engines are suitable for neuroimaging, more efforts need to be put
