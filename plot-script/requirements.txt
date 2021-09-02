@@ -1,0 +1,5 @@
+bokeh
+matplotlib
+numpy
+pandas
+jupyterlab

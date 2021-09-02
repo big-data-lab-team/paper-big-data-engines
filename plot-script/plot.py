@@ -239,9 +239,12 @@ def gantt(
         show(plot)
 
 
-def wasted_time(df, *, framework):
+def wasted_time(df, *, framework, func_remap=None):
     if framework == "spark":
         df["thread"] = df["process"]
+        
+    if func_remap:
+        df = func_remap(df)
 
     core_used = sum(
         [
@@ -264,9 +267,12 @@ def wasted_time(df, *, framework):
     return wasted_time, *run_time
 
 
-def idle_time(df, *, framework):
+def idle_time(df, *, framework, func_remap=None):
     if framework == "spark":
         df["thread"] = df["process"]
+        
+    if func_remap:
+        df = func_remap(df)
 
     by_thread = df.groupby(["worker", "thread"])
 
@@ -295,6 +301,7 @@ def stacked_bar(
     save_name=None,
     ylim=None,
     title=None,
+    func_remap=None,
     **kwargs,
 ):
     matplotlib.rcParams.update({"font.size": 22})
@@ -340,7 +347,7 @@ def stacked_bar(
         data = [
             np.array(
                 [
-                    idle_func(pd.read_csv(file_, names=col_names), framework=framework)
+                    idle_func(pd.read_csv(file_, names=col_names), framework=framework, func_remap=func_remap)
                     for file_ in experiments[key]
                 ]
             )
@@ -431,7 +438,9 @@ def stacked_bar(
 
     func_patches = []
     sample_df = pd.read_csv(filenames[0], names=col_names)
-    for i, function in enumerate(["idle"] + sorted(sample_df["func"].unique())):
+    if func_remap:
+        sample_df = func_remap(sample_df)
+    for i, function in enumerate(["overhead"] + sorted(sample_df["func"].unique())):
         func_patches.append(
             Patch(
                 facecolor="lightgray",
@@ -459,5 +468,100 @@ def stacked_bar(
         os.makedirs(os.path.dirname(save_name), exist_ok=True)
         plt.savefig(save_name, bbox_inches="tight")
         plt.title(title)
+
+    plt.show()
+
+def bar(
+    *,
+    col_names,
+    benchmark_dir,
+    experiment,
+    parameters,
+    xlabel,
+    save_name=None,
+    ylim=None,
+    **kwargs,
+):
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    bar_width = 0.15
+
+    benchmark_dir += f"/*{experiment}"
+    freedom = None
+    for parameter in parameters:
+        if parameter in kwargs:
+            benchmark_dir += f":{parameter}={kwargs[parameter]}"
+        else:
+            assert freedom == None, "Only one degree of freedom is allowed."
+            benchmark_dir += f":{parameter}=*"
+            freedom = parameter
+
+    filenames = glob.glob(benchmark_dir + "/*summary-*.csv")
+
+    xticks_label = sorted(
+        {
+            float(x.replace(freedom + "=", ""))
+            for k in filenames
+            for x in k.split("/")[-2].split(":")[2:]
+            if freedom in x
+        }
+    )
+    x_pos = lambda i: np.arange(len(xticks_label)) + bar_width * i
+
+    results = defaultdict(lambda: defaultdict(list))
+    for x in filenames:
+        path = x.split("/")
+        experiment = path[-2]
+
+        framework = experiment.split(":")[0]
+        results[framework][experiment].append(x)
+
+    for i, (framework, experiments) in enumerate(sorted(results.items())):
+        data = [
+            [
+                pd.read_csv(file_, names=col_names).end.max()
+                for file_ in experiments[key]
+            ]
+            for key in sorted(
+                experiments,
+                key=lambda k: float(re.search(f"{freedom}=(\d+\.?\d*)", k).group(1)),
+            )
+        ]
+
+        # Calculate statistics
+        stats = {
+            "mean": list(map(np.mean, data)),
+            "std": list(map(np.std, data)),
+        }
+
+        # Set position of bar on X axis
+        print(framework, stats["mean"])
+
+        plt.bar(
+            x_pos(i),
+            stats["mean"],
+            yerr=stats["std"],
+            color=Colorblind8[i % len(Colorblind8)],
+            width=bar_width,
+            edgecolor="black",
+            alpha=0.66,
+            label=framework.capitalize(),
+        )
+
+    xticks_loc = np.arange(len(xticks_label)) + bar_width * i / 2
+    plt.xticks(xticks_loc, xticks_label)
+    plt.xlabel(xlabel, fontweight="bold")
+    plt.ylabel("Makespan [s]", fontweight="bold")
+
+    if ylim:
+        plt.ylim([0, ylim])
+
+    plt.title(kwargs.get("title", None))
+    plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
+
+    # Display mode
+    if save_name:
+        os.makedirs(os.path.dirname(save_name), exist_ok=True)
+        plt.savefig(save_name, bbox_inches="tight")
 
     plt.show()
