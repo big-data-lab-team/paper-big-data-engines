@@ -38,9 +38,8 @@
 
 \begin{abstract}
 	% TODO
-	The joint increase in data resolution, data sharing and
-	study sizes motivates the adoption of Big Data strategies in a number of scientific disciplines.
-	However, while several options are available, no particular Big Data engine emerged.
+	The general increase in data size and data sharing motivates the adoption of Big Data strategies in a number of scientific disciplines.
+	However, while several options are available, no particular guidelines exist for the selection of a Big Data engine.
 	In this paper, we compare the runtime performance of two popular Big Data engines with
 	Python APIs, Apache Spark, and Dask, in processing neuroimaging pipelines.
 	Our experiments use three synthetic data-intensive applications to process
@@ -87,7 +86,7 @@ Our study is restrained to performance, although we recognize that other factors
 While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructures.
 This paper focuses on the performance of Big Data engines in HPCs environments.
 We installed the Slurm scheduler and Lustre file system~\cite{braam2019lustre} on a dedicated cluster to mimic a typical HPC system.
-Lustre is a powerful and scalable file system for HPC environments offering parallel file accesses.
+Lustre is a popular file system for HPC environments offering parallel file accesses.
 
 In a previous study\cite{8943502} we found that there was no significant performance difference between Apache Spark and Dask for data-intensive applications.
 However, using the network file system (NFS) led to an I/O bottleneck limiting application performance.
@@ -387,7 +386,7 @@ However, the total execution time of the application is similar due to the trade
 				
 \subsection{Histogram}
 Figure \ref{fig:histogram_worker} depicts the execution time for the \textit{Histogram} application when varying the number of nodes.
-Overall, Spark has up to 5\% lower total execution time, with the difference coming from a shorter execution time for \textit{Calculate\_histogram}.
+Overall, Spark's total execution time is up to 5\% lower than Dask's, with the difference coming from a shorter execution time for \textit{Calculate\_histogram}.
 This is unexpected as the code base for both engines is the same, with only the calling APIs differing.
 It is most likely due to the use of Dask Bags, which are slower than the other Dask APIs.
 As with previous experiments, the overhead for Spark is less and scales better, although compensated by a longer total I/O time.
@@ -410,7 +409,7 @@ This results in a makespan difference of up to 3\%.
 
 \subsection{Kmeans}
 Figure \ref{fig:kmeans_worker} depicts the total execution time for the \textit{Kmeans} application when varying the number of workers.
-We observe that Dask is multifold faster than Spark, resulting in a $1.79\times$ to $2.71\times$ lower makespan.
+We observe that Dask is multifold faster than Spark, resulting in a $1.79\times$ to $2.71\times$ speed-up ratio on the makespan.
 Specifically, Spark has much longer overhead, \textit{get\_labels} and read time than Dask.
 This difference arises from Spark workers restarting due to lack of executor memory, leading to recomputation of tasks.
 
@@ -425,7 +424,7 @@ For brevity we omitted the figure when varying the number of iterations as the r
 \subsection{BIDS App Example}
 Figure \ref{fig:bids} shows the total execution time for the \textit{BIDS App Example} application when varying the number of nodes.
 We observe that Dask has slightly lower overhead, thank Spark, although not significant.
-However, the makespan for Dask is between 7.5\% to 14.5\% lower than Spark.
+However, the makespan for Dask is between 7.5\% to 14.5\% lower than for Spark.
 The main difference comes from an increased amount of stagger tasks for Spark, thus increasing the overhead of the application.
 Moreover, although minimal, a shorter cluster deployment time for Dask reinforces the difference in overhead time.
 As with other experiments, the I/O from Lustre affects the scaling of both engines as we increase the number of nodes.
@@ -439,10 +438,10 @@ As with other experiments, the I/O from Lustre affects the scaling of both engin
 \section{Discussion}
 \subsection{I/O bottleneck}
 We used Lustre as shared file system as it is a standard solution in HPC systems.
-The performance of Lustre degrades when a large number of concurrent tasks attempt to perform I/O to the shared file system, as shown in Figures \ref{fig:increment_worker} and \ref{fig:histogram_worker}.
+The performance of our Lustre installation degrades when a large number of concurrent tasks attempt to perform I/O to the shared file system, as shown in Figures \ref{fig:increment_worker} and \ref{fig:histogram_worker}.
 In a previous study \cite{8943502}, we observed nearly no improvement when increasing the number of nodes to process an application while using an NFS.
 In this paper, Lustre shows some scaling when increasing the number of nodes, although not linear.
-This suggests that increasing the parallelism level of the file system might help alleviate the I/O bottleneck observed.
+This suggests that increasing the parallelism level of the file system, including through potential configuration optimizations, might help alleviate the I/O bottleneck observed.
 
 As in our previous study \cite{8943502}, we observe that the I/O bottleneck from the file system has a lower impact on more compute-intensive applications, such as BIDS App Example.
 However, it significantly affects data-intensive applications, such as Increment and Histogram.
