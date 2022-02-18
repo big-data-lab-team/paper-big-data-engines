@@ -63,10 +63,10 @@
 \maketitle
 
 \section{Introduction}
-The rise in data sharing coupled with improved data collection technologies leads neuroimaging into the Big Data era\cite{ALFAROALMAGRO:18, van2014human, ConpPortal}.
+The rise in data sharing coupled with improved data collection technologies leads neuroimaging into the Big Data era\cite{ALFAROALMAGRO2018400, van2014human, ConpPortal}.
 While standard neuroimaging workflow engines, such as Nipype\cite{Nipype:11}, are well rounded to process standard compute-intensive pipelines,
 they lack Big Data strategies (i.e., in-memory computing, data locality, and lazy-evaluation) to improve the performance of increasingly prevalent data-intensive pipelines.
-A previous study\cite{hayot2019performance} noted the importance of in-memory computing and data locality to improve the performance of data-intensive pipelines.
+A previous study\cite{8752675} noted the importance of in-memory computing and data locality to improve the performance of data-intensive pipelines.
 In this work, we study how performance benchmarks generalize across Big Data engines in an HPC environment.
 In particular, we study in-depth the performance difference between Dask\cite{Dask:15} and Apache Spark\cite{Spark:16} for their suitability to process neuroimaging pipelines.
 Our objective is to assess whether Spark or Dask has substantial performance benefits in processing data-intensive HPC pipelines.
@@ -86,8 +86,8 @@ Our study is restrained to performance, although we recognize that other factors
 
 While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructures.
 This paper focuses on the performance of Big Data engines in HPCs environments.
-We installed the Slurm scheduler and Lustre file system~\cite{braam2019lustre} on a dedicated cluster to mimic a typical HPC system.
-Lustre is a popular file system for HPC environments offering parallel file accesses.
+We installed the Slurm scheduler and Lustre file system~\cite{Braam2019TheLS} on a dedicated cluster to mimic a typical HPC system.
+Lustre is a reference file system for HPC environments, used in over 60 of the TOP100 supercomputers~\cite{OpenSFS-lustre}, offering parallel file accesses.
 
 In a previous study\cite{8943502} we found that there was no significant performance difference between Apache Spark and Dask for data-intensive applications.
 However, using the network file system (NFS) led to an I/O bottleneck limiting application performance.
@@ -100,7 +100,8 @@ On the contrary, the work in~\cite{10.1145/3225058.3225128} shows that with larg
 However, that study used the Dask Bag API, which has performance limitations compared to other Dask APIs.
 
 The above studies compared the performance of the engine at a high level.
-In comparison, our study provides a detailed analysis of the performance differences and similarities between Dask and Spark for data-intensive applications.
+In comparison, our study provides a detailed analysis of the performance differences
+and similarities, for HPC, between Dask and Spark for data-intensive applications.
 
 The following section introduces the Lustre file system and the Big Data engines.
 Next, we present the design of our benchmarking experiments.
@@ -111,7 +112,7 @@ Further sections present our results, discussion, and conclusion.
 
 \section{Background}
 \subsection{Lustre}
-The Lustre file system is a parallel file system well suited for HPC environments.
+The Lustre file system is a parallel file system of reference in HPC environments.
 Lustre offers a POSIX-compliant interface with the file system.
 Installed in some of the most powerful supercomputers, the design of Lustre allows
 scaling to thousands of nodes, petabytes of storage, and hundreds of gigabits per second of I/O throughput.
@@ -121,6 +122,10 @@ the \textit{object storage targets} (OSTs) to store file data, and the \textit{o
 Lustre clients make requests to the MGSs to access files on the OSTs.
 To handle failures in the system, the MGSs, MDSs, and OSTs have failover capabilities.
 InfiniBand, Ethernet, or a combination of both can be used to interconnect these different components.
+
+While other filesystem such as HDFS or cloud storage could be considered, we chose Lustre to best represent an HPC environment.
+HDFS makes use of permanent local storage on compute node, which is usually not feasable in HPC.
+Morevoer, HPC node rarely have access to internet, limiting the use of cloud storage.
 
 \subsection{Dask}
 Dask is a Python-based Big Data engine with growing popularity in the scientific Python ecosystem.
@@ -196,6 +201,8 @@ Each compute node has two 16-core Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz,
 \SI{250}{\gibi\byte} of RAM, \SI{126}{\gibi\byte} of tmpfs,
 % 6 $\times$ SSDs of \SI{447}{\gibi\byte} each with the XFS file system (no RAID enabled),
 CentOS~8.1 and Linux kernel \textit{4.18.0-240.1.1.el8\_lustre.x86\_64}.
+All of the compute and storage nodes are inter-connected by a \SI{10}{\giga\bit\per\second} Ethernet link through a switch.
+The login node, hosting an NFS, is also connected by a \SI{10}{\giga\bit\per\second} Ethernet link to the compute nodes.
 
 We configured Lustre to have 1 MGS and 4 OSS.
 Each OSS has 11 OSTs (disks) of \SI{8.8}{\tebi\byte}.
@@ -203,6 +210,12 @@ The OSTs are configured to have a maximum of \SI{1000}{\mebi\byte} of dirty data
 Both the MDT and OSTs are configured to a maximum of 64 concurrent RPCs in flight.
 A timeout of \SI{100}{\second} is set for Lustre, and OSTs checksum are disabled.
 Lustre \textit{2.14.0-1.el8} is installed on both the Lustre clients and servers.
+%  TODO Inode config??
+
+Our system uses similar hardware as Compute Canada Beluga, and replicates as
+close as possible it's configuration.
+This let us make a fair comparison of Spark and Dask in the condition of a realistic
+HPC system.
 	
 Both Spark and Dask are configured to have eight worker processes, each with eight threads.
 Each worker was allocated \SI{31.5}{\gibi\byte} of memory.
@@ -239,13 +252,16 @@ We use three simple synthetic applications to have a deep understanding of the
 underlying behavior of the applications with simple I/O patterns, namely
 \textit{Increment}, \textit{Multi-Increment}, and \textit{Histogram}.
 Also, two neuroimaging applications are used to study more realistic 
-applications, namely \textit{Kmeans} and \textit{BIDS App Example}.
+applications, namely \textit{Kmeans} and \textit{BIDS App Example}\cite{gorgolewski2017bids}.
 		
 To have a fair comparison between the engines, the code base for the core functions of the applications is the same for both engines.
 This allows us to reduce the performance difference from different implementations.
-		
+
+The scripts used for our experiements and the results generated are available on
+GitHub at: \href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines/}.
+
 \subsubsection{Increment}
-We adapted the increment application used in~\cite{hayot2019performance}.
+We adapted the increment application used in~\cite{8752675}.
 This synthetic application reads blocks of the BigBrain from Lustre and
 simulates computation by sleeping for a specified period (Fig.~\ref{fig:graph-increment}). To simulate
 intermediate results, we repeat the sleep process for a configurable amount
@@ -447,7 +463,7 @@ As with other experiments, the I/O from Lustre affects the scaling of both engin
 
 \section{Discussion}
 \subsection{I/O bottleneck}
-We used Lustre as shared file system as it is a standard solution in HPC systems.
+We used Lustre as shared file system as it is a defacto solution in HPC systems.
 The performance of our Lustre installation degrades when a large number of concurrent tasks attempt to perform I/O to the shared file system, as shown in Figures \ref{fig:increment_worker} and \ref{fig:histogram_worker}.
 In a previous study~\cite{8943502}, we observed nearly no improvement when increasing the number of nodes to process an application while using an NFS.
 In this paper, Lustre shows some scaling when increasing the number of nodes, although not linear.
@@ -473,7 +489,7 @@ It could be interesting to explore strategies that take advantage of this tradeo
 \subsection{Memory management}
 Our Kmeans experiment shows a significant difference between Dask and Spark.
 The difference in performance comes from Spark worker restarting due to running out of memory; thus, Spark needs to recompute several tasks.
-This is unexpected, given that Dask and Spark are configured similarly and use the same amount of resources.
+This is unexpected, given that Dask and Spark are configured similarly and are allocated the same amount of resources.
 We think those issues arise from a combination of
 (1) the reserved memory for the JVM heap space,
 (2) the serialization of Python to Java kept in memory,
@@ -481,8 +497,10 @@ We think those issues arise from a combination of
 and (4) different policies to persist data to disk when running out of memory.
 
 When reducing the number of processes from 64 to 32 for Spark (effectively doubling the memory of each process), the total execution time became similar between Spark and Dask.
-However, with only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
+That is, with only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
 We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
+For our experiments, we allocated all available memory on the compute nodes.
+Therefore, it was not possible to allocate more resources to test this hypothesis.
 
 \subsection{Comparison to other studies}
 Overall, except for Kmeans, our experiments did not show substantial performance differences between Spark and Dask.
@@ -525,5 +543,5 @@ was partially funded by the Canada Research Chairs program. The HPC cluster
 was funded by the Canada Foundation for Innovation.
 
 \bibliographystyle{wileyNJD-AMA}
-\bibliography{reference}
+\bibliography{paper}
 \end{document}

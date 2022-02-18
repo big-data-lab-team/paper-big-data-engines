@@ -20,6 +20,7 @@ from bokeh.palettes import Colorblind8
 import matplotlib
 from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
 import numpy as np
 import pandas as pd
 
@@ -324,7 +325,7 @@ def stacked_bar(
     print(f"{benchmark_dir=}")
     filenames = glob.glob(benchmark_dir + "/*summary-*.csv")
 
-    xticks_label = sorted(
+    xticks_labels = sorted(
         {
             float(x.replace(freedom + "=", ""))
             for k in filenames
@@ -332,7 +333,9 @@ def stacked_bar(
             if freedom in x
         }
     )
-    x_pos = lambda i: np.arange(len(xticks_label)) + bar_width * i
+    xticks_labels = atomic_array_convert(xticks_labels, int)
+    
+    x_pos = lambda i: np.arange(len(xticks_labels)) + bar_width * i
 
     results = defaultdict(lambda: defaultdict(list))
     for x in filenames:
@@ -366,7 +369,7 @@ def stacked_bar(
         ############
         # Plotting #
         ############
-        y_offset = stats["mean"].max() * 0.01
+        y_offset = stats["mean"].max() * 0.025
         totals = stats["mean"].sum(axis=0)
         color = Colorblind8[xs % len(Colorblind8)]
         # Plot idle time as a special case since it always exist.
@@ -406,15 +409,15 @@ def stacked_bar(
             ax.text(
                 x,
                 total + y_offset,
-                round(total),
+                f"{round(total):,}",
                 ha="center",
                 weight="bold",
                 fontsize=14,
                 color=color,
             )
 
-    xticks_loc = np.arange(len(xticks_label)) + bar_width * xs / 2
-    plt.xticks(xticks_loc, xticks_label)
+    xticks_locs = np.arange(len(xticks_labels)) + bar_width * xs / 2
+    plt.xticks(xticks_locs, xticks_labels)
     ax.set_xlabel(xlabel, fontweight="bold")
     ax.set_ylabel("Makespan [s]", fontweight="bold")
     ax.set_ylabel("Total time [s]", fontweight="bold")
@@ -468,7 +471,12 @@ def stacked_bar(
         os.makedirs(os.path.dirname(save_name), exist_ok=True)
         plt.savefig(save_name, bbox_inches="tight")
         plt.title(title)
-
+    
+    yticks_locs, yticks_labels = plt.yticks()
+    yticks_locs = atomic_array_convert(yticks_locs, int)
+    plt.yticks(yticks_locs, yticks_labels)
+    ax.yaxis.set_major_formatter(StrMethodFormatter('{x:,}'))
+    
     plt.show()
 
 def bar(
@@ -498,7 +506,7 @@ def bar(
 
     filenames = glob.glob(benchmark_dir + "/*summary-*.csv")
 
-    xticks_label = sorted(
+    xticks_labels = sorted(
         {
             float(x.replace(freedom + "=", ""))
             for k in filenames
@@ -506,7 +514,7 @@ def bar(
             if freedom in x
         }
     )
-    x_pos = lambda i: np.arange(len(xticks_label)) + bar_width * i
+    x_pos = lambda i: np.arange(len(xticks_labels)) + bar_width * i
 
     results = defaultdict(lambda: defaultdict(list))
     for x in filenames:
@@ -548,8 +556,8 @@ def bar(
             label=framework.capitalize(),
         )
 
-    xticks_loc = np.arange(len(xticks_label)) + bar_width * i / 2
-    plt.xticks(xticks_loc, xticks_label)
+    xticks_loc = np.arange(len(xticks_labels)) + bar_width * i / 2
+    plt.xticks(xticks_loc, xticks_labels)
     plt.xlabel(xlabel, fontweight="bold")
     plt.ylabel("Makespan [s]", fontweight="bold")
 
@@ -565,3 +573,16 @@ def bar(
         plt.savefig(save_name, bbox_inches="tight")
 
     plt.show()
+
+def atomic_array_convert(arr, type_):
+    """Converts all elements of `arr` to `type_` without loss if possible, otherwise return original `arr`."""
+    # try:
+    for x in arr:
+        if x != int(float(str(x))):
+            print("Cannot convert")
+            return arr
+    # except:
+    #     print("Failed conversion")
+    #     return arr
+    # print("Converting")
+    return [type_(x) for x in arr]
