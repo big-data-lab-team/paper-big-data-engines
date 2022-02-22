@@ -501,17 +501,17 @@ def stacked_bar(
         ncol=math.ceil(len(framework_patches + func_patches)/2),
         title="Total time [s]",
     )
-
-    if save_name:
-        plt.title("")  # Remove title for used with Latex Fig.
-        os.makedirs(os.path.dirname(save_name), exist_ok=True)
-        plt.savefig(save_name, bbox_inches="tight")
-        plt.title(title)
     
     yticks_locs, yticks_labels = plt.yticks()
     yticks_locs = atomic_array_convert(yticks_locs, int)
     plt.yticks(yticks_locs, yticks_labels)
     ax.yaxis.set_major_formatter(StrMethodFormatter('{x:,}'))
+    
+    if save_name:
+        plt.title("")  # Remove title for used with Latex Fig.
+        os.makedirs(os.path.dirname(save_name), exist_ok=True)
+        plt.savefig(save_name, bbox_inches="tight")
+        plt.title(title)
     
     plt.show()
 
