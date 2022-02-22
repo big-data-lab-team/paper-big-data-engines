@@ -1,5 +1,6 @@
 from collections import defaultdict
 import glob
+import math
 import os
 import re
 
@@ -487,17 +488,17 @@ def stacked_bar(
             )
         )
 
-    delta = abs(len(func_patches) - len(framework_patches))
-    if len(func_patches) > len(framework_patches):
-        framework_patches += [Patch(alpha=0)] * delta
-    elif len(framework_patches) > len(func_patches):
-        func_patches = [Patch(alpha=0)] * delta + func_patches
+    # delta = abs(len(func_patches) - len(framework_patches))
+    # if len(func_patches) > len(framework_patches):
+    #     framework_patches += [Patch(alpha=0)] * delta
+    # elif len(framework_patches) > len(func_patches):
+    #     func_patches = [Patch(alpha=0)] * delta + func_patches
 
     plt.legend(
         handles=(framework_patches + func_patches[::-1]),
-        loc="upper right",
-        bbox_to_anchor=(1, -0.05),
-        ncol=2,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.1),
+        ncol=math.ceil(len(framework_patches + func_patches)/2),
         title="Total time [s]",
     )
 
