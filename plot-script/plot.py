@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
 import numpy as np
 import pandas as pd
+from scipy.stats import ttest_ind
 
 
 def gantt(
@@ -346,6 +347,8 @@ def stacked_bar(
         results[framework][experiment].append(x)
 
     # Application detailed time spent
+    ttest_data = {}
+    max_height = -float("inf")
     for xs, (framework, experiments) in enumerate(sorted(results.items())):
         data = [
             np.array(
@@ -359,7 +362,7 @@ def stacked_bar(
                 key=lambda k: float(re.search(f"{freedom}=(\d+\.?\d*)", k).group(1)),
             )
         ]
-
+        ttest_data[framework] = np.array([x.sum(axis=1) for x in data])
         stats = {
             "mean": np.array([x.mean(axis=0) for x in data]).T,
             "std": np.array([x.std(axis=0) for x in data]).T,
@@ -372,6 +375,7 @@ def stacked_bar(
         y_offset = stats["mean"].max() * 0.025
         totals = stats["mean"].sum(axis=0)
         color = Colorblind8[xs % len(Colorblind8)]
+        max_height = max(totals.max(), max_height)
         # Plot idle time as a special case since it always exist.
         # Thus we want to having consistent hatch and position.
         ax.bar(
@@ -415,7 +419,7 @@ def stacked_bar(
                 fontsize=14,
                 color=color,
             )
-
+            
     xticks_locs = np.arange(len(xticks_labels)) + bar_width * xs / 2
     plt.xticks(xticks_locs, xticks_labels)
     ax.set_xlabel(xlabel, fontweight="bold")
@@ -426,6 +430,37 @@ def stacked_bar(
         plt.ylim([0, ylim])
 
     plt.title(title)
+    
+    # Significance difference between frameworks.
+    y0 = max_height * 1.05
+    y1 = y0 * 1.025
+    frameworks = list(results)
+    for i in range(len(frameworks)-1):
+        a = frameworks[i]
+        b = frameworks[i+1]
+        _, pvalues = ttest_ind(ttest_data[a], ttest_data[b], axis=1, equal_var=False)
+        x0s = x_pos(i)
+        x1s = x_pos(i+1)
+        for x0, x1, pvalue in zip(x0s, x1s, pvalues):
+            if pvalue <= 0.05:
+                p_text = "*"
+                if pvalue <= 0.005: p_text = "**"
+                if pvalue <= 0.0005: p_text = "***"    
+                    
+                plt.plot(
+                    np.array([x0, x0, x1, x1]),
+                    np.array([y0, y1, y1, y0]),
+                    lw=1.5,
+                    c="k",
+                )
+                plt.text(
+                    (x0+x1)/2,
+                    y1,
+                    p_text,
+                    ha="center",
+                    va="center",
+                    color="k",
+                )
 
     # Total time legend (Summary)
     framework_patches = []
