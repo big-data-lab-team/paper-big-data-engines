@@ -102,7 +102,7 @@ However, that study used the Dask Bag API, which has performance limitations com
 	
 The above studies compared the performance of the engine at a high level.
 In comparison, our study provides a detailed analysis of the performance differences
-and similarities\HL{, for HPC,} between Dask and Spark for data-intensive applications.
+and similarities between Dask and Spark for data-intensive applications \HL{executed on HPC systems}.
 	
 The following section introduces the Lustre file system and the Big Data engines.
 Next, we present the design of our benchmarking experiments.
@@ -202,8 +202,8 @@ Each compute node has two 16-core Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz,
 \SI{250}{\gibi\byte} of RAM, \SI{126}{\gibi\byte} of tmpfs,
 % 6 $\times$ SSDs of \SI{447}{\gibi\byte} each with the XFS file system (no RAID enabled),
 CentOS~8.1 and Linux kernel \textit{4.18.0-240.1.1.el8\_lustre.x86\_64}.
-\HL{The compute and storage nodes are inter-connected by {\SI{10}{\giga\bit\per\second}} Ethernet link through a switch.
-	The login node, hosting an NFS, is also connected by a {\SI{10}{\giga\bit\per\second}} Ethernet link to the compute nodes.}
+\HL{The compute and storage nodes are inter-connected by {\SI{10}{\giga\bit\per\second}} Ethernet link through a Mellanox MSN2410 switch.
+	The login node, hosting an NFS server, is connected to the compute nodes through the same switch, with {\SI{10}{\giga\bit\per\second}} Ethernet.}
 		
 We configured Lustre to have 1 MGS and 4 OSS.
 Each OSS has 11 OSTs (disks) of \SI{8.8}{\tebi\byte}.
@@ -213,9 +213,9 @@ A timeout of \SI{100}{\second} is set for Lustre, and OSTs checksum are disabled
 Lustre \textit{2.14.0-1.el8} is installed on both the Lustre clients and servers.
 \HL{We used the default inode configuration for Lustre.}
 		
-\HL{Our system uses similar hardware as Compute Canada Beluga, and replicates as
-	close as possible it's configuration.
-	This let us make a fair comparison of Spark and Dask in the condition of a realistic
+\HL{Our system uses similar hardware as Compute Canada's B\'eluga cluster --- a representative cluster available to researchers in Canada --- and replicates as
+	close as possible its configuration.
+	This let us compare Spark and Dask in the condition of a realistic
 HPC system.}
 			
 Both Spark and Dask are configured to have eight worker processes, each with eight threads.
@@ -316,9 +316,8 @@ communication between the workers.
 The computation to find the closest centroids for each voxels scales with the number of centroids.
 It can be computed in parallel at the cost of higher memory or sequentially to reduce memory usage.
 We decided to compute the nearest centroids in parallel since we use only three centroids.
-		
 \HL{Due to resources limitation on our infrastructure, the Kmeans experiments
-	are performed with only a sample of half the BigBrain dataset ({\SI{303}{\gibi\byte}}).}
+	are performed with only half of the BigBrain dataset ({\SI{303}{\gibi\byte}}).}
 				
 \subsubsection{BIDS App Example}
 Our fifth application is the BIDS App Example, a neuroimaging pipeline to
@@ -375,7 +374,7 @@ This is explained by an I/O bottleneck on the Lustre file system.
 						
 From Figure \ref{fig:increment_worker}, we also observe that Dask's overhead is higher than Spark's.
 While the overhead of both engines increases with the number of nodes, Dask's overhead is significantly worse when scaling.
-\HL{Although Dask has a higher overhead, the total time for both engines is overall significantly similar.}
+\HL{Although Dask has a higher overhead, the total time for both engines is overall similar.}
 This is due to a tradeoff between disk bandwidth and compute/overhead time.
 On the one hand, multiple threads access Lustre concurrently, thus sharing the disk bandwidth resulting in longer I/O time.
 On the other hand, when most threads are either idle or performing computations, it reduces the contention on the disk bandwidth resulting in shorter I/O time.
@@ -408,7 +407,7 @@ Similarly to Figure \ref{fig:increment_itr}, increasing the total compute time o
 Again, this is explained by the I/O tradeoff between compute time and contention of disk bandwidth.
 					
 From Figure \ref{fig:increment_block} we also observe that Dask has significantly higher overhead than Spark.
-However, the total execution time of the application is \HL{significantly equivalent} due to the tradeoff between I/O and compute/overhead time.
+However, the total execution time of the application is \HL{equivalent} due to the tradeoff between I/O and compute/overhead time.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_increment_block.jpg}
@@ -488,7 +487,7 @@ As with other experiments, the I/O from Lustre affects the scaling of both engin
 We used Lustre as shared file system as it is a \HL{de facto} solution in HPC systems.
 The performance of our Lustre installation degrades when a large number of concurrent tasks attempt to perform I/O to the shared file system, as shown in Figures \ref{fig:increment_worker} and \ref{fig:histogram_worker}.
 In a previous study~\cite{8943502}, we observed nearly no improvement when increasing the number of nodes to process an application while using an NFS.
-\HL{In this paper, the performance scale when increasing the number of nodes, although not linear due to an I/O bottleneck.
+\HL{In this paper, the performance scales when increasing the number of nodes, although not linearly due to an I/O bottleneck.
 	The system was designed such that the filesystem has similar speed to the network.
 Upgrading to more performant networking and storage compononents would reduce the bottleneck seen when increasing the number of workers.}
 				
