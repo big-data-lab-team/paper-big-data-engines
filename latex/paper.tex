@@ -431,7 +431,7 @@ As with previous experiments, the overhead for Spark is less and scales better, 
 								
 Figure \ref{fig:histogram_block} shows the execution time for the \textit{Histogram} when varying the number of files.
 The results are similar to varying the number of nodes with Spark having faster compute time for \textit{Calculate\_histogram}.
-This results in a \HL{significant} makespan difference of up to 3\%.
+This results in a \HL{significant} makespan difference \HL{with Spark being up to 3\% faster}.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_histogram_block.jpg}
@@ -451,7 +451,27 @@ This difference arises from Spark workers restarting due to lack of executor mem
 	\caption{Kmeans: varying nodes -- 5000 files, 3 iterations}
 	\label{fig:kmeans_worker}
 \end{figure}
-		
+
+\HL{
+	In a follow up experiement, we further optimized the Kmeans algorithm to minimize the size of data kept in memory.
+	Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} show the gantt chart for the execution
+	of this new experiments for Dask and Spark.
+	The x-axis shows the time in second while the y-axis depicts the workers, with 
+	one worker thread ID (Dask) and process ID (Spark) per line.
+	Each task is represented on the gantt chart with the color of it's associated function.
+	We observe that Spark report 3 times more process than Dask threads.
+	However, we found out that both Dask and Spark use the same amount of maximum concurrent processes/threads.
+	This is most likely due to the difficulty to track process id within Spark.
+}
+
+\HL{
+	Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}}
+	show that Dask has a significantly shorther makespan than Spark, {\SI{338}{\second}}
+	and {\SI{409}{\second}} respectively.
+	The main differences in makespan for Spark appear from a longer initial load of the data
+	and a longer scheduling delay between the data load and the initial computation.
+}
+
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=\columnwidth]{figures/dask_kmeans_gantt.png}
@@ -513,7 +533,7 @@ In a previous study~\cite{8943502}, we also observed this tradeoff between overh
 It could be interesting to explore strategies that take advantage of this tradeoff to reduce the application makespan.
 										
 \subsection{Memory management}
-Our Kmeans experiment shows a significant difference between Dask and Spark.
+Our Kmeans \HL{resutls from Figure~{\ref{fig:kmeans_worker}} show} a significant difference between Dask and Spark.
 The difference in performance comes from Spark worker restarting due to running out of memory; thus, Spark needs to recompute several tasks.
 This is unexpected, given that Dask and Spark are configured similarly and \HL{are allocated} the same amount of resources.
 We think those issues arise from a combination of
@@ -521,13 +541,25 @@ We think those issues arise from a combination of
 (2) the serialization of Python to Java kept in memory,
 (3) Spark only using procesess compared to Dask using threads, thus limiting shared memory consumption,
 and (4) different policies to persist data to disk when running out of memory.
-										
+
+
 When reducing the number of processes from 64 to 32 for Spark (effectively doubling the memory of each process), \HL{the difference in execution time between Spark and Dask reduced significantly}.
 \HL{That is,} with only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
 We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
 \HL{For our experiments, we allocated all available memory on the compute nodes.
 Therefore, it was not possible to allocate more resources to test this hypothesis.}
-		
+
+\subsection{Scheduling overhead}
+\HL{
+	Overall, our results show that Dask has a slightly longer startup overhead compared to Spark.
+	However, we found that this did not lead directly to makespan difference.
+	While both engines showed similar overhead for applications with low inter-worker communication,
+	Spark had significantly more scheduling overhead than Dask for the Kmeans applications.
+	Spark was considerably slower to schedule the first set of computation after reading the data on the workers.
+	Moreover, Spark read all the data before starting computation while was still reading data along side doing computation.
+	This difference in scheduling is beneficial for data-intensive applications as it reduce the risk
+	of I/O bottleneck, as explained in Section~{\ref{subsec:overhead-tradeoff}}.
+}
 										
 \subsection{Comparison to other studies}
 Overall, except for Kmeans, our experiments did not show substantial performance differences between Spark and Dask.
@@ -536,7 +568,7 @@ However, this was compensated by the overhead and data transfer tradeoff mention
 Since our focus is on data-intensive applications, we conclude that the performance of Dask and Spark is equivalent.
 										
 The experiments from~\cite{Mehta:17} found that Dask has a larger startup overhead than Spark, while another study~\cite{8588652} found the opposite.
-In this study, we found that Dask has a lower startup overhead than Spark; however, we did not in our previous study~\cite{8943502}.
+In this study, we found that Dask has a \HL{larger} startup overhead than Spark; however, we did not in our previous study~\cite{8943502}.
 Those apparent contractions most likely come from differences in infrastructure and configuration of the engines.
 										
 Our results from the Histogram experiments show that the Dask Bags API was slower than Spark.
@@ -579,7 +611,7 @@ These results suggest that future research should focus on strategies to:
 \end{itemize}
 											
 \section*{Acknowledgment}
-Mathieu Dugr\'e was funded by an Alexander Graham Bell scholarship from
+Mathieu Dugr\'e was funded by \HL{the} Alexander Graham Bell scholarship from
 the Natural Sciences and Engineering Research Council of Canada. This work
 was partially funded by the Canada Research Chairs program. The HPC cluster
 was funded by the Canada Foundation for Innovation.
