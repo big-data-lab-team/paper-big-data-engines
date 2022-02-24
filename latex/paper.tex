@@ -445,6 +445,15 @@ We observe that Dask is multifold faster than Spark, resulting in a $1.79\times$
 Specifically, Spark has much longer overhead, \textit{get\_labels} and read time than Dask.
 This difference arises from Spark workers restarting due to lack of executor memory, leading to recomputation of tasks.
 
+\HL{
+	We increase the worker memory by reducing the amount of worker process per compute nodes.
+	This was done because all available memory from the compute node is already allocated to the pool of workers.
+	When reducing the number of processes from 64 to 32 for Spark and Dask 
+	(effectively doubling the memory of each process), the difference in execution time between Spark and Dask reduced significantly.
+	That is, with only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
+	We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
+}
+
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_kmeans_worker.jpg}
@@ -453,15 +462,14 @@ This difference arises from Spark workers restarting due to lack of executor mem
 \end{figure}
 
 \HL{
-	In a follow up experiement, we further optimized the Kmeans algorithm to minimize the size of data kept in memory.
-	Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} show the gantt chart for the execution
+	In a follow up experiement, we further optimized our Kmeans implementations, for both Dask and Spark, to minimize the size of data kept in memory.
+	Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} show the Gantt chart for the execution
 	of this new experiments for Dask and Spark.
 	The x-axis shows the time in second while the y-axis depicts the workers, with 
 	one worker thread ID (Dask) and process ID (Spark) per line.
-	Each task is represented on the gantt chart with the color of it's associated function.
+	Each task is represented on the Gantt chart with the color of it's associated function.
 	We observe that Spark report 3 times more process than Dask threads.
-	However, we found out that both Dask and Spark use the same amount of maximum concurrent processes/threads.
-	This is most likely due to the difficulty to track process id within Spark.
+	However, we found out that both Dask and Spark use the same amount of maximum concurrent processes or threads.
 }
 
 \HL{
@@ -542,12 +550,12 @@ We think those issues arise from a combination of
 (3) Spark only using procesess compared to Dask using threads, thus limiting shared memory consumption,
 and (4) different policies to persist data to disk when running out of memory.
 
-
-When reducing the number of processes from 64 to 32 for Spark (effectively doubling the memory of each process), \HL{the difference in execution time between Spark and Dask reduced significantly}.
-\HL{That is,} with only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
-We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
-\HL{For our experiments, we allocated all available memory on the compute nodes.
-Therefore, it was not possible to allocate more resources to test this hypothesis.}
+\HL{
+	We optimized the memory usage in our kmeans implementation, for Dask and Spark,
+	and observed that with this improved implementation, Spark worker no longer failed.
+	Nevertheless, Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} depicts that a substantial difference in makespan remained between Spark and Dask with this implementation,
+	showing that the previously-based gap was not only due to worker failures.
+}
 
 \subsection{Scheduling overhead}
 \HL{
@@ -599,7 +607,7 @@ Otherwise, those extras resources might be underused.
 We presented a detailed comparison of two Big Data engines, Apache Spark and Dask.
 We studied the engines using three synthetic data-intensive applications and a data-intensive neuroimaging pipeline.
 Overall, our results showed no substantial difference between the engines.
-Although Spark overhead is lower than Dask, Dask performs I/O faster due to a tradeoff between overhead and I/O when the file system is saturated.
+\HL{Although Spark overhead was generally lower than Dask, it was significantly higher when applications incur inter-worker communication.}
 For one application, our results showed that Spark used more memory, causing issues with its workers resulting in a significantly faster runtime for Dask.
 However, using an infrastructure offering more memory per worker would most likely solve this issue.
 											
