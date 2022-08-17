@@ -41,15 +41,15 @@
 % \presentaddress{This is sample for present address text this is sample for present address text}
 
 \abstract[Summary]{
-	The general increase in data size and data sharing motivates the adoption of Big Data strategies in a number of scientific disciplines.
-	However, while several options are available, no particular guidelines exist for the selection of a Big Data engine.
+	The general increase in data size and data sharing motivates the adoption of Big Data strategies in several scientific disciplines.
+	However, while several options are available, no particular guidelines exist for selecting a Big Data engine.
 	In this paper, we compare the runtime performance of two popular Big Data engines with
 	Python APIs, Apache Spark, and Dask, in processing neuroimaging pipelines.
 	Our experiments use three synthetic data-intensive applications to process
 	the \SI{606}{\gibi\byte} BigBrain image and an actual pipeline to process data
 	from thousands of anatomical images.
 	We benchmark these applications on a dedicated HPC cluster running the Lustre file system while using varying
-	combinations of number of nodes, file size, and task duration.
+	combinations of the number of nodes, file size, and task duration.
 	Our results show that although there are slight differences between Dask and Spark,
 	the performance of the engines is comparable for data-intensive applications.
 	However, Spark requires more memory than Dask, which can lead to 
@@ -68,13 +68,13 @@ The rise in data sharing coupled with improved data collection technologies lead
 While standard neuroimaging workflow engines, such as Nipype\cite{Nipype:11}, are well rounded to process standard compute-intensive pipelines,
 they lack Big Data strategies (i.e., in-memory computing, data locality, and lazy-evaluation) to improve the performance of increasingly prevalent data-intensive pipelines.
 A previous study\cite{8752675} noted the importance of in-memory computing and data locality to improve the performance of data-intensive pipelines.
-In this work, we study how performance benchmarks generalize across Big Data engines in an HPC environment.
+This work studies how performance benchmarks generalize across Big Data engines in an HPC environment.
 In particular, we study in-depth the performance difference between Dask\cite{Dask:15} and Apache Spark\cite{Spark:16} for their suitability to process neuroimaging pipelines.
 Our objective is to assess whether Spark or Dask has substantial performance benefits in processing data-intensive HPC pipelines.
 
 Spark and Dask both provide in-memory computing, data locality, and lazy-evaluation, typical for Big Data engines.
 The scheduler for both engines operates dynamically, which benefits applications with runtime unknown ahead of time\cite{Dask:15}.
-They also provide rich high-level API and support a variety of schedulers and deployment environments, such as Mesos\cite{hindman2011mesos}, YARN\cite{vavilapalli2013apache}, Kubernetes, and HPC clusters.
+They also provide rich high-level APIs and support a variety of schedulers and deployment environments, such as Mesos\cite{hindman2011mesos}, YARN\cite{vavilapalli2013apache}, Kubernetes, and HPC clusters.
 Although sharing similarities, these engines have differences.
 
 First and foremost, Spark is written in Scala while Dask is in Python.
@@ -82,15 +82,15 @@ The popularity of Python in the scientific community arguably gives an edge to D
 However, if not careful, the Python Global Interpreter Lock (GIL) can significantly reduce the parallelism of an application in some cases.
 The difference in programming languages also provides different benefits.
 On the one hand, as part of the Scipy ecosystem, Dask provides almost transparent integration with APIs such as Numpy arrays, Pandas dataframe, or RAPIDS GPU accelerated code framework.
-On the other hand, Spark's Java, Scala, R, and Python APIs efficiently parallelize pipelines with minimal performance loss, due to the Java Virtual Machine.
+On the other hand, Spark's Java, Scala, R, and Python APIs efficiently parallelize pipelines with minimal performance loss due to the Java Virtual Machine.
 Our study is restrained to performance, although we recognize that other factors affect the choice of an engine in practice.
 
 While laptops or workstations can be sufficient for some applications, data-intensive neuroimaging pipelines often require large infrastructures.
 This paper focuses on the performance of Big Data engines in HPCs environments.
 We installed the Slurm scheduler and Lustre file system~\cite{Braam2019TheLS} on a dedicated cluster to mimic a typical HPC system.
-\HL{Lustre is a reference file system for HPC environments, used in over 60 of the TOP100 supercomputers~{\cite{OpenSFS-lustre}}, offering parallel file accesses.}
+Lustre is a reference file system for HPC environments, used in over 60 TOP100 supercomputers~{\cite{OpenSFS-lustre}}, offering parallel file accesses.
 	
-In a previous study\cite{8943502} we found that there was no significant performance difference between Apache Spark and Dask for data-intensive applications.
+In a previous study\cite{8943502} we found no significant performance difference between Apache Spark and Dask for data-intensive applications.
 However, using the network file system (NFS) led to an I/O bottleneck limiting application performance.
 Another study~\cite{8588652} also reported network and I/O bottlenecks when concurrency increased.
 This same study found that the startup overhead time for Spark was more prominent than for Dask.
@@ -102,7 +102,7 @@ However, that study used the Dask Bag API, which has performance limitations com
 	
 The above studies compared the performance of the engine at a high level.
 In comparison, our study provides a detailed analysis of the performance differences
-and similarities between Dask and Spark for data-intensive applications \HL{executed on HPC systems}.
+and similarities between Dask and Spark for data-intensive applications executed on HPC systems.
 	
 The following section introduces the Lustre file system and the Big Data engines.
 Next, we present the design of our benchmarking experiments.
@@ -113,26 +113,26 @@ Further sections present our results, discussion, and conclusion.
 	
 \section{Background}
 \subsection{Lustre}
-The Lustre file system is a parallel file system \HL{of reference in} HPC environments.
+The Lustre file system is a parallel file system of reference in HPC environments.
 Lustre offers a POSIX-compliant interface with the file system.
 Installed in some of the most powerful supercomputers, the design of Lustre allows
 scaling to thousands of nodes, petabytes of storage, and hundreds of gigabits per second of I/O throughput.
 		
-At the core of Lustre are the \textit{management servers} (MGSs) and \textit{metatdata server} (MDSs) in charge of the file operations and metadata,
-the \textit{object storage targets} (OSTs) to store file data, and the \textit{object sotrage server} (OSSs) to handle the OSTs.
+At the core of Lustre are the \textit{management servers} (MGSs) and \textit{metadata server} (MDSs) in charge of the file operations and metadata,
+the \textit{object storage targets} (OSTs) store file data, and the \textit{object storage servers} (OSSs) handle the OSTs.
 Lustre clients make requests to the MGSs to access files on the OSTs.
 To handle failures in the system, the MGSs, MDSs, and OSTs have failover capabilities.
 InfiniBand, Ethernet, or a combination of both can be used to interconnect these different components.
 		
-\HL{While other filesystem such as HDFS or cloud storage could be considered, we chose Lustre to best represent an HPC environment.
-	HDFS makes use of permanent local storage on compute node, which is usually not feasable in HPC.
-Morevoer, HPC node rarely have access to internet, limiting the use of cloud storage.}
+While other filesystems such as HDFS or cloud storage could be considered, we chose Lustre to represent an HPC environment best.
+HDFS uses permanent local storage on compute node, which is usually not feasible in HPC.
+Moreover, HPC nodes rarely have access to the internet, limiting cloud storage use.
 		
 \subsection{Dask}
 Dask is a Python-based Big Data engine with growing popularity in the scientific Python ecosystem.
 Dask was designed with data locality and in-memory computing in mind to mitigate the data transfer bottleneck in Big Data workflows.
 Data locality, popularized by Map-Reduce~\cite{dean2008mapreduce}, schedules tasks where the data reside.
-In-memory computing minimizes the overhead of transferring data to disk by keeping data in memory when possible.
+In-memory computing minimizes the overhead of transferring data to disks by keeping data in memory.
 Dask uses lazy evaluation to reduce unnecessary communication and computation.
 The engine builds a dynamic graph before execution, allowing it to determine which task to compute.
 Dask workflows can further reduce data transfers by leveraging multithreading whenever the Python GIL does not restrict it.
@@ -145,9 +145,9 @@ Dask offers five data structures:
 \href{https://docs.dask.org/en/latest/delayed.html}{Delayed},
 and \href{https://docs.dask.org/en/latest/futures.html}{Futures}.
 Arrays offer a clone of NumPy API for distributed processing of large arrays.
-Bags are a distributed collection of Python object that offers a programming abstraction similar to \href{https://toolz.readthedocs.io/en/latest/}{PyToolz}.
+Bags are a distributed collection of Python objects that offers a programming abstraction similar to \href{https://toolz.readthedocs.io/en/latest/}{PyToolz}.
 Dataframes are a parallel composition of \href{https://pandas.pydata.org/}{Pandas} Dataframes used to process a large amount of tabular data.
-Dask Delayed offers an API for distributing arbitrary functions that do not fit in the above frameworks.
+Dask Delayed offers an API for distributing arbitrary functions that do not fit the above frameworks.
 Lastly, Dask Futures can also execute arbitrary functions; however, it launches computation immediately rather than lazily.
 Dask allows users to install only required components making it lightweight.
 		
@@ -155,7 +155,7 @@ In Dask, a scheduler decides where and when to execute tasks using the Dask grap
 API operations generate multiple fine-coarse tasks in the computation graph, allowing a more straightforward representation of complex algorithms.
 		
 The Dask engine is compatible with multiple distributed schedulers, including YARN and Mesos.
-It also provides its own scheduler, \textit{Dask Distributed scheduler}.
+It also provides its scheduler, \textit{Dask Distributed scheduler}.
 We chose to use Dask Distributed scheduler to keep the environments similar between Dask and Spark.
 		
 In the Dask Distributed scheduler, a \textit{dask-scheduler} process administrates the resource provided by \textit{dask-worker}s in the cluster.
@@ -178,7 +178,7 @@ execute their workflows in an HPC environment where neither YARN nor Mesos is us
 In the Spark Standalone scheduler, a \textit{leader} (a.k.a master) coordinates the resource provisioned by \textit{workers} in the cluster.
 A \textit{driver}  process receives jobs from clients and requests workers from the leader.
 Jobs are divided into stages to execute onto workers.
-Each operation in a stage is represents by a high-level task in the computation graph.
+Each operation in a stage is represented by a high-level task in the computation graph.
 Like Dask, Spark Standalone scheduler uses a LIFO policy to schedule tasks.
 Spark Standalone has two execution modes: (1) the client mode, where the driver process runs in a dedicated process,
 and (2) the cluster mode, where the driver runs within a worker process.
@@ -192,7 +192,7 @@ While the DataFrame API is available in all supported languages, Datasets are li
 		
 Python is a standard programming language in the scientific community, offering numerous data processing libraries.
 While serialization from Python to Java, an operation required when using Spark's Python API, creates overhead, we found it minimal in a previous study~\cite{8943502}.
-We focus on PySpark API to have a similar environment between the different engines and due to its suitability for neuroimaging.
+We focus on PySpark API to have a similar environment between the different engines and  its suitability for neuroimaging.
 		
 \section{Methods}
 \subsection{Infrastructure}
@@ -202,8 +202,8 @@ Each compute node has two 16-core Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz,
 \SI{250}{\gibi\byte} of RAM, \SI{126}{\gibi\byte} of tmpfs,
 % 6 $\times$ SSDs of \SI{447}{\gibi\byte} each with the XFS file system (no RAID enabled),
 CentOS~8.1 and Linux kernel \textit{4.18.0-240.1.1.el8\_lustre.x86\_64}.
-\HL{The compute and storage nodes are inter-connected by {\SI{10}{\giga\bit\per\second}} Ethernet link through a Mellanox MSN2410 switch.
-	The login node, hosting an NFS server, is connected to the compute nodes through the same switch, with {\SI{10}{\giga\bit\per\second}} Ethernet.}
+The compute and storage nodes are inter-connected by {\SI{10}{\giga\bit\per\second}} Ethernet link through a Mellanox MSN2410 switch.
+The login node, hosting an NFS server, is connected to the compute nodes through the same switch, with {\SI{10}{\giga\bit\per\second}} Ethernet.
 		
 We configured Lustre to have 1 MGS and 4 OSS.
 Each OSS has 11 OSTs (disks) of \SI{8.8}{\tebi\byte}.
@@ -211,12 +211,12 @@ The OSTs are configured to have a maximum of \SI{1000}{\mebi\byte} of dirty data
 Both the MDT and OSTs are configured to a maximum of 64 concurrent RPCs in flight.
 A timeout of \SI{100}{\second} is set for Lustre, and OSTs checksum are disabled.
 Lustre \textit{2.14.0-1.el8} is installed on both the Lustre clients and servers.
-\HL{We used the default inode configuration for Lustre.}
+We used the default inode configuration for Lustre.
 		
-\HL{Our system uses similar hardware as Compute Canada's B\'eluga cluster --- a representative cluster available to researchers in Canada --- and replicates as
-	close as possible its configuration.
-	This let us compare Spark and Dask in the condition of a realistic
-HPC system.}
+Our system uses similar hardware as Compute Canada's B\'eluga cluster --- a representative cluster available to researchers in Canada --- and replicates as
+close as possible its configuration.
+This lets us compare Spark and Dask in the condition of a realistic
+HPC system.
 			
 Both Spark and Dask are configured to have eight worker processes, each with eight threads.
 Each worker was allocated \SI{31.5}{\gibi\byte} of memory.
@@ -224,14 +224,14 @@ For Spark, the JVM heap space uses 10\% of workers' memory, and the location of 
 The worker workspace for both engines is located on Lustre due to the limited fast storage space on the worker nodes.
 Other Dask configurations are left to default.
 The Spark network timeout is set to \SI{600}{\second} and the executor heartbeat to \SI{120}{\second}.
-A new Dask or Spark cluster was started and tore down for each experiment.
+A new Dask or Spark cluster was started and torn down for each experiment.
 Dask \textit{2021.7.0} and Spark \textit{3.1.2} were used.
 			
 \subsection{Dataset}
 We used BigBrain\cite{Amunts:13}, a 3-D image of the human brain with voxel
 intensities ranging from 0 to 65,535. We converted the blocks into the
 NIfTI format, a popular format in neuroimaging. We left the NIfTI blocks
-uncompressed, resulting in total data size of \SI{606}{\gibi\byte}. To
+uncompressed, resulting in a total data size of \SI{606}{\gibi\byte}. To
 evaluate the effect of block size, we split the image into 1000, 2500,
 and 5000 files of \SI{606}{\mebi\byte}, \SI{242.4}{\mebi\byte}, and
 \SI{121.2}{\mebi\byte}, respectively.
@@ -248,36 +248,29 @@ We used all 3,491 anatomical images, representing \SI{26.67}{\gibi\byte} overall
 (\SI{7.82}{\mebi\byte} per image on average).
 				
 \subsection{Applications}
-In this section, we describe the applications used to benchmark Dask and Spark.
+This section describes the applications used to benchmark Dask and Spark.
 We use three simple synthetic applications to have a deep understanding of the 
 underlying behavior of the applications with simple I/O patterns, namely
 \textit{Increment}, \textit{Multi-Increment}, and \textit{Histogram}.
 Also, two neuroimaging applications are used to study more realistic 
-applications, namely \textit{Kmeans} and \textit{BIDS App Example}\HL{{\cite{gorgolewski2017bids}}}.
+applications, namely \textit{Kmeans} and \textit{BIDS App Example}{\cite{gorgolewski2017bids}}.
 				
 To have a fair comparison between the engines, the code base for the core functions of the applications is the same for both engines.
 This allows us to reduce the performance difference from different implementations.
 		
-\HL{The scripts used for our experiements and the results generated are available on
-	GitHub at: \mbox{\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines/}}.}
+The scripts used for our experiments and the results generated are available on
+GitHub at: \mbox{\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines/}}.
 		
 \subsubsection{Increment}
 We adapted the increment application used in~\cite{8752675}.
 This synthetic application reads blocks of the BigBrain from Lustre and
 simulates computation by sleeping for a specified period (Fig.~\ref{fig:graph-increment}). To simulate
-intermediate results, we repeat \HL{a {\SI{1}{\second}} sleep delay during each incrementation}.
+intermediate results, we repeat a {\SI{1}{\second} sleep delay during each incrementation}.
 We prevent data caching of the blocks by incrementing their voxels
 value by one after each sleep operation. Finally, we write the resulting
 NIfTI image back to Lustre. This application allows us to study the engines
 when their inputs are processed independently. The map-only pattern
 mimics the processing of multiple independent subjects in parallel.
-% \begin{figure}[!hb]
-% 	\centering
-% 	\includegraphics[height=0.5\columnwidth,
-% 	angle=0]{figures/increment.png}
-% 	\caption{Task graph for Incrementation with 3 iterations and 3 BigBrain blocks.}
-% 	\label{fig:graph-increment}
-% \end{figure}
 							
 \subsubsection{Histogram}
 As our third application, we calculate the histogram of the BigBrain image. 
@@ -309,20 +302,20 @@ application starts by reading the image blocks, combining all voxels in a
 1-D array, and choosing initial centroids using the min, max, and
 intermediate values. It assigns each voxel to its closest centroid and
 updates each centroid with the average of its assigned voxels. It repeats
-the assignment and update steps for a configurable number of iterations.
+the assignment and updates steps for a configurable number of iterations.
 Finally, the voxels of the image blocks are classified and written back to
 the file system. Updating the centroids involves substantial data
 communication between the workers.
 The computation to find the closest centroids for each voxels scales with the number of centroids.
 It can be computed in parallel at the cost of higher memory or sequentially to reduce memory usage.
 We decided to compute the nearest centroids in parallel since we use only three centroids.
-\HL{Due to resources limitation on our infrastructure, the Kmeans experiments
-	are performed with only half of the BigBrain dataset ({\SI{303}{\gibi\byte}}).}
+Due to resources limitation on our infrastructure, the Kmeans experiments
+are performed with only half of the BigBrain dataset ({\SI{303}{\gibi\byte}}).
 				
 \subsubsection{BIDS App Example}
 Our fifth application is the BIDS App Example, a neuroimaging pipeline to
 measure brain volume from MRIs. For this application, we use the CoRR
-dataset. The application extracts the brain volume of each participant,
+dataset. The application extracts the brain volume of each participant
 then computes the average for each group of participants. Unlike the other
 applications, the BIDS App Example is a command-line executed in a Docker image
 (bids/example on DockerHub). We converted the Docker image to a Singularity
@@ -333,11 +326,11 @@ image for use in HPC environments, using
 Table~\ref{table:parameters} shows the parameters that we varied
 throughout the experiments. We varied (1) the number of nodes to assess
 the scalability of the engines' scheduler, (2) the number of files for the BigBrain
-in Increment, and Histogram to measure the
+in Increment and Histogram to measure the
 effect of different I/O patterns and parallelization degrees, and (3) the
 number of iterations to evaluate the effect of the number of tasks.
 It should be noted that increasing the number of iterations for a given sleep 
-delay also increases the total compute time of an application.
+delay also increases the total compute time.
 						
 To avoid potential external biases due to caching, background processes and,
 network load, we ran the applications in randomized order and cleared the
@@ -369,17 +362,17 @@ Figure \ref{fig:increment_worker} depicts the total execution time spent in each
 The bars are broken down into Overhead, Read, Write, and other application-specific functions.
 The mean of each bar is calculated from ten repetitions, with the error bar representing the standard deviation.
 As expected, the compute time, from \textit{Increment}, remains the same when we vary the number of nodes.
-However, the \textit{Read} and \textit{Write} time increase with the number of nodes for both engines.
+However, the \textit{Read} and \textit{Write} time increases with the number of nodes for both engines.
 This is explained by an I/O bottleneck on the Lustre file system.
 						
 From Figure \ref{fig:increment_worker}, we also observe that Dask's overhead is higher than Spark's.
 While the overhead of both engines increases with the number of nodes, Dask's overhead is significantly worse when scaling.
-\HL{Although Dask has a higher overhead, the total time for both engines is overall similar.}
+Although Dask has a higher overhead, the total time for both engines is overall similar.
 This is due to a tradeoff between disk bandwidth and compute/overhead time.
 On the one hand, multiple threads access Lustre concurrently, thus sharing the disk bandwidth resulting in longer I/O time.
 On the other hand, when most threads are either idle or performing computations, it reduces the contention on the disk bandwidth resulting in shorter I/O time.
-\HL{The only significant difference in total time is when two nodes are used.
-	This results in an approximately 3\% total runtime difference.}
+The only significant difference in total time is when two nodes are used.
+This results in an approximately 3\% total runtime difference.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_increment_worker.jpg}
@@ -391,7 +384,7 @@ Figure \ref{fig:increment_itr} shows the detailed execution time for the \textit
 As expected, the overhead for both engines increases with the number of iterations.
 However, overhead for Dask increases significantly faster than Spark, resulting in a 7\% makespan difference for 25 iterations.
 							
-Figure \ref{fig:increment_itr} also shows that the the total I/O time decreases as total computation time increases.
+Figure \ref{fig:increment_itr} also shows that the total I/O time decreases as total computation time increases.
 This is explained by an I/O bottleneck on the Lustre file system.
 When threads are busy with computations, it reduces the contention on Lustre, thus improving I/O speed for individual accesses.
 \begin{figure}[!h]
@@ -407,7 +400,7 @@ Similarly to Figure \ref{fig:increment_itr}, increasing the total compute time o
 Again, this is explained by the I/O tradeoff between compute time and contention of disk bandwidth.
 					
 From Figure \ref{fig:increment_block} we also observe that Dask has significantly higher overhead than Spark.
-However, the total execution time of the application is \HL{equivalent} due to the tradeoff between I/O and compute/overhead time.
+However, the total execution time of the application is equivalent due to the tradeoff between I/O and compute/overhead time.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_increment_block.jpg}
@@ -417,7 +410,7 @@ However, the total execution time of the application is \HL{equivalent} due to t
 									
 \subsection{Histogram}
 Figure \ref{fig:histogram_worker} depicts the execution time for the \textit{Histogram} application when varying the number of nodes.
-Overall, \HL{the execution time for Spark is significantly lower than for Dask by up to 5\%}, with the difference coming from a shorter execution time for \textit{Calculate\_histogram}.
+Overall, the execution time for Spark is significantly lower than for Dask by up to 5\%, with the difference coming from a shorter execution time for \textit{Calculate\_histogram}.
 This is unexpected as the code base for both engines is the same, with only the calling APIs differing.
 It is most likely due to the use of Dask Bags, which are slower than the other Dask APIs.
 As with previous experiments, the overhead for Spark is less and scales better, although compensated by a longer total I/O time.
@@ -430,7 +423,7 @@ As with previous experiments, the overhead for Spark is less and scales better, 
 								
 Figure \ref{fig:histogram_block} shows the execution time for the \textit{Histogram} when varying the number of files.
 The results are similar to varying the number of nodes with Spark having faster compute time for \textit{Calculate\_histogram}.
-This results in a \HL{significant} makespan difference \HL{with Spark being up to 3\% faster}.
+This results in a significant makespan difference with Spark being up to 3\% faster.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_histogram_block.jpg}
@@ -444,14 +437,12 @@ We observe that Dask is multifold faster than Spark, resulting in a $1.79\times$
 Specifically, Spark has much longer overhead, \textit{get\_labels} and read time than Dask.
 This difference arises from Spark workers restarting due to lack of executor memory, leading to recomputation of tasks.
 
-\HL{
-	We increase the worker memory by reducing the amount of worker process per compute nodes.
-	This was done because all available memory from the compute node is already allocated to the pool of workers.
-	When reducing the number of processes from 64 to 32 for Spark and Dask 
-	(effectively doubling the memory of each process), the difference in execution time between Spark and Dask reduced significantly.
-	That is, with only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
-	We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
-}
+We increase the worker memory by reducing the number of worker processes per
+compute node since all available memory from the compute node is already allocated to the pool of workers.
+When reducing the number of processes from 64 to 32 for Spark and Dask 
+(effectively doubling the memory of each process), the difference in execution time between Spark and Dask was reduced significantly.
+With only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
+We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
 
 \begin{figure}[!h]
 	\centering
@@ -460,24 +451,20 @@ This difference arises from Spark workers restarting due to lack of executor mem
 	\label{fig:kmeans_worker}
 \end{figure}
 
-\HL{
-	In a follow up experiement, we further optimized our Kmeans implementations, for both Dask and Spark, to minimize the size of data kept in memory.
-	Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} show the Gantt chart for the execution
-	of this new experiments for Dask and Spark.
-	The x-axis shows the time in second while the y-axis depicts the workers, with 
-	one worker thread ID (Dask) and process ID (Spark) per line.
-	Each task is represented on the Gantt chart with the color of it's associated function.
-	We observe that Spark report 3 times more process than Dask threads.
-	However, we found out that both Dask and Spark use the same amount of maximum concurrent processes or threads.
-}
+In a follow-up experiment, we further optimized our Kmeans implementations for both Dask and Spark to minimize the size of data kept in memory.
+Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} show the Gantt chart for the execution
+of this new experiments for Dask and Spark.
+The x-axis shows the time in second while the y-axis depicts the workers, with 
+one worker thread ID (Dask) and process ID (Spark) per line.
+We represent each task on the Gantt chart with its associated function's color.
+We observe that Spark reports three times more processes than Dask threads.
+However, we found out that both Dask and Spark use the same amount of maximum concurrent processes or threads.
 
-\HL{
-	Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}}
-	show that Dask has a significantly shorther makespan than Spark, {\SI{338}{\second}}
-	and {\SI{409}{\second}} respectively.
-	The main differences in makespan for Spark appear from a longer initial load of the data
-	and a longer scheduling delay between the data load and the initial computation.
-}
+Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}}
+show that Dask has a significantly shorther makespan than Spark, {\SI{338}{\second}}
+and {\SI{409}{\second}} respectively.
+The main differences in makespan for Spark appear from a longer initial load of the data
+and a longer scheduling delay between the data load and the initial computation.
 
 \begin{figure}[!h]
 	\centering
@@ -493,11 +480,11 @@ This difference arises from Spark workers restarting due to lack of executor mem
 	\label{fig:spark_kmeans_gantt}
 \end{figure}
 
-For brevity we omitted the figure\HL{s} when varying the number of iterations as the results are similar to varying the number of workers.
+For brevity we omitted the figures when varying the number of iterations as the results are similar to varying the number of workers.
 						
 \subsection{BIDS App Example}
 Figure \ref{fig:bids} shows the total execution time for the \textit{BIDS App Example} application when varying the number of nodes.
-We observe that Dask has slightly lower overhead, thank Spark, although not significant.
+We observe that Dask has a slightly lower overhead, thank Spark, although not significant.
 However, the makespan for Dask is between 7.5\% to 14.5\% lower than for Spark.
 The main difference comes from an increased amount of stagger tasks for Spark, thus increasing the overhead of the application.
 Moreover, although minimal, a shorter cluster deployment time for Dask reinforces the difference in overhead time.
@@ -512,21 +499,20 @@ As with other experiments, the I/O from Lustre affects the scaling of both engin
 \section{Discussion}
 \subsection{I/O bottleneck}
 \label{subsec:io-bottleneck}
-We used Lustre as shared file system as it is a \HL{de facto} solution in HPC systems.
+We used Lustre as shared file system as it is a de facto solution in HPC systems.
 The performance of our Lustre installation degrades when a large number of concurrent tasks attempt to perform I/O to the shared file system, as shown in Figures \ref{fig:increment_worker} and \ref{fig:histogram_worker}.
 In a previous study~\cite{8943502}, we observed nearly no improvement when increasing the number of nodes to process an application while using an NFS.
-\HL{In this paper, the performance scales when increasing the number of nodes, although not linearly due to an I/O bottleneck.
-	The system was designed such that the filesystem has similar speed to the network.
-Upgrading to more performant networking and storage compononents would reduce the bottleneck seen when increasing the number of workers.}
-				
-\HL{
-	As in our previous study~{\cite{8943502}}, we observe that the I/O bottleneck has a lower impact on more compute-intensive applications, such as Kmeans and BIDS App Example.
-	However, it significantly affects data-intensive applications, such as Increment and Histogram.
-}
-										
-These results suggest that increasing the parallelism of the file system \HL{and speed of the network} is critical when scaling the compute resources to process a data-intensive application.
+In this paper, the performance scales when increasing the number of nodes, although not linearly due to an I/O bottleneck.
+The system was designed such that the filesystem has a similar speed to the network.
+Upgrading to more performant networking and storage components would reduce the bottleneck when increasing the number of workers.
+
+As in our previous study~{\cite{8943502}}, we observe that the I/O bottleneck has a lower impact on more compute-intensive applications, such as Kmeans and BIDS App Example.
+However, it significantly affects data-intensive applications, such as Increment and Histogram.
+
+
+These results suggest that increasing the parallelism of the file system and speed of the network is critical when scaling the compute resources to process a data-intensive application.
 Otherwise, the compute resource might be underutilized.
-										
+
 \subsection{Tradeoff between overhead and data transfer}
 \label{subsec:overhead-tradeoff}
 Overall, except for Kmeans, the overhead for Dask is larger than for Spark.
@@ -534,48 +520,44 @@ However, the total execution time for both engines is comparable.
 This almost exact compensation between the engine overhead and the data transfer time (see for example Figure \ref{fig:increment_worker}) is not surprising.
 When there is high contention on the bandwidth of the file system, and in the absence of trashing, desynchronizing the file transfers generally does not reduce the total data transfer time.
 To take an extreme example, the makespan of $n$ concurrent file transfer of size $F$ from a file system with a bandwidth $B$ would be $nF/B$,
-as the $n$ transfer would share the bandwidth $B$, which is equivalent to sequentially transfer the $n$ files.
+as the $n$ transfer would share the bandwidth $B$, which is equivalent to sequentially transferring the $n$ files.
 i.e., when the bandwidth of the file system is saturated, engine overhead does not increase the makespan as long as it desynchronizes the data transfers.
 In a previous study~\cite{8943502}, we also observed this tradeoff between overhead and data transfer when the file system was saturated.
-It could be interesting to explore strategies that take advantage of this tradeoff to reduce the application makespan.
+Exploring strategies that take advantage of this tradeoff could be interesting to reduce the application makespan.
 										
 \subsection{Memory management}
-Our Kmeans \HL{resutls from Figure~{\ref{fig:kmeans_worker}} show} a significant difference between Dask and Spark.
+Our Kmeans resutls from Figure~{\ref{fig:kmeans_worker}} show a significant difference between Dask and Spark.
 The difference in performance comes from Spark worker restarting due to running out of memory; thus, Spark needs to recompute several tasks.
-This is unexpected, given that Dask and Spark are configured similarly and \HL{are allocated} the same amount of resources.
+This is unexpected, given that Dask and Spark are configured similarly and are allocated the same amount of resources.
 We think those issues arise from a combination of
 (1) the reserved memory for the JVM heap space,
 (2) the serialization of Python to Java kept in memory,
-(3) Spark only using procesess compared to Dask using threads, thus limiting shared memory consumption,
+(3) Spark using processes compared to Dask using threads, thus limiting shared memory consumption,
 and (4) different policies to persist data to disk when running out of memory.
 
-\HL{
-	We optimized the memory usage in our kmeans implementation, for Dask and Spark,
-	and observed that with this improved implementation, Spark worker no longer failed.
-	Nevertheless, Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} depicts that a substantial difference in makespan remained between Spark and Dask with this implementation,
-	showing that the previously-based gap was not only due to worker failures.
-}
+We optimized the memory usage in our Kmeans implementation for Dask and Spark
+and observed that the Spark workers no longer failed with this improved implementation.
+Nevertheless, Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} depicts that a substantial difference in makespan remained between Spark and Dask with this implementation,
+showing that the previously-based gap was not only due to worker failures.
 
 \subsection{Scheduling overhead}
-\HL{
-	Overall, our results show that Dask has a slightly longer startup overhead compared to Spark.
-	However, we found that this did not lead directly to makespan difference.
-	While both engines showed similar overhead for applications with low inter-worker communication,
-	Spark had significantly more scheduling overhead than Dask for the Kmeans applications.
-	Spark was considerably slower to schedule the first set of computation after reading the data on the workers.
-	Moreover, Spark read all the data before starting computation while was still reading data along side doing computation.
-	This difference in scheduling is beneficial for data-intensive applications as it reduce the risk
-	of I/O bottleneck, as explained in Section~{\ref{subsec:overhead-tradeoff}}.
-}
+Overall, our results show that Dask has a slightly longer startup overhead than Spark.
+However, we found that this did not lead directly to the makespan difference.
+While both engines showed similar overhead for applications with low inter-worker communication,
+Spark had significantly more scheduling overhead than Dask for the Kmeans applications.
+Spark was considerably slower to schedule the first set of computations after reading the data on the workers.
+Moreover, Spark read all the data before starting computation while was still reading data alongside doing computation.
+This difference in scheduling is beneficial for data-intensive applications as it reduces the risk
+of I/O bottleneck, as explained in Section~{\ref{subsec:overhead-tradeoff}}.
 										
 \subsection{Comparison to other studies}
 Overall, except for Kmeans, our experiments did not show substantial performance differences between Spark and Dask.
 In contradiction with the experiments of~\cite{Mehta:17}, we found that Dask had a larger overhead than Spark, especially when scaling the number of workers.
-However, this was compensated by the overhead and data transfer tradeoff mentioned previously.
+However, this was compensated by the previously mentioned overhead and data transfer tradeoff.
 Since our focus is on data-intensive applications, we conclude that the performance of Dask and Spark is equivalent.
 										
 The experiments from~\cite{Mehta:17} found that Dask has a larger startup overhead than Spark, while another study~\cite{8588652} found the opposite.
-In this study, we found that Dask has a \HL{larger} startup overhead than Spark; however, we did not in our previous study~\cite{8943502}.
+In this study, we found that Dask has a larger startup overhead than Spark; however, we did not in our previous study~\cite{8943502}.
 Those apparent contractions most likely come from differences in infrastructure and configuration of the engines.
 										
 Our results from the Histogram experiments show that the Dask Bags API was slower than Spark.
@@ -585,28 +567,27 @@ We conclude that when using Dask, the other Dask APIs should be favored unless D
 Our results showed that, for data-intensive applications, increasing the number of workers should only be done if the bandwidth of the file system is not saturated.
 Two other studies support this~\cite{8943502, 8588652}.
 Therefore, it is critical to ensure enough bandwidth to the file system before scaling the compute resources for data-intensive applications.
-Otherwise, those extras resources might be underused.
+Otherwise, those extra resources might be underused.
 		
 \subsection{Limitations}
-\HL{
-	To make a fair comparison between Spark and Dask, we set the configurations of both
-	engine to be equivalent to the best of our capabilities, which comes with some limitations.
-	Firstly, both engines use a common implementation for the algorithms.
-	This is done to keep the theoretical runtime equivalent, however, in practice the
-	chosen implementation might not be optimal for either of the engines.
-	Secondly, we decided to use Lustre as a file system for both Spark and Dask.
-	Spark could benefit from using HDFS as a file system, however, HDFS is uncommon in HPC.
-	Finally, our infrastructure has a bottleneck from the network and Lustre.
-	As explained in section~{\ref{subsec:overhead-tradeoff}}, the data transfer time is tighly corrolated to the overhead of the application.
-	Therefore, while reducing this bottleneck should improve the performance of both engine similarly
-	it can be hard to predict the actual behavior.
-}
+To make a fair comparison between Spark and Dask, we set both engine configurations
+to be equivalent to the best of our capabilities, which comes with some limitations.
+Firstly, both engines use a shared implementation for the algorithms.
+This is done to keep the theoretical runtime equivalent; however, the chosen
+implementation might not be optimal for either of the engines.
+Secondly, we decided to use Lustre as a file system for both Spark and Dask.
+Spark could benefit from using HDFS as a file system, but HDFS is uncommon in HPC.
+Finally, our infrastructure has a bottleneck from the network and Lustre.
+As explained in section~{\ref{subsec:overhead-tradeoff}}, the data transfer 
+time is tightly correlated to the overhead of the application.
+Therefore, while reducing this bottleneck should improve the performance of 
+both engines similarly, it can be hard to predict the actual behavior.
 		
 \section{Conclusion}
 We presented a detailed comparison of two Big Data engines, Apache Spark and Dask.
 We studied the engines using three synthetic data-intensive applications and a data-intensive neuroimaging pipeline.
 Overall, our results showed no substantial difference between the engines.
-\HL{Although Spark overhead was generally lower than Dask, it was significantly higher when applications incur inter-worker communication.}
+Although Spark overhead was generally lower than Dask, it was significantly higher when applications incur inter-worker communication.
 For one application, our results showed that Spark used more memory, causing issues with its workers resulting in a significantly faster runtime for Dask.
 However, using an infrastructure offering more memory per worker would most likely solve this issue.
 											
@@ -618,11 +599,10 @@ These results suggest that future research should focus on strategies to:
 \end{itemize}
 											
 \section*{Acknowledgment}
-Mathieu Dugr\'e was funded by \HL{the} Alexander Graham Bell scholarship from
-the Natural Sciences and Engineering Research Council of Canada. This work
-was partially funded by the Canada Research Chairs program. The HPC cluster
-was funded by the Canada Foundation for Innovation.
-											
-\bibliographystyle{wileyNJD-AMA}
+Mathieu Dugr\'e was funded by the Alexander Graham Bell scholarship from
+the Natural Sciences and Engineering Research Council of Canada.
+The Canada Research Chairs program partially funded this work.
+The Canada Foundation for Innovation funded the HPC cluster.
+								
 \bibliography{paper}
 \end{document}
