@@ -27,6 +27,9 @@ import pandas as pd
 from scipy.stats import ttest_ind
 
 
+matplotlib.rc('font', size=20)
+
+
 def gantt(
     df,
     xlabel="Time [s]",
@@ -175,6 +178,11 @@ def gantt(
     plot.yaxis.major_tick_line_color = None
     plot.yaxis.minor_tick_line_color = None
     plot.yaxis.major_label_text_font_size = "0pt"
+    
+    plot.xaxis.major_label_text_font_size = "20pt"
+    plot.axis.axis_label_text_font_size = "20pt"
+    plot.legend.title_text_font_size = "20pt"
+    plot.legend.label_text_font_size = "20pt"
 
     # Hover tool
     hover = HoverTool(
