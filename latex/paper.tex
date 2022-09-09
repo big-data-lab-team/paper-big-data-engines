@@ -237,7 +237,7 @@ We used the default inode configuration for Lustre.
 \HL{
 	We configure Dask to have eight worker processes per node, each with eight threads.
 	This is the default recommended configuration for the Dask SLURM cluster configuration~{\cite{DaskSLURMDoc}}.
-	Similarly, we configured Spark to have eight executors per node, each with eight threads.
+	Similarly, we configured Spark to have eight executors per node (hereafter called workers for consistency with Dask), each with eight threads.
 	When trying different configuration for the workers, we did not observe performance difference
 	for our benchmark.
 	Therefore we chose the recommended configuration from Dask.
@@ -506,10 +506,15 @@ This results in a significant makespan difference with Spark being up to 3\% fas
 \end{figure}
 													
 \subsection{Kmeans}
-Figure \ref{fig:kmeans_worker} depicts the total execution time for the \textit{Kmeans} application when varying the number of workers.
-We observe that Dask is multifold faster than Spark, resulting in a $1.79\times$ to $2.71\times$ speed-up ratio on the makespan.
-Specifically, Spark has much longer overhead, \textit{get\_labels} and read time than Dask.
-This difference arises from Spark workers restarting due to lack of executor memory, leading to recomputation of tasks.
+\HL{
+	When varying the number of workers, we observed that Dask is multifold faster
+	than Spark, resulting in a $1.79\times$ to $2.71\times$ speed-up ratio on the makespan.
+	The problem we observed was two fold.
+	Firstly, the process ID of the workers' threads is not reported correctly and 
+	leading to falsely excessive overhead for Spark.
+	Secondly, the Spark workers were restarting due to lack of memory, leading 
+	to task recomputation and having to reload data into memory.
+}
 							
 We increase the worker memory by reducing the number of worker processes per
 compute node since all available memory from the compute node is already allocated to the pool of workers.
@@ -518,20 +523,13 @@ When reducing the number of processes from 64 to 32 for Spark and Dask
 With only 32 processes and more memory per worker, Spark no longer recomputed tasks for the Kmeans application.
 We suppose that given more memory per thread/process, Dask and Spark would then perform similarly.
 							
-\begin{figure}[!h]
-	\centering
-	\includegraphics[clip,width=0.75\columnwidth]{figures/stacked_kmeans_worker.jpg}
-	\caption{Kmeans: varying nodes -- 5000 files, 3 iterations}
-	\label{fig:kmeans_worker}
-\end{figure}
-							
 In a follow-up experiment, we further optimized our Kmeans implementations for both Dask and Spark to minimize the size of data kept in memory.
 Figure~{\ref{fig:dask_kmeans_gantt}} and Figure~{\ref{fig:spark_kmeans_gantt}} show the Gantt chart for the execution
 of this new experiments for Dask and Spark.
 The x-axis shows the time in second while the y-axis depicts the workers, with 
 one worker thread ID (Dask) and process ID (Spark) per line.
 We represent each task on the Gantt chart with its associated function's color.
-We observe that Spark reports three times more processes than Dask threads.
+We again observe that Spark reports three times more processes than Dask threads.
 \HL{
 	It is unclear what is the cause for reporting extra Spark processes.
 	However, with our analysis we found that both Dask and Spark use the same 
@@ -606,9 +604,10 @@ In a previous study~\cite{8943502}, we also observed this tradeoff between overh
 Exploring strategies that take advantage of this tradeoff could be interesting to reduce the application makespan.
 																	
 \subsection{Memory management}
-Our Kmeans results from Figure~{\ref{fig:kmeans_worker}} show a significant difference between Dask and Spark.
-The difference in performance comes from Spark worker restarting due to running out of memory; thus, Spark needs to recompute several tasks.
-This is unexpected, given that Dask and Spark are configured similarly and are allocated the same amount of resources.
+% TODO remore reference to figure.
+\HL{Our initial Kmeans results showe a significant difference between Dask and Spark.}
+The difference in performance \HL{came} from Spark worker restarting due to running out of memory; thus, Spark \HL{needed} to recompute several tasks.
+This is unexpected, given that Dask and Spark \HL{were} configured similarly and \HL{were} allocated the same amount of resources.
 We think those issues arise from a combination of
 (1) the reserved memory for the JVM heap space,
 (2) the serialization of Python to Java kept in memory,
@@ -653,11 +652,6 @@ Therefore, it is critical to ensure enough bandwidth to the file system before s
 Otherwise, those extra resources might be underused.
 				
 \subsection{Recommendations}
-\iffalse
-The differences in performance are minimal between both engines. However, 
-we added a “Recommendation” subsection to the discussion for qualitative 
-difference and some caveats to avoid when using the engines.
-\fi
 \HL{
 	The results from our experiments show that the performance difference between
 	Dask and Spark is minimal, in general. 
@@ -675,6 +669,7 @@ difference and some caveats to avoid when using the engines.
 
 \HL{
 	% TODO add caveats to avoid when using the engines.
+					
 }
 											
 \subsection{Limitations}
@@ -685,11 +680,17 @@ This is done to keep the theoretical runtime equivalent; however, the chosen
 implementation might not be optimal for either of the engines.
 Secondly, we decided to use Lustre as a file system for both Spark and Dask.
 Spark could benefit from using HDFS as a file system, but HDFS is uncommon in HPC.
-Finally, our infrastructure has a bottleneck from the network and Lustre.
+\HL{Finally, our Lustre filesystem suffer from an I/O bottleneck coming from 
+either the network or disks bandwidth.}
 As explained in section~{\ref{subsec:overhead-tradeoff}}, the data transfer 
 time is tightly correlated to the overhead of the application.
-Therefore, while reducing this bottleneck should improve the performance of 
+However, while reducing this bottleneck should improve the performance of 
 both engines similarly, it can be hard to predict the actual behavior.
+
+\HL{
+	% TODO discuss UCX and other high performance networks.???
+				
+}
 			
 \HL{
 	Dask and Spark both support GPUs, however we did not use applications that
