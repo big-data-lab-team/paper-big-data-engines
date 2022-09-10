@@ -668,8 +668,14 @@ Otherwise, those extra resources might be underused.
 }
 
 \HL{
-	% TODO add caveats to avoid when using the engines.
-					
+	% TODO reread this paragraph.
+	While the engines showed similar performance, they both come with their ow caveat that
+	can drastically affect their performance.
+	For Dask, the user should be aware of the Python GIL limitations.
+	For Python code multiples worker processes should be used and for code releasing the
+	GIL a balance between processes and thread is recommended.
+	For Spark, we experienced severe performance issues due to workers running out of memory.
+	Users should pay careful attetion to their Spark worker configurations to prevent similar issues.
 }
 											
 \subsection{Limitations}
@@ -688,8 +694,13 @@ However, while reducing this bottleneck should improve the performance of
 both engines similarly, it can be hard to predict the actual behavior.
 
 \HL{
-	% TODO discuss UCX and other high performance networks.???
-				
+	% TODO reread paragraph
+	While both Dask and Spark support various high-performance network strategies
+	such as UCX, we focused on the stand point on neuroscientist that would 
+	commonly use the frameworks mostly out-of-the-box.
+	With higher network throughput, the overall performance of the engines could differ.
+	Further work would be required to compare Dask and Spark using different high-performance
+	network protocols.
 }
 			
 \HL{
