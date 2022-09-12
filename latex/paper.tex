@@ -16,6 +16,8 @@
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 \newcommand{\HL}[1]{\hl{#1}}
+\newcommand{\TG}[1]{\color{red}\textsc{From Tristan: }#1\color{black}}
+
 
 \articletype{WORKS19 Special Issue on Workflows in Support of Large-Scale Science GEs:  Chase Wu, Hoang Nguyen}
 
@@ -76,7 +78,7 @@ This work studies how performance benchmarks \HL{of neuroimaging applications} g
 }
 In particular, we study in-depth the performance difference between Dask\cite{Dask:15} and Apache Spark\cite{Spark:16} for their suitability to process neuroimaging pipelines.
 \HL{
-	Our main contribution is to assess whether Spark or Dask has substantial performance benefits in processing neuroimaging pipelines in HPC systems.
+	Our main contribution is to assess whether Spark or Dask has any substantial performance advantage in processing neuroimaging pipelines in HPC systems.
 }
 	
 Spark and Dask both provide in-memory computing, data locality, and lazy-evaluation, typical for Big Data engines.
@@ -223,16 +225,14 @@ Lustre \textit{2.14.0-1.el8} is installed on both the Lustre clients and servers
 We used the default inode configuration for Lustre.
 
 \HL{
-	While our infrastructure is not of the scale of TOP500 HPC systems, it is 
-	hard to reserve multiple nodes concurrently on those infrastructures.
-	Moreover, by using our infrastructure, we can ensure that no external
-	processes influence the benchmark for our experiments.
+	While our infrastructure is not of the scale of TOP500 HPC systems,
+	we can assure that no external processes
+	impacted our measurements which would be hard to achieve on a production system.
 	Our system uses similar hardware as Compute Canada's B\'eluga cluster
-	--- a representative cluster available to researchers in Canada --- and
-	replicates as close as possible its configuration.
-	This lets us compare Spark and Dask in an isolated environment with the
-	condition of a realistic allocation of resources, for neuroimaging
-	applications, in an HPC system.
+	--- a representative cluster available to researchers in Canada --- and 
+	replicates as closely as possible its configuration.
+	This lets us compare Spark and Dask in an isolated environement with the condition 
+	of a realistic  allocation of resources, for neuroimaging applications, in an HPC system.
 }
 					
 \HL{
@@ -273,7 +273,8 @@ We used all 3,491 anatomical images, representing \SI{26.67}{\gibi\byte} overall
 (\SI{7.82}{\mebi\byte} per image on average).
 
 \HL{
-	We chose these datasets as they represent typical dataset sizes for neuroimaging studies and their free access.
+	We chose these dataset as they represent common dataset sizes for neuroimaging 
+	imaging studies and are open-access.
 }
 							
 \subsection{Applications}
@@ -287,8 +288,9 @@ applications, namely \textit{Kmeans} and \textit{BIDS App Example}{\cite{gorgole
 	We chose these neuroimaging data processing applications to study the 
 	effects of various Big Data characteristics.
 	Table~{\ref{table:applications}} depicts the Big Data characteristics used in
-	each application.
+	each application. 
 }
+\TG{Explain what each column represents}
 
 \begin{table*}[t]
 	\caption{Big Data characteristics of the applications}
@@ -314,11 +316,9 @@ applications, namely \textit{Kmeans} and \textit{BIDS App Example}{\cite{gorgole
 \HL{
 	To minimize the performance difference from implementation decisions, the
 	code base of the applications is common for both engines.
-	Therefore, the performance observed comes directly from the 
-	engine scheduling and APIs.
-}
-						
-The scripts used for our experiments and the results generated are available on
+	Therefore, the performance observed comes directly from the engine scheduling and
+	their APIs.
+} The scripts used for our experiments and the results generated are available on
 GitHub at: \mbox{\href{https://github.com/mathdugre/paper-big-data-engines}{https://github.com/mathdugre/paper-big-data-engines/}}.
 						
 \subsubsection{Increment}
@@ -371,8 +371,8 @@ It can be computed in parallel at the cost of higher memory or sequentially to r
 We decided to compute the nearest centroids in parallel since we use only three centroids.
 However, due to resources limitation on our infrastructure, the Kmeans experiments
 are performed with only half of the BigBrain dataset ({\SI{303}{\gibi\byte}}).
-\HL{We chose this application for its real-life use case, large data shuffling between workers,
-and requirements to keep all data in-memory.}
+\HL{We chose this application as it involves substantial data shuffling between workers,
+and requires to keep all the data in memory.}
 								
 \subsubsection{BIDS App Example}
 Our fourth application is the BIDS App Example, a neuroimaging pipeline to
@@ -383,7 +383,7 @@ applications, the BIDS App Example is a command-line executed in a Docker image
 (bids/example on DockerHub). We converted the Docker image to a Singularity
 image for use in HPC environments, using
 \href{https://hub.docker.com/r/singularityware/docker2singularity/tags/}{docker2singularity}
-\HL{We chose this application for its real-life use case and it is containerized unlike our other applications.}
+\HL{We chose this application for its real-life use case and the fact that it is containerized unlike our other applications.}
 										
 \subsection{Experiments}
 Table~\ref{table:parameters} shows the parameters that we varied
@@ -432,9 +432,8 @@ The mean of each bar is calculated from ten repetitions, with the error bar repr
 As expected, the compute time, from \textit{Increment}, remains the same when we vary the number of nodes.
 However, the \textit{Read} and \textit{Write} time increases with the number of nodes for both engines.
 \HL{
-	With a large number of worker threads accessing the Lustre file system
-	concurrently, the disk bandwidth or network is saturated, and it creates 
-	an I/O bottleneck to access the Lustre file system.
+	Due to the large amount of worker threads accessing the Lustre file system
+	concurrently, the disk bandiwdth or network are saturated, which results in an I/O bottleneck.
 }
 												
 From Figure \ref{fig:increment_worker}, we also observe that Dask's overhead is higher than Spark's.
@@ -442,10 +441,9 @@ While the overhead of both engines increases with the number of nodes, Dask's ov
 Although Dask has a higher overhead, the total time for both engines is overall similar.
 This is due to a tradeoff between disk bandwidth and compute/overhead time.
 \HL{
-	On the one hand, when multiple threads access Lustre concurrently, they risk 
-	saturation of the shared disk bandwidth, thus resulting in longer I/O time.
+	On the one hand, when multiple threads access Lustre concurrently they may saturate the shared disk bandwidth, resulting in longer I/O time.
 	On the other hand, when most threads are either idle or performing computations,
-	it reduces the contention on the disk bandwidth resulting in shorter I/O time.
+	the contention on the disk bandwidth is reduced, resulting in shorter I/O time.
 }
 The only significant difference in total time is when two nodes are used.
 This results in an approximately 3\% total runtime difference.
@@ -533,10 +531,10 @@ one worker thread ID (Dask) and process ID (Spark) per line.
 We represent each task on the Gantt chart with its associated function's color.
 We again observe that Spark reports three times more processes than Dask threads.
 \HL{
-	It is unclear what the cause is for reporting extra Spark processes.
-	However, with our analysis, we found that both Dask and Spark use the same 
+	It is unclear what is the cause for reporting extra Spark processes.
+	However, we found that both Dask and Spark use the same 
 	amount of maximum concurrent processes or threads.
-	Additionally, the is no significant difference in the average amount of 
+	Additionally, there was no significant difference in the average amount of 
 	concurrent processes or threads between Dask and Spark.
 }
 							
@@ -653,7 +651,7 @@ Therefore, it is critical to ensure enough bandwidth to the file system before s
 Otherwise, those extra resources might be underused.
 
 \HL{
-	Another study~{\cite{Slaughter2020-ql}} developed a parametrized benchmark framework
+	Another study~{\cite{9355308}} developed a parametrized benchmark framework
 	to evaluate the performance of different engines, including Spark and Dask.
 	On the one hand, the framework reduces the implementation effort and helps with
 	comparing frameworks fairly.
@@ -670,15 +668,15 @@ Otherwise, those extra resources might be underused.
 	The results from our experiments show that the performance difference between
 	Dask and Spark are minimal, in general. 
 	The main differences we observed are qualitative.
-	First, we found that Dask integration with the scientific Python ecosystem made it
+	We found that Dask integration with the scientific Python ecosystem made it
 	easier to implement neuroimaging applications.
-	Spark configuration requires setting multiple environment variables.
-	In comparison, Dask is ready to go after an installation through PIP.
-	In addition, Dask dashboard provides more information than Spark ones, making
+	Spark configuration required to set multiple environment variables.
+	In comparison, Dask is ready-to-go after an installation through PIP, the Python package manager.
+	The Dask dashboard provides more information than Spark's, making
 	the debugging of Dask applications easier and faster.
-	Therefore, for the neuroimaging field, we recommend using Dask over Spark.
-	However, in other fields with non-Python-based ecosystems, both Dask and Spark
-	would be equal candidates as Big Data engines.
+	Therefore, for the neuroimaging field, we recommend the use of Dask over Spark.
+	However, in other fields with non-Python-based ecosystem, both Dask and Spark
+	may be equal candidates as a Big Data engine.
 }
 
 \HL{
@@ -708,21 +706,21 @@ both engines similarly, it can be hard to predict the actual behavior.
 
 \HL{
 	While both Dask and Spark support various high-performance network strategies
-    such as UCX, we focused on the standpoint of neuroscientists that would 
-    commonly use the frameworks mostly out of the box.
-    With higher network throughput, the overall performance of the engines could differ.
-    Further work would be required to compare Dask and Spark using different high-performance
-    network protocols.
+	such as UCX, we focused on the standpoint of neuroscientists that would 
+	commonly use the frameworks mostly out of the box.
+	With higher network throughput, the overall performance of the engines could differ.
+	Further work would be required to compare Dask and Spark using different high-performance
+	network protocols.
 }
 			
 \HL{
 	Dask and Spark both support GPUs; however, we did not use applications that
-    leverage them in our work.
-    Although several neuroimaging applications use GPUs, only a few preprocessing pipelines use them.
-    Therefore, we omitted GPUs from this study because preprocessing comprises the majority of computing time for neuroimaging
-    workflow.
-    Moreover, the few preprocessing applications using GPUs are not commonly used
-    due to their recent development.
+	leverage them in our work.
+	Although several neuroimaging applications use GPUs, only a few preprocessing pipelines use them.
+	Therefore, we omitted GPUs from this study because preprocessing comprises the majority of computing time for neuroimaging
+	workflow.
+	Moreover, the few preprocessing applications using GPUs are not commonly used
+	due to their recent development.
 }
 											
 \section{Conclusion}
