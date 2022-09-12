@@ -289,8 +289,15 @@ applications, namely \textit{Kmeans} and \textit{BIDS App Example}{\cite{gorgole
 	effects of various Big Data characteristics.
 	Table~{\ref{table:applications}} depicts the Big Data characteristics used in
 	each application. 
+	Each row represents an application, while each column represents an engine's characteristic.
+	The \textit{Map} and \textit{Reduce} represent the Map-Reduce paradigm operations,
+	and the \textit{Shuffle} column represents the amount of data shuffled between stages if any.
+	The column \textit{Dataset in-memory} depicts whether the whole dataset is required to 
+	be in memory for processing.
+	Then \textit{Compute intensive} and \textit{Data intensive} shows if the applications are
+	compute or data intensive.
+	Lastly, the \textit{Containerized} column shows applications wrapped in a container.
 }
-\TG{Explain what each column represents}
 
 \begin{table*}[t]
 	\caption{Big Data characteristics of the applications}
