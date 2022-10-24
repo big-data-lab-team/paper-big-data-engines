@@ -15,11 +15,11 @@
 \usepackage{tabularx} 
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
-\newcommand{\HL}[1]{\hl{#1}}
+\newcommand{\HL}[1]{#1}
 \newcommand{\TG}[1]{\color{red}\textsc{From Tristan: }#1\color{black}}
 
 
-\articletype{WORKS19 Special Issue on Workflows in Support of Large-Scale Science GEs:  Chase Wu, Hoang Nguyen}
+\articletype{WORKS19 Special Issue on Workflows in Support of Large-Scale Science GEs:  David Walker, Chase Wu}
 
 \received{}
 \revised{}
@@ -731,9 +731,9 @@ both engines similarly, it can be hard to predict the actual behavior.
 
 \HL{
 	Due to the limited amount of benchmarks available to evaluate the performance
-    of neuroimaging applications, we use our own collection of applications.
-    Further efforts would be needed to create a credible and in-depth performance
-    benchmark specific to the neuroimaging field.
+	of neuroimaging applications, we use our own collection of applications.
+	Further efforts would be needed to create a credible and in-depth performance
+	benchmark specific to the neuroimaging field.
 }
 											
 \section{Conclusion}
@@ -751,12 +751,29 @@ These results suggest that future research should focus on strategies to:
 	\item Reduce the footprint of application memory
 	\item Manage the memory of workers more efficiently
 \end{itemize}
-																					
+
 \section*{Acknowledgment}
-Mathieu Dugr\'e was funded by the Alexander Graham Bell scholarship from
-the Natural Sciences and Engineering Research Council of Canada.
+Mathieu Dugr\'e was partially funded by a Alexander Graham Bell scholarship from the Natural
+Sciences and Engineering Research Council of Canada and a Master's (B1X) Research Scholarships.
 The Canada Research Chairs program partially funded this work.
 The Canada Foundation for Innovation funded the HPC cluster.
-																		
+
+\section*{Data Availability}
+\subsection*{BigBrain}
+The data that support the findings of this study are available from the corresponding author, M. Dugr\'e, upon reasonable request.
+A lower resolution of \SI{40}{\micro\metre} is available publicly by FTP at: 
+\newline\href{https://ftp.bigbrainproject.org/bigbrain-ftp/BigBrainRelease.2015/3D_Blocks/40um/nii/}{https://ftp.bigbrainproject.org/bigbrain-ftp/BigBrainRelease.2015/3D\_Blocks/40um/nii}
+
+\subsection*{CoRR}
+The data that support the findings of this study are openly available in DataLad at:
+\newline\href{https://datasets.datalad.org/?dir=/corr/RawDataBIDS}{https://datasets.datalad.org/?dir=/corr/RawDataBIDS}
+
+\subsection*{Code}
+The code that support the findings of this study is openly available in GitHub at:
+\newline\href{https://github.com/big-data-lab-team/paper-big-data-engines/tree/CPE}{https://github.com/big-data-lab-team/paper-big-data-engines/tree/CPE}
+
+\section*{Conflict of Interests}
+The authors declare no conflict of interests.
+
 \bibliography{paper}
 \end{document}

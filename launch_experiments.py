@@ -9,7 +9,7 @@ REPETITIONS = 10
 
 n_nodes = [2, 4, 8]
 n_iterations = [1, 5, 25]
-n_iterations_small = [1, 3, 9]
+n_iterations_small = [1, 3]
 BB_blocks = [1000, 2500, 5000]
 
 default = {
@@ -51,15 +51,15 @@ for cmd_template in cmd_templates:
                 benchmark_folder,
             )
         )
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_sample_path(5000),
-        #         "multi-increment",
-        #         f"{5000} {default['small_itr']} {default['sleep']}",
-        #         x,
-        #         benchmark_folder,
-        #     )
-        # )
+        cmds.append(
+            cmd_template.format(
+                BB_sample_path(5000),
+                "multi-increment",
+                f"{5000} {default['small_itr']} {default['sleep']}",
+                x,
+                benchmark_folder,
+            )
+        )
         cmds.append(
             cmd_template.format(
                 BB_sample_path(5000),
@@ -119,15 +119,15 @@ for cmd_template in cmd_templates:
             )
         )
     for x in n_iterations_small:
-        # cmds.append(
-        #     cmd_template.format(
-        #         BB_sample_path(5000),
-        #         "multi-increment",
-        #         f"{5000} {x} {default['sleep']}",
-        #         default["node"],
-        #         benchmark_folder,
-        #     )
-        # )
+        cmds.append(
+            cmd_template.format(
+                BB_sample_path(5000),
+                "multi-increment",
+                f"{5000} {x} {default['sleep']}",
+                default["node"],
+                benchmark_folder,
+            )
+        )
         cmds.append(
             cmd_template.format(
                 BB_sample_path(5000),
