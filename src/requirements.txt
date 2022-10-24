@@ -4,7 +4,7 @@ click==8.0.1
 cloudpickle==1.6.0
 dask==2021.7.0
 dask-jobqueue==0.7.2
-distributed==2021.7.0
+distributed==2021.10.0
 fsspec==2021.6.1
 HeapDict==1.0.1
 Jinja2==3.0.1
